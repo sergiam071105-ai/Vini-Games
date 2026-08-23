@@ -1,92 +1,117 @@
-import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { GameMediaGallery } from "@/components/store/game-media-gallery";
-import { FloatingBuyBox } from "@/components/store/floating-buy-box";
+import { GameInfoBox } from "@/components/store/game-info-box";
 import { GameMetadata } from "@/components/store/game-metadata";
+import { GameReviews } from "@/components/store/game-reviews";
+import { GameRequirements } from "@/components/store/game-requirements";
 
-interface GamePageProps {
-  params: Promise<{ slug: string }>;
-}
+// =====================================================================
+// DATOS DE DEMOSTRACIÓN (Mock Data)
+// =====================================================================
+const MOCK_GAME = {
+  id: 1,
+  title: "Neon Odyssey",
+  slug: "neon-odyssey",
+  description: "Explora una ciudad futurista, descubre sus secretos y construye tu propia historia en un mundo lleno de aventuras.",
+  basePrice: 111.25,
+  discountPercent: 20,
+  finalPrice: 89,
+  coverUrl: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&q=80",
+  trailerUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  developer: "Vini Studio",
+  publisher: "Vini Games",
+  releaseDate: "2026-08-18",
+  ageRating: "+13",
+  ratingAvg: 4.8,
+  ratingCount: 1284,
+};
 
-export default async function GameDetailPage({ params }: GamePageProps) {
-  const resolvedParams = await params;
-  const slug = resolvedParams.slug;
-  const supabase = await createClient();
+const MOCK_CATEGORIES = [
+  { id: 1, name: "Acción" },
+  { id: 2, name: "RPG" },
+  { id: 3, name: "Aventura" },
+];
 
-  // Consultar datos del juego, medios y categorías relacionadas
-  const { data: game, error } = await supabase
-    .from("games")
-    .select(`
-      *,
-      game_media (
-        id,
-        media_type,
-        media_url,
-        sort_order
-      ),
-      game_categories (
-        categories (
-          id,
-          name
-        )
-      )
-    `)
-    .eq("slug", slug)
-    .single();
+const MOCK_GALLERY = [
+  { id: 1, media_type: "image", media_url: "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&q=80" },
+  { id: 2, media_type: "image", media_url: "https://images.unsplash.com/photo-1535223289827-42f1e9919769?w=800&q=80" },
+];
 
-  if (error || !game) {
-    notFound();
-  }
+const MOCK_RELATED = [
+  { id: 2, title: "VOID RUNNER", price: 59 },
+  { id: 3, title: "DARK REALM", price: 119 },
+  { id: 4, title: "PIXEL WARS", price: 39 },
+];
 
-  // Ordenar la galería por sort_order
-  const gallery = [...(game.game_media || [])].sort((a, b) => a.sort_order - b.sort_order);
-  
-  // Extraer las categorías de la relación N:M
-  const categories = (game.game_categories || [])
-    // @ts-ignore - Tipo complejo de supabase
-    .map(gc => gc.categories)
-    .filter(Boolean);
-
+export default async function GameDetailPage() {
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="min-h-screen bg-[#080A13] pb-24">
+      
+      {/* Container principal para alinear todo al centro con max-width */}
+      <div className="container mx-auto px-4 pt-10 max-w-7xl">
         
-        {/* Columna Izquierda (Principal) */}
-        <div className="lg:col-span-2 flex flex-col gap-8">
-          {/* Título (visible en móvil, oculto en desktop donde va en la caja flotante) */}
-          <h1 className="text-3xl font-bold text-foreground lg:hidden">{game.title}</h1>
-
-          <GameMediaGallery 
-            coverUrl={game.cover_image_url} 
-            trailerUrl={game.trailer_url} 
-            gallery={gallery} 
-          />
-
-          <div className="prose prose-invert max-w-none">
-            <h2 className="text-xl font-semibold mb-4 text-foreground">Acerca de este juego</h2>
-            <div className="text-zinc-300 leading-relaxed whitespace-pre-wrap">
-              {game.description}
-            </div>
+        {/* TOP SECTION: Galería y Buy Box */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mb-16">
+          {/* Izquierda: Media Gallery (Ocupa 7 de 12 columnas) */}
+          <div className="lg:col-span-7">
+            <GameMediaGallery
+              coverUrl={MOCK_GAME.coverUrl}
+              trailerUrl={MOCK_GAME.trailerUrl}
+              gallery={MOCK_GALLERY}
+            />
           </div>
+          
+          {/* Derecha: Info & Buy Box (Ocupa 5 de 12 columnas) */}
+          <div className="lg:col-span-5 pt-4">
+            <GameInfoBox
+              title={MOCK_GAME.title}
+              categories={MOCK_CATEGORIES}
+              ratingAvg={MOCK_GAME.ratingAvg}
+              ratingCount={MOCK_GAME.ratingCount}
+              shortDescription={MOCK_GAME.description}
+              basePrice={MOCK_GAME.basePrice}
+              discountPercent={MOCK_GAME.discountPercent}
+              finalPrice={MOCK_GAME.finalPrice}
+            />
+          </div>
+        </div>
 
-          <GameMetadata 
-            developer={game.developer}
-            publisher={game.publisher}
-            releaseDate={game.release_date}
-            ageRating={game.age_rating}
-            categories={categories}
+        {/* MIDDLE SECTION 1: Acerca del juego */}
+        <div className="mb-16">
+          <h2 className="text-xl font-bold text-white mb-6">Acerca del juego</h2>
+          <GameMetadata
+            developer={MOCK_GAME.developer}
+            publisher={MOCK_GAME.publisher}
+            releaseDate={MOCK_GAME.releaseDate}
+            ageRating={MOCK_GAME.ageRating}
           />
         </div>
 
-        {/* Columna Derecha (Caja de Compra Flotante) */}
-        <div className="lg:col-span-1">
-          <FloatingBuyBox 
-            gameId={game.id}
-            title={game.title}
-            basePrice={game.base_price}
-            discountPercent={game.discount_percent}
-            finalPrice={game.final_price}
-          />
+        {/* MIDDLE SECTION 2: Requisitos del sistema */}
+        <div className="mb-16">
+          <h2 className="text-xl font-bold text-white mb-6">Requisitos del sistema</h2>
+          <GameRequirements />
+        </div>
+
+        {/* MIDDLE SECTION 3: Reseñas */}
+        <div className="mb-16">
+          <h2 className="text-xl font-bold text-white mb-6">Reseñas de la comunidad</h2>
+          <GameReviews />
+        </div>
+
+        {/* BOTTOM SECTION: También te puede gustar */}
+        <div>
+          <h2 className="text-xl font-bold text-white mb-6">También te puede gustar</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {MOCK_RELATED.map((game) => (
+              <div key={game.id} className="bg-[#151722] rounded-xl overflow-hidden border border-transparent hover:border-[#783DF2]/50 transition-colors cursor-pointer group">
+                <div className="aspect-[4/3] bg-[#1A1C2B] w-full" />
+                <div className="p-5">
+                  <h3 className="text-white font-bold text-sm mb-2 group-hover:text-[#1FD1EB] transition-colors">{game.title}</h3>
+                  <div className="text-[#1FD1EB] font-bold text-sm">Bs. {game.price}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
       </div>

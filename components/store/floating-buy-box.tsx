@@ -1,10 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ShoppingCart, Heart } from "lucide-react";
-import Button from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import Badge from "@/components/ui/badge";
+import { ShoppingCart, Heart, Check } from "lucide-react";
 
 interface FloatingBuyBoxProps {
   gameId: number;
@@ -23,33 +20,35 @@ export function FloatingBuyBox({
 }: FloatingBuyBoxProps) {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false);
 
   const priceToDisplay = finalPrice ?? basePrice;
   const hasDiscount = discountPercent > 0;
 
   const handleAddToCart = async () => {
     setIsAddingToCart(true);
-    // Simular retraso de Server Action
     await new Promise((resolve) => setTimeout(resolve, 800));
-    console.log(`Added game ${gameId} to cart`);
     setIsAddingToCart(false);
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 2000);
   };
 
   const handleToggleWishlist = () => {
     setIsWishlisted(!isWishlisted);
-    console.log(`Toggled wishlist for game ${gameId}`);
   };
 
   return (
-    <Card className="sticky top-24 bg-zinc-900 border-zinc-800 p-6 flex flex-col gap-6">
-      <CardContent className="p-0">
-        <h2 className="text-2xl font-bold text-foreground mb-4">{title}</h2>
-        
-        <div className="flex items-center gap-3 mb-6">
+    <div className="sticky top-8 bg-[#1A1C2B] border border-[#2E334A] rounded-xl overflow-hidden">
+      {/* Portada pequeña en la caja */}
+      <div className="p-6 flex flex-col gap-5">
+        <h2 className="text-2xl font-bold text-white">{title}</h2>
+
+        {/* Bloque de precios */}
+        <div className="flex items-center gap-3">
           {hasDiscount && (
-            <Badge className="bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 text-lg py-1">
+            <span className="bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30 text-base font-bold px-3 py-1 rounded-md">
               -{discountPercent}%
-            </Badge>
+            </span>
           )}
           <div className="flex flex-col">
             {hasDiscount && (
@@ -57,43 +56,68 @@ export function FloatingBuyBox({
                 Bs. {basePrice.toFixed(2)}
               </span>
             )}
-            <span className="text-3xl font-bold text-foreground">
+            <span className="text-3xl font-bold text-white">
               Bs. {priceToDisplay.toFixed(2)}
             </span>
           </div>
         </div>
 
+        {/* Botones de acción */}
         <div className="flex flex-col gap-3">
-          <Button 
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-6 text-lg font-semibold"
+          <button
+            className={`w-full py-4 rounded-lg text-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+              addedToCart
+                ? "bg-[#10B981] text-white"
+                : "bg-[#783DF2] hover:bg-[#6A32DB] text-white hover:shadow-[0_0_20px_rgba(120,61,242,0.4)]"
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
             onClick={handleAddToCart}
             disabled={isAddingToCart}
           >
-            {isAddingToCart ? (
-              <span className="flex items-center gap-2">
-                <span className="animate-spin">⏳</span> Agregando...
-              </span>
+            {addedToCart ? (
+              <>
+                <Check className="w-5 h-5" /> ¡Agregado!
+              </>
+            ) : isAddingToCart ? (
+              <>
+                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Agregando...
+              </>
             ) : (
-              <span className="flex items-center gap-2">
+              <>
                 <ShoppingCart className="w-5 h-5" /> Añadir al Carrito
-              </span>
+              </>
             )}
-          </Button>
+          </button>
 
-          <Button 
-            variant="outline"
-            className={`w-full py-6 text-lg font-semibold border-zinc-700 ${
-              isWishlisted ? "text-pink-500 bg-pink-500/10 border-pink-500/50 hover:bg-pink-500/20" : "text-foreground hover:bg-zinc-800"
+          <button
+            className={`w-full py-4 rounded-lg text-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 border ${
+              isWishlisted
+                ? "text-pink-400 bg-pink-500/10 border-pink-500/40 hover:bg-pink-500/20"
+                : "text-zinc-300 border-[#2E334A] hover:border-[#783DF2]/50 hover:bg-[#1E2033]"
             }`}
             onClick={handleToggleWishlist}
           >
-            <span className="flex items-center gap-2">
-              <Heart className={`w-5 h-5 ${isWishlisted ? "fill-current" : ""}`} /> 
-              {isWishlisted ? "En Wishlist" : "Añadir a Wishlist"}
-            </span>
-          </Button>
+            <Heart className={`w-5 h-5 ${isWishlisted ? "fill-current" : ""}`} />
+            {isWishlisted ? "En tu Wishlist ♥" : "Añadir a Wishlist"}
+          </button>
         </div>
-      </CardContent>
-    </Card>
+
+        {/* Info adicional */}
+        <div className="border-t border-[#2E334A] pt-4 space-y-3 text-sm">
+          <div className="flex justify-between">
+            <span className="text-zinc-500">Plataforma</span>
+            <span className="text-zinc-200">PC (Windows)</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-zinc-500">Idiomas</span>
+            <span className="text-zinc-200">Español, Inglés, Portugués</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-zinc-500">Almacenamiento</span>
+            <span className="text-zinc-200">85 GB disponibles</span>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
