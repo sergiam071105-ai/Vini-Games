@@ -130,12 +130,19 @@ export async function registerOnboardingAction(
   });
 
   if (authError) {
-    let friendly = 'Error al registrar la cuenta.';
-    if (authError.message.includes('already registered')) {
+    let friendly = authError.message;
+    const msg = authError.message.toLowerCase();
+
+    if (msg.includes('rate limit') || msg.includes('over_email_send_rate_limit')) {
+      friendly = 'Límite de correos de prueba de Supabase alcanzado (Free Tier: 3/hora). Desactiva "Confirm email" en Supabase Auth o espera unos minutos.';
+    } else if (msg.includes('already registered') || msg.includes('user already registered')) {
       friendly = 'Este correo electrónico ya está registrado. Por favor, inicia sesión.';
-    } else if (authError.message.includes('Password')) {
-      friendly = 'La contraseña no cumple con los requisitos de seguridad.';
+    } else if (msg.includes('password')) {
+      friendly = 'La contraseña no cumple con los requisitos mínimos de seguridad.';
+    } else if (msg.includes('database error')) {
+      friendly = 'Error en la base de datos al registrar el usuario o Gamer Tag duplicado.';
     }
+
     return {
       success: false,
       error: friendly,
