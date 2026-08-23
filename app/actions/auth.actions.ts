@@ -1,7 +1,12 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { loginSchema, type LoginInput } from '@/lib/schemas/auth.schema';
+import {
+  loginSchema,
+  fullOnboardingSchema,
+  type LoginInput,
+  type FullOnboardingInput,
+} from '@/lib/schemas/auth.schema';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -60,27 +65,118 @@ export async function loginAction(input: LoginInput): Promise<AuthActionResult> 
     };
   }
 
-  // 3. Actualizar fecha de último login en profiles si existe sesión
+  // 3. Actualizar fecha de último login en profiles
   if (data.user) {
     try {
       await supabase
         .from('profiles')
         .update({
-          last_login_date: new Date().toISOString(),
+          last_login_date: new Date().toISOString().split('T')[0],
           updated_at: new Date().toISOString(),
         })
         .eq('id', data.user.id);
     } catch {
-      // Si falla la actualización de last_login_date no interrumpe el login
+      // Ignorar si la actualización opcional falla
     }
   }
 
-  // 4. Revalidar rutas para refrescar estado en servidor
   revalidatePath('/', 'layout');
 
   return {
     success: true,
     message: '¡Bienvenido de vuelta a ViniGames!',
+  };
+}
+
+/**
+ * Server Action para registrar nuevo usuario completando el Onboarding en 4 pasos
+ */
+export async function registerOnboardingAction(
+  input: FullOnboardingInput
+): Promise<AuthActionResult> {
+  // 1. Validar esquema completo
+  const validation = fullOnboardingSchema.safeParse(input);
+
+  if (!validation.success) {
+    const fieldErrors: Record<string, string[]> = {};
+    for (const issue of validation.error.issues) {
+      const field = issue.path[0] as string;
+      if (!fieldErrors[field]) {
+        fieldErrors[field] = [];
+      }
+      fieldErrors[field].push(issue.message);
+    }
+    return {
+      success: false,
+      error: 'Datos de registro incompletos o inválidos.',
+      fieldErrors,
+    };
+  }
+
+  const { email, password, username, fullName, avatarUrl, gamerDna } = validation.data;
+  const supabase = await createClient();
+
+  // 2. Registrar cuenta en Supabase Auth
+  const { data: authData, error: authError } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        username,
+        full_name: fullName || null,
+        avatar_url: avatarUrl,
+      },
+    },
+  });
+
+  if (authError) {
+    let friendly = 'Error al registrar la cuenta.';
+    if (authError.message.includes('already registered')) {
+      friendly = 'Este correo electrónico ya está registrado. Por favor, inicia sesión.';
+    } else if (authError.message.includes('Password')) {
+      friendly = 'La contraseña no cumple con los requisitos de seguridad.';
+    }
+    return {
+      success: false,
+      error: friendly,
+    };
+  }
+
+  // 3. Guardar / Upsert perfil Gamer en la tabla profiles
+  if (authData.user) {
+    try {
+      const { error: profileError } = await supabase.from('profiles').upsert({
+        id: authData.user.id,
+        username,
+        full_name: fullName || null,
+        avatar_url: avatarUrl,
+        role: 'USER',
+        dna_exploration: Math.round(gamerDna.exploration),
+        dna_competitive: Math.round(gamerDna.competitive),
+        dna_narrative: Math.round(gamerDna.narrative),
+        dna_collection: Math.round(gamerDna.collection),
+        total_xp: 100,
+        gamecoins_balance: 100,
+        current_level: 1,
+        current_streak: 1,
+        longest_streak: 1,
+        last_login_date: new Date().toISOString().split('T')[0],
+        updated_at: new Date().toISOString(),
+      });
+
+      if (profileError) {
+        console.error('Error al insertar perfil en Supabase:', profileError);
+      }
+    } catch (err) {
+      console.error('Excepción al crear perfil:', err);
+    }
+  }
+
+  revalidatePath('/', 'layout');
+
+  return {
+    success: true,
+    message: '¡Perfil Gamer creado con éxito! +100 XP desbloqueados.',
   };
 }
 
