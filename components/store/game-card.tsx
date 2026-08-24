@@ -6,8 +6,24 @@ import Image from 'next/image';
 import { Heart, ShoppingCart, Star, Check } from 'lucide-react';
 import { GameItem } from '@/types/catalog';
 
+export interface Game {
+  id: number;
+  title: string;
+  slug: string;
+  base_price: number;
+  discount_percent: number;
+  final_price: number;
+  cover_image_url: string | null;
+  rating_avg: number;
+  rating_count?: number;
+  developer?: string;
+  short_description?: string | null;
+  categories?: { id: number; name: string; slug: string }[];
+  is_featured?: boolean;
+}
+
 interface GameCardProps {
-  game: GameItem;
+  game: Game | GameItem;
   priority?: boolean;
 }
 
@@ -30,23 +46,36 @@ export function GameCard({ game, priority = false }: GameCardProps) {
     }, 2000);
   };
 
-  const isDiscounted = game.discount_percent > 0;
-  const isFree = game.final_price === 0;
+  const isDiscounted = (game.discount_percent || 0) > 0;
+  const isFree = Number(game.final_price) === 0;
+  const categories = 'categories' in game && Array.isArray(game.categories) ? game.categories : [];
+  const ratingAvg = Number(game.rating_avg || 0);
+  const ratingCount = 'rating_count' in game ? game.rating_count : undefined;
+  const developer = 'developer' in game ? game.developer : undefined;
+  const shortDescription = 'short_description' in game ? game.short_description : undefined;
 
   return (
-    <div className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-[#2D3349] bg-[#1A1C2B] transition-all duration-300 hover:-translate-y-1 hover:border-[#783DF2]/80 hover:shadow-[0_8px_30px_rgba(120,61,242,0.25)]">
+    <div className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-[#2D3349] bg-[#1A1C2B] transition-all duration-300 hover:-translate-y-1 hover:border-[#783DF2]/80 hover:shadow-[0_8px_30px_rgba(120,61,242,0.25)] h-full">
       {/* Enlace principal al detalle del videojuego */}
       <Link href={`/games/${game.slug}`} className="block flex-1">
         {/* Contenedor de la Imagen de Portada con Hover Zoom */}
         <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#0F111A]">
-          <Image
-            src={game.cover_image_url}
-            alt={game.title}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            priority={priority}
-            className="object-cover transition-transform duration-500 will-change-transform group-hover:scale-110"
-          />
+          {game.cover_image_url ? (
+            <Image
+              src={game.cover_image_url}
+              alt={game.title}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              priority={priority}
+              className="object-cover transition-transform duration-500 will-change-transform group-hover:scale-110"
+            />
+          ) : (
+            <div className="flex h-full w-full flex-col items-center justify-center text-center p-4">
+              <span className="text-4xl">🎮</span>
+              <span className="text-[10px] text-[#949CB2] mt-2 font-mono">Sin Portada</span>
+            </div>
+          )}
+
           {/* Overlay con degradado inferior */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#1A1C2B] via-transparent to-transparent opacity-80" />
 
@@ -57,7 +86,7 @@ export function GameCard({ game, priority = false }: GameCardProps) {
                 -{game.discount_percent}%
               </span>
             )}
-            {game.is_featured && !isDiscounted && (
+            {'is_featured' in game && game.is_featured && !isDiscounted && (
               <span className="inline-flex items-center rounded-md bg-[#1FD1EB]/20 border border-[#1FD1EB]/50 px-2 py-0.5 text-xs font-bold text-[#1FD1EB] backdrop-blur-md">
                 DESTACADO
               </span>
@@ -83,59 +112,65 @@ export function GameCard({ game, priority = false }: GameCardProps) {
           {/* Puntuación Rating */}
           <div className="absolute bottom-2.5 left-2.5 z-10 flex items-center gap-1 rounded-md bg-[#090B14]/80 px-2 py-0.5 text-xs font-semibold text-[#F5F7FF] backdrop-blur-md border border-white/10">
             <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-            <span>{game.rating_avg.toFixed(1)}</span>
-            <span className="text-[#949CB2] text-[10px]">({game.rating_count})</span>
+            <span>{ratingAvg.toFixed(1)}</span>
+            {ratingCount !== undefined && (
+              <span className="text-[#949CB2] text-[10px]">({ratingCount})</span>
+            )}
           </div>
         </div>
 
         {/* Información del Videojuego */}
         <div className="p-4">
-          {/* Categorías / Géneros */}
-          <div className="mb-2 flex flex-wrap gap-1.5">
-            {game.categories.slice(0, 3).map((cat) => (
-              <span
-                key={cat.slug || cat.id}
-                className="rounded-full bg-[#2D3349]/50 px-2 py-0.5 text-[11px] font-medium text-[#949CB2] transition-colors group-hover:text-[#F5F7FF]"
-              >
-                {cat.name}
-              </span>
-            ))}
-          </div>
+          {/* Categorías / Géneros si existen */}
+          {categories.length > 0 && (
+            <div className="mb-2 flex flex-wrap gap-1.5">
+              {categories.slice(0, 3).map((cat) => (
+                <span
+                  key={cat.slug || cat.id}
+                  className="rounded-full bg-[#2D3349]/50 px-2 py-0.5 text-[11px] font-medium text-[#949CB2] transition-colors group-hover:text-[#F5F7FF]"
+                >
+                  {cat.name}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Título */}
           <h3 className="line-clamp-1 text-base font-bold text-[#F5F7FF] transition-colors duration-200 group-hover:text-[#1FD1EB]">
             {game.title}
           </h3>
 
-          {/* Desarrollador */}
-          <p className="mt-1 text-xs text-[#949CB2]">
-            {game.developer}
-          </p>
+          {/* Desarrollador si existe */}
+          {developer && (
+            <p className="mt-1 text-xs text-[#949CB2]">
+              {developer}
+            </p>
+          )}
 
           {/* Breve descripción */}
-          {game.short_description && (
+          {shortDescription && (
             <p className="mt-2 line-clamp-2 text-xs text-[#949CB2]/80 leading-relaxed">
-              {game.short_description}
+              {shortDescription}
             </p>
           )}
         </div>
       </Link>
 
       {/* Barra Inferior de Precios y Acción Rápida */}
-      <div className="flex items-center justify-between border-t border-[#2D3349]/70 bg-[#131421]/60 px-4 py-3">
+      <div className="flex items-center justify-between border-t border-[#2D3349]/70 bg-[#131421]/60 px-4 py-3 mt-auto">
         {/* Precios */}
         <div className="flex flex-col">
           {isDiscounted && (
             <span className="text-xs text-[#949CB2] line-through font-medium">
-              Bs. {game.base_price.toFixed(2)}
+              Bs. {Number(game.base_price).toFixed(2)}
             </span>
           )}
           <span className={`text-base font-black tracking-tight ${isFree ? 'text-emerald-400' : 'text-[#F5F7FF]'}`}>
-            {isFree ? 'GRATIS' : `Bs. ${game.final_price.toFixed(2)}`}
+            {isFree ? 'GRATIS' : `Bs. ${Number(game.final_price).toFixed(2)}`}
           </span>
         </div>
 
-        {/* Botón de añadir al carrito rápido */}
+        {/* Botón de acción rápida */}
         <button
           type="button"
           onClick={handleAddToCart}
