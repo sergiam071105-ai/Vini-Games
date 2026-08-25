@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Heart, ShoppingCart, Star, Check } from 'lucide-react';
 import { GameItem } from '@/types/catalog';
+import { useWishlist } from '@/lib/context/wishlist-context';
 
 export interface Game {
   id: number;
@@ -28,13 +29,14 @@ interface GameCardProps {
 }
 
 export function GameCard({ game, priority = false }: GameCardProps) {
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const { isWishlisted: checkIsWishlisted, toggleWishlist } = useWishlist();
+  const isWishlisted = checkIsWishlisted(game.id);
   const [isAddedToCart, setIsAddedToCart] = useState(false);
 
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsWishlisted((prev) => !prev);
+    toggleWishlist(game);
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -100,7 +102,7 @@ export function GameCard({ game, priority = false }: GameCardProps) {
             aria-label={isWishlisted ? 'Quitar de lista de deseos' : 'Añadir a lista de deseos'}
             className={`absolute top-2.5 right-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full border backdrop-blur-md transition-all duration-200 ${
               isWishlisted
-                ? 'border-red-500/80 bg-red-500/20 text-red-400 shadow-[0_0_12px_rgba(239,68,68,0.5)]'
+                ? 'border-pink-500/80 bg-pink-500/20 text-pink-400 shadow-[0_0_12px_rgba(236,72,153,0.5)]'
                 : 'border-white/10 bg-[#090B14]/60 text-[#949CB2] hover:border-white/30 hover:bg-[#090B14]/90 hover:text-white'
             }`}
           >

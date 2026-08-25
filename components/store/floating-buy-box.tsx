@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ShoppingCart, Heart, Check } from "lucide-react";
+import { useWishlist } from "@/lib/context/wishlist-context";
 
 interface FloatingBuyBoxProps {
   gameId: number;
@@ -18,7 +19,8 @@ export function FloatingBuyBox({
   discountPercent,
   finalPrice,
 }: FloatingBuyBoxProps) {
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const { isWishlisted: checkIsWishlisted, toggleWishlist } = useWishlist();
+  const isWishlisted = checkIsWishlisted(gameId);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
 
@@ -34,7 +36,13 @@ export function FloatingBuyBox({
   };
 
   const handleToggleWishlist = () => {
-    setIsWishlisted(!isWishlisted);
+    toggleWishlist({
+      id: gameId,
+      title,
+      base_price: basePrice,
+      discount_percent: discountPercent,
+      final_price: finalPrice,
+    });
   };
 
   return (

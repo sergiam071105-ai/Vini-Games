@@ -1,6 +1,10 @@
+"use client";
+
 import { Star, ShoppingCart, Heart, ArrowRight } from "lucide-react";
+import { useWishlist } from "@/lib/context/wishlist-context";
 
 interface GameInfoBoxProps {
+  gameId: number;
   title: string;
   categories: { id: number; name: string }[];
   ratingAvg: number;
@@ -9,9 +13,11 @@ interface GameInfoBoxProps {
   basePrice: number;
   discountPercent: number;
   finalPrice: number | null;
+  initialIsWishlisted?: boolean;
 }
 
 export function GameInfoBox({
+  gameId,
   title,
   categories,
   ratingAvg,
@@ -21,8 +27,22 @@ export function GameInfoBox({
   discountPercent,
   finalPrice,
 }: GameInfoBoxProps) {
+  const { isWishlisted: checkIsWishlisted, toggleWishlist } = useWishlist();
+  const isWishlisted = checkIsWishlisted(gameId);
+
   const priceToDisplay = finalPrice ?? basePrice;
   const hasDiscount = discountPercent > 0;
+
+  const handleToggleWishlist = () => {
+    toggleWishlist({
+      id: gameId,
+      title,
+      base_price: basePrice,
+      discount_percent: discountPercent,
+      final_price: finalPrice,
+      short_description: shortDescription,
+    });
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -61,11 +81,21 @@ export function GameInfoBox({
         </div>
 
         <div className="flex items-center gap-3">
-          <button className="flex-1 bg-[#783DF2] hover:bg-[#6A32DB] text-white py-4 px-6 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all">
+          <button className="flex-1 bg-[#783DF2] hover:bg-[#6A32DB] text-white py-4 px-6 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all hover:shadow-[0_0_20px_rgba(120,61,242,0.4)] active:scale-[0.99]">
             Comprar ahora <ArrowRight className="w-5 h-5" />
           </button>
-          <button className="w-14 h-14 border border-[#2E334A] hover:border-[#783DF2] bg-[#1A1C2B] rounded-xl flex items-center justify-center text-zinc-400 hover:text-pink-400 transition-all group">
-            <Heart className="w-6 h-6 group-hover:fill-pink-400/20" />
+          
+          <button 
+            type="button"
+            onClick={handleToggleWishlist}
+            aria-label={isWishlisted ? 'Quitar de lista de deseos' : 'Añadir a lista de deseos'}
+            className={`w-14 h-14 border rounded-xl flex items-center justify-center transition-all duration-200 group active:scale-95 ${
+              isWishlisted 
+                ? "bg-pink-500/20 border-pink-500/70 text-pink-400 shadow-[0_0_15px_rgba(236,72,153,0.4)]" 
+                : "bg-[#1A1C2B] border-[#2E334A] text-zinc-400 hover:border-[#783DF2] hover:text-white"
+            }`}
+          >
+            <Heart className={`w-6 h-6 transition-transform duration-200 ${isWishlisted ? "fill-current scale-110" : "group-hover:scale-110"}`} />
           </button>
         </div>
       </div>

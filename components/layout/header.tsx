@@ -20,6 +20,7 @@ import {
   Search
 } from 'lucide-react';
 import { getLevelProgress } from '@/lib/gamification/level-calculator';
+import { useWishlist } from '@/lib/context/wishlist-context';
 
 interface Profile {
   id: string;
@@ -39,6 +40,7 @@ interface HeaderProps {
 export function Header({ profile }: HeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { wishlistCount } = useWishlist();
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -106,6 +108,11 @@ export function Header({ profile }: HeaderProps) {
                 >
                   <Icon className="h-4 w-4" />
                   {link.label}
+                  {link.href === '/wishlist' && wishlistCount > 0 && (
+                    <span className="ml-1 px-1.5 py-0.2 bg-pink-500/20 text-pink-400 border border-pink-500/40 text-[10px] font-bold rounded-full">
+                      {wishlistCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -271,6 +278,11 @@ export function Header({ profile }: HeaderProps) {
                 >
                   <Icon className="h-4.5 w-4.5" />
                   {link.label}
+                  {link.href === '/wishlist' && wishlistCount > 0 && (
+                    <span className="ml-auto px-2 py-0.5 bg-pink-500/20 text-pink-400 border border-pink-500/40 text-xs font-bold rounded-full">
+                      {wishlistCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}

@@ -63,6 +63,7 @@ export default async function GameDetailPage() {
           {/* Derecha: Info & Buy Box (Ocupa 5 de 12 columnas) */}
           <div className="lg:col-span-5 pt-4">
             <GameInfoBox
+              gameId={MOCK_GAME.id}
               title={MOCK_GAME.title}
               categories={MOCK_CATEGORIES}
               ratingAvg={MOCK_GAME.ratingAvg}
