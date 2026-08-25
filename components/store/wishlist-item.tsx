@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { HeartCrack, ShoppingCart } from "lucide-react";
 import { useWishlist } from "@/lib/context/wishlist-context";
+import { useCart } from "@/lib/context/cart-context";
 
 interface WishlistItemProps {
   game: {
@@ -20,9 +21,27 @@ interface WishlistItemProps {
 
 export function WishlistItem({ game }: WishlistItemProps) {
   const { removeFromWishlist, moveToCart } = useWishlist();
+  const { addItem } = useCart();
 
   const priceToDisplay = game.final_price ?? game.base_price;
   const hasDiscount = game.discount_percent > 0;
+
+  const handleMoveToCart = async () => {
+    // 1. Agregar al carrito
+    await addItem({
+      id: game.id,
+      title: game.title,
+      slug: game.slug,
+      coverUrl: game.cover_image_url,
+      developer: game.developer || "ViniGames Studio",
+      basePrice: Number(game.base_price),
+      discountPercent: game.discount_percent,
+      finalPrice: Number(priceToDisplay),
+    });
+
+    // 2. Remover de la wishlist
+    await moveToCart(game.id);
+  };
 
   return (
     <div className="bg-[#1A1C2B] border border-[#2E334A] rounded-xl overflow-hidden flex flex-col sm:flex-row transition-all duration-200 hover:border-[#783DF2]/50 group">
@@ -69,7 +88,7 @@ export function WishlistItem({ game }: WishlistItemProps) {
           <button 
             type="button"
             onClick={() => removeFromWishlist(game.id)}
-            className="text-zinc-400 hover:text-pink-400 bg-[#131521] border border-[#2E334A] hover:border-pink-500/50 hover:bg-pink-500/10 p-3 rounded-xl flex items-center justify-center transition-all active:scale-95"
+            className="text-zinc-400 hover:text-pink-400 bg-[#131521] border border-[#2E334A] hover:border-pink-500/50 hover:bg-pink-500/10 p-3 rounded-xl flex items-center justify-center transition-all active:scale-95 cursor-pointer"
             title="Eliminar de la Wishlist"
           >
             <HeartCrack className="w-5 h-5" />
@@ -77,8 +96,8 @@ export function WishlistItem({ game }: WishlistItemProps) {
 
           <button 
             type="button"
-            onClick={() => moveToCart(game.id)}
-            className="flex-1 sm:flex-none bg-[#783DF2] hover:bg-[#6A32DB] text-white py-3 px-6 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all hover:shadow-[0_0_15px_rgba(120,61,242,0.4)] active:scale-95"
+            onClick={handleMoveToCart}
+            className="flex-1 sm:flex-none bg-[#783DF2] hover:bg-[#6A32DB] text-white py-3 px-6 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all hover:shadow-[0_0_15px_rgba(120,61,242,0.4)] active:scale-95 cursor-pointer"
           >
             <ShoppingCart className="w-5 h-5" /> Mover al Carrito
           </button>

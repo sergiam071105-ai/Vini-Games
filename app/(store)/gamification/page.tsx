@@ -16,15 +16,9 @@ type AchievementRow =
 export default async function GamificationPage() {
   const supabase = await createClient();
 
-  // TEMPORAL: comprobar que la página se está ejecutando
-  console.log("GAMIFICATION PAGE CARGADA");
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  // TEMPORAL: comprobar que existe un usuario autenticado
-  console.log("USER:", user?.id);
 
   let profile = null;
   let achievements: AchievementRow[] = [];
@@ -47,16 +41,9 @@ export default async function GamificationPage() {
 
     profile = profileData;
 
-    const {
-      data: achievementsData,
-      error: achievementsError,
-    } = await supabase
+    const { data: achievementsData } = await supabase
       .from("achievements")
       .select("*");
-
-    // TEMPORAL: comprobar qué devuelve achievements
-    console.log("ACHIEVEMENTS:", achievementsData);
-    console.log("ACHIEVEMENTS ERROR:", achievementsError);
 
     achievements = achievementsData ?? [];
 
@@ -79,30 +66,30 @@ export default async function GamificationPage() {
     SOCIAL: "Social",
   } as const;
 
-  const badges: GamerBadge[] = achievements.map((achievement) => {
-    const rewards: string[] = [];
+  const badges: GamerBadge[] = achievements.length > 0
+    ? achievements.map((achievement) => {
+        const rewards: string[] = [];
 
-    if (achievement.xp_reward > 0) {
-      rewards.push(`+${achievement.xp_reward} XP`);
-    }
+        if (achievement.xp_reward > 0) {
+          rewards.push(`+${achievement.xp_reward} XP`);
+        }
 
-    if (achievement.gamecoins_reward > 0) {
-      rewards.push(
-        `+${achievement.gamecoins_reward} GameCoins`
-      );
-    }
+        if (achievement.gamecoins_reward > 0) {
+          rewards.push(
+            `+${achievement.gamecoins_reward} GameCoins`
+          );
+        }
 
-    return {
-      id: achievement.id,
-      name: achievement.title,
-      description: achievement.description,
-      category: categoryMap[achievement.category],
-      unlocked: unlockedAchievementIds.has(
-        achievement.id
-      ),
-      reward: rewards.join(" · "),
-    };
-  });
+        return {
+          id: achievement.id,
+          name: achievement.title,
+          description: achievement.description,
+          category: categoryMap[achievement.category] || "Social",
+          unlocked: unlockedAchievementIds.has(achievement.id),
+          reward: rewards.join(" · "),
+        };
+      })
+    : mockAchievements;
 
   return (
     <div className="w-full space-y-8 text-white">

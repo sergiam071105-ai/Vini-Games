@@ -20,7 +20,7 @@ export const MOCK_GAMES: GameItem[] = [
     short_description: 'Un RPG de acción cyberpunk con combates vertiginosos y narrativa ramificada.',
     cover_image_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=800&q=80',
     banner_image_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1600&q=80',
-    trailer_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    trailer_url: 'https://www.youtube.com/watch?v=8X2kIfS6fb8',
     developer: 'ViniStudios',
     publisher: 'ViniGames Publishing',
     release_date: '2026-03-15',

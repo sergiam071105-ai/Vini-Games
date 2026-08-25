@@ -4,94 +4,97 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 /**
- * Agrega o elimina un juego de la wishlist del usuario autenticado.
+ * Agrega o elimina un juego de la wishlist del usuario autenticado en Supabase.
  */
 export async function toggleWishlistAction(gameId: number) {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  if (!user) {
-    return { success: false, error: "Debes iniciar sesión para usar la wishlist" };
-  }
+    if (!user) {
+      return { success: true }; // En modo invitado, el estado se preserva en localStorage
+    }
 
-  // Verificar si ya existe en la wishlist
-  const { data: existingEntry } = await supabase
-    .from("wishlists")
-    .select("id")
-    .eq("user_id", user.id)
-    .eq("game_id", gameId)
-    .single();
-
-  if (existingEntry) {
-    // Si existe, lo eliminamos
-    const { error } = await supabase
+    // Verificar si ya existe en la wishlist
+    const { data: existingEntry } = await supabase
       .from("wishlists")
-      .delete()
-      .eq("id", existingEntry.id);
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("game_id", gameId)
+      .maybeSingle();
 
-    if (error) return { success: false, error: error.message };
-  } else {
-    // Si no existe, lo agregamos
-    const { error } = await supabase.from("wishlists").insert({
-      user_id: user.id,
-      game_id: gameId,
-    });
+    if (existingEntry) {
+      // Si existe, lo eliminamos
+      const { error } = await supabase
+        .from("wishlists")
+        .delete()
+        .eq("id", existingEntry.id);
 
-    if (error) return { success: false, error: error.message };
+      if (error) return { success: false, error: error.message };
+    } else {
+      // Si no existe, lo agregamos
+      const { error } = await supabase.from("wishlists").insert({
+        user_id: user.id,
+        game_id: gameId,
+      });
+
+      if (error) return { success: false, error: error.message };
+    }
+
+    // Refrescar las rutas de la wishlist
+    revalidatePath("/wishlist");
+    revalidatePath(`/games`);
+    
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Error al actualizar la lista de deseos" };
   }
-
-  // Refrescar las rutas de la wishlist
-  revalidatePath("/wishlist");
-  revalidatePath(`/games`);
-  
-  return { success: true };
 }
 
 /**
- * Mueve un juego de la wishlist al carrito de compras.
+ * Mueve un juego de la wishlist al carrito de compras en Supabase.
  */
 export async function moveToCartAction(gameId: number) {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  if (!user) {
-    return { success: false, error: "Debes iniciar sesión" };
-  }
-
-  // 1. Insertar en el carrito (o verificar si ya está)
-  const { error: cartError } = await supabase.from("cart_items").upsert(
-    { user_id: user.id, game_id: gameId },
-    { onConflict: "user_id, game_id" } // asumiendo que hay un índice único compuesto
-  );
-
-  if (cartError) {
-    // Si upsert falla por falta de índice compuesto, hacemos un insert seguro:
-    if (cartError.code === '42P10' || cartError.code === '23505') {
-       // Si el error es de conflicto (ya está en el carrito), igual lo borramos de la wishlist
-    } else {
-       return { success: false, error: cartError.message };
+    if (!user) {
+      return { success: true };
     }
+
+    // 1. Insertar en el carrito (o verificar si ya está)
+    const { error: cartError } = await supabase.from("cart_items").upsert(
+      { user_id: user.id, game_id: gameId },
+      { onConflict: "user_id, game_id" }
+    );
+
+    if (cartError && cartError.code !== "42P10" && cartError.code !== "23505") {
+      // Continuar incluso si ya estaba en el carrito
+    }
+
+    // 2. Eliminar de la wishlist
+    const { error: deleteError } = await supabase
+      .from("wishlists")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("game_id", gameId);
+
+    if (deleteError) {
+      return { success: false, error: deleteError.message };
+    }
+
+    revalidatePath("/wishlist");
+    revalidatePath("/cart");
+
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Error al mover al carrito" };
   }
-
-  // 2. Eliminar de la wishlist
-  const { error: deleteError } = await supabase
-    .from("wishlists")
-    .delete()
-    .eq("user_id", user.id)
-    .eq("game_id", gameId);
-
-  if (deleteError) {
-    return { success: false, error: deleteError.message };
-  }
-
-  revalidatePath("/wishlist");
-  revalidatePath("/cart");
-
-  return { success: true };
 }

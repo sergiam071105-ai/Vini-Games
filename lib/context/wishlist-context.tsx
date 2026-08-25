@@ -17,7 +17,9 @@ export interface WishlistGame {
 interface WishlistContextType {
   wishlistItems: WishlistGame[];
   wishlistCount: number;
+  count: number;
   isWishlisted: (gameId: number) => boolean;
+  isInWishlist: (gameId: number) => boolean;
   toggleWishlist: (game: any) => Promise<boolean>;
   removeFromWishlist: (gameId: number) => Promise<void>;
   moveToCart: (gameId: number) => Promise<void>;
@@ -31,7 +33,7 @@ const INITIAL_DEMO_ITEMS: WishlistGame[] = [
   {
     id: 1,
     title: 'Neon Odyssey: Cyber Genesis',
-    slug: 'neon-odyssey-cyber-genesis',
+    slug: 'neon-odyssey',
     developer: 'ViniStudios',
     base_price: 120,
     discount_percent: 25,
@@ -148,7 +150,9 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       value={{
         wishlistItems,
         wishlistCount: wishlistItems.length,
+        count: wishlistItems.length,
         isWishlisted,
+        isInWishlist: isWishlisted,
         toggleWishlist,
         removeFromWishlist,
         moveToCart,
@@ -165,7 +169,9 @@ export function useWishlist() {
     return {
       wishlistItems: [],
       wishlistCount: 0,
+      count: 0,
       isWishlisted: (_gameId: number) => false,
+      isInWishlist: (_gameId: number) => false,
       toggleWishlist: async (_game: any) => false,
       removeFromWishlist: async (_gameId: number) => {},
       moveToCart: async (_gameId: number) => {},

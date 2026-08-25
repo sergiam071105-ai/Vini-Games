@@ -17,9 +17,11 @@ import {
   ShieldAlert,
   Home,
   Gamepad2,
-  Search
+  Search,
+  ShoppingCart
 } from 'lucide-react';
 import { getLevelProgress } from '@/lib/gamification/level-calculator';
+import { useCart } from '@/lib/context/cart-context';
 import { useWishlist } from '@/lib/context/wishlist-context';
 
 interface Profile {
@@ -40,10 +42,12 @@ interface HeaderProps {
 export function Header({ profile }: HeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { wishlistCount } = useWishlist();
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const { itemCount, openDrawer } = useCart();
+  const { count: wishlistCount } = useWishlist();
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,7 +113,7 @@ export function Header({ profile }: HeaderProps) {
                   <Icon className="h-4 w-4" />
                   {link.label}
                   {link.href === '/wishlist' && wishlistCount > 0 && (
-                    <span className="ml-1 px-1.5 py-0.2 bg-pink-500/20 text-pink-400 border border-pink-500/40 text-[10px] font-bold rounded-full">
+                    <span className="ml-1 px-1.5 py-0.2 rounded-full bg-[#EF4444] text-white text-[10px] font-bold">
                       {wishlistCount}
                     </span>
                   )}
@@ -157,12 +161,30 @@ export function Header({ profile }: HeaderProps) {
           </div>
 
           {/* Streak Widget */}
-          <div className="flex items-center gap-1.5 bg-[#1A1C2B] border border-[#2D3349] rounded-lg px-3 py-1.5">
+          <Link
+            href="/gamification"
+            className="flex items-center gap-1.5 bg-[#1A1C2B] hover:bg-[#25283d] border border-[#2D3349] rounded-lg px-3 py-1.5 transition-colors cursor-pointer"
+            title="Ver Hub de Gamificación"
+          >
             <Flame className="h-4 w-4 text-[#10B981]" />
             <span className="text-xs font-bold text-[#F5F7FF]">
               🔥 {displayProfile.current_streak} días
             </span>
-          </div>
+          </Link>
+
+          {/* Shopping Cart Button */}
+          <button
+            onClick={openDrawer}
+            className="relative flex items-center gap-1.5 bg-[#1A1C2B] hover:bg-[#25283d] border border-[#2D3349] hover:border-[#783DF2]/60 rounded-lg p-2 transition-all cursor-pointer group"
+            title="Abrir carrito de compras"
+          >
+            <ShoppingCart className="h-4 w-4 text-[#783DF2] group-hover:text-[#1FD1EB] transition-colors" />
+            {itemCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-[#783DF2] text-white text-[10px] font-black flex items-center justify-center shadow-[0_0_8px_rgba(120,61,242,0.8)] animate-in zoom-in">
+                {itemCount}
+              </span>
+            )}
+          </button>
 
           {/* User Account / Profile Dropdown */}
           {profile ? (
@@ -228,6 +250,20 @@ export function Header({ profile }: HeaderProps) {
 
         {/* Mobile Navigation controls */}
         <div className="flex md:hidden items-center gap-2 flex-shrink-0">
+          {/* Cart Button Mobile */}
+          <button
+            onClick={openDrawer}
+            className="relative p-1.5 rounded-lg bg-[#1A1C2B] text-[#783DF2] hover:text-[#1FD1EB] transition-colors cursor-pointer"
+            title="Carrito"
+          >
+            <ShoppingCart className="h-4 w-4" />
+            {itemCount > 0 && (
+              <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-[#783DF2] text-white text-[9px] font-black flex items-center justify-center">
+                {itemCount}
+              </span>
+            )}
+          </button>
+
           {/* Coins for mobile */}
           <div className="flex items-center gap-1 bg-[#1A1C2B] rounded-lg px-2.5 py-1">
             <Coins className="h-3.5 w-3.5 text-[#1FD1EB]" />
@@ -278,11 +314,6 @@ export function Header({ profile }: HeaderProps) {
                 >
                   <Icon className="h-4.5 w-4.5" />
                   {link.label}
-                  {link.href === '/wishlist' && wishlistCount > 0 && (
-                    <span className="ml-auto px-2 py-0.5 bg-pink-500/20 text-pink-400 border border-pink-500/40 text-xs font-bold rounded-full">
-                      {wishlistCount}
-                    </span>
-                  )}
                 </Link>
               );
             })}

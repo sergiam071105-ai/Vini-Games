@@ -8,7 +8,7 @@ export function getPublicImageUrl(
   path: string
 ): string {
   const supabase = createClient();
-  const { data } = supabase.storage.bucket(bucket).getPublicUrl(path);
+  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
   return data.publicUrl;
 }
 
@@ -20,7 +20,7 @@ export async function uploadUserAvatar(userId: string, file: File): Promise<stri
   const fileExt = file.name.split(".").pop();
   const filePath = `${userId}-${Math.random()}.${fileExt}`;
 
-  const { error } = await supabase.storage.bucket("avatars").upload(filePath, file, {
+  const { error } = await supabase.storage.from("avatars").upload(filePath, file, {
     cacheControl: "3600",
     upsert: true,
   });
@@ -40,7 +40,7 @@ export async function uploadGameCover(gameSlug: string, file: File): Promise<str
   const fileExt = file.name.split(".").pop();
   const filePath = `${gameSlug}/cover.${fileExt}`;
 
-  const { error } = await supabase.storage.bucket("game-covers").upload(filePath, file, {
+  const { error } = await supabase.storage.from("game-covers").upload(filePath, file, {
     cacheControl: "3600",
     upsert: true,
   });

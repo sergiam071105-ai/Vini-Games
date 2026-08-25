@@ -1,35 +1,17 @@
+import { notFound } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import { GameMediaGallery } from "@/components/store/game-media-gallery";
 import { GameInfoBox } from "@/components/store/game-info-box";
 import { GameMetadata } from "@/components/store/game-metadata";
 import { GameReviews } from "@/components/store/game-reviews";
 import { GameRequirements } from "@/components/store/game-requirements";
+import { MOCK_GAMES } from "@/lib/mock-data/games";
 
-// =====================================================================
-// DATOS DE DEMOSTRACIÓN (Mock Data)
-// =====================================================================
-const MOCK_GAME = {
-  id: 1,
-  title: "Neon Odyssey",
-  slug: "neon-odyssey",
-  description: "Explora una ciudad futurista, descubre sus secretos y construye tu propia historia en un mundo lleno de aventuras.",
-  basePrice: 111.25,
-  discountPercent: 20,
-  finalPrice: 89,
-  coverUrl: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&q=80",
-  trailerUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-  developer: "Vini Studio",
-  publisher: "Vini Games",
-  releaseDate: "2026-08-18",
-  ageRating: "+13",
-  ratingAvg: 4.8,
-  ratingCount: 1284,
-};
-
-const MOCK_CATEGORIES = [
-  { id: 1, name: "Acción" },
-  { id: 2, name: "RPG" },
-  { id: 3, name: "Aventura" },
-];
+interface GameDetailPageProps {
+  params: Promise<{
+    slug: string;
+  }>;
+}
 
 const MOCK_GALLERY = [
   { id: 1, media_type: "image", media_url: "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&q=80" },
@@ -42,7 +24,90 @@ const MOCK_RELATED = [
   { id: 4, title: "PIXEL WARS", price: 39 },
 ];
 
-export default async function GameDetailPage() {
+export default async function GameDetailPage({ params }: GameDetailPageProps) {
+  const { slug } = await params;
+
+  let gameData: any = null;
+
+  try {
+    const supabase = await createClient();
+    const { data: dbGame } = await supabase
+      .from("games")
+      .select(`
+        id,
+        title,
+        slug,
+        description,
+        short_description,
+        cover_image_url,
+        banner_image_url,
+        trailer_url,
+        developer,
+        publisher,
+        release_date,
+        base_price,
+        discount_percent,
+        final_price,
+        rating_avg,
+        rating_count,
+        age_rating
+      `)
+      .eq("slug", slug)
+      .maybeSingle();
+
+    if (dbGame) {
+      gameData = {
+        id: dbGame.id,
+        title: dbGame.title,
+        slug: dbGame.slug,
+        description: dbGame.description || dbGame.short_description || "Explora un mundo interactivo lleno de aventuras.",
+        basePrice: Number(dbGame.base_price),
+        discountPercent: dbGame.discount_percent || 0,
+        finalPrice: dbGame.final_price ? Number(dbGame.final_price) : Number(dbGame.base_price),
+        coverUrl: dbGame.cover_image_url || "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&q=80",
+        trailerUrl: dbGame.trailer_url || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+        developer: dbGame.developer || "Estudio Gamer",
+        publisher: dbGame.publisher || "ViniGames Publishing",
+        releaseDate: dbGame.release_date || "2026-08-18",
+        ageRating: dbGame.age_rating || "+13",
+        ratingAvg: Number(dbGame.rating_avg) || 4.8,
+        ratingCount: dbGame.rating_count || 1284,
+      };
+    }
+  } catch {
+    // Continuar con fallback local
+  }
+
+  // Fallback con MOCK_GAMES si no existe en la base de datos
+  if (!gameData) {
+    const matched = MOCK_GAMES.find((g) => g.slug === slug || g.slug.includes(slug) || slug.includes(g.slug));
+    const fallback = matched || MOCK_GAMES[0];
+
+    gameData = {
+      id: fallback.id,
+      title: fallback.title,
+      slug: fallback.slug,
+      description: fallback.description || fallback.short_description,
+      basePrice: Number(fallback.base_price),
+      discountPercent: fallback.discount_percent || 0,
+      finalPrice: Number(fallback.final_price),
+      coverUrl: fallback.cover_image_url || "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&q=80",
+      trailerUrl: fallback.trailer_url || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+      developer: fallback.developer || "Vini Studio",
+      publisher: fallback.publisher || "Vini Games",
+      releaseDate: fallback.release_date || "2026-08-18",
+      ageRating: fallback.age_rating || "+13",
+      ratingAvg: Number(fallback.rating_avg) || 4.8,
+      ratingCount: fallback.rating_count || 1284,
+    };
+  }
+
+  const categories = [
+    { id: 1, name: "Acción" },
+    { id: 2, name: "RPG" },
+    { id: 3, name: "Aventura" },
+  ];
+
   return (
     <div className="min-h-screen bg-[#080A13] pb-24">
       
@@ -54,8 +119,8 @@ export default async function GameDetailPage() {
           {/* Izquierda: Media Gallery (Ocupa 7 de 12 columnas) */}
           <div className="lg:col-span-7">
             <GameMediaGallery
-              coverUrl={MOCK_GAME.coverUrl}
-              trailerUrl={MOCK_GAME.trailerUrl}
+              coverUrl={gameData.coverUrl}
+              trailerUrl={gameData.trailerUrl}
               gallery={MOCK_GALLERY}
             />
           </div>
@@ -63,15 +128,18 @@ export default async function GameDetailPage() {
           {/* Derecha: Info & Buy Box (Ocupa 5 de 12 columnas) */}
           <div className="lg:col-span-5 pt-4">
             <GameInfoBox
-              gameId={MOCK_GAME.id}
-              title={MOCK_GAME.title}
-              categories={MOCK_CATEGORIES}
-              ratingAvg={MOCK_GAME.ratingAvg}
-              ratingCount={MOCK_GAME.ratingCount}
-              shortDescription={MOCK_GAME.description}
-              basePrice={MOCK_GAME.basePrice}
-              discountPercent={MOCK_GAME.discountPercent}
-              finalPrice={MOCK_GAME.finalPrice}
+              gameId={gameData.id}
+              gameSlug={gameData.slug}
+              coverUrl={gameData.coverUrl}
+              developer={gameData.developer}
+              title={gameData.title}
+              categories={categories}
+              ratingAvg={gameData.ratingAvg}
+              ratingCount={gameData.ratingCount}
+              shortDescription={gameData.description}
+              basePrice={gameData.basePrice}
+              discountPercent={gameData.discountPercent}
+              finalPrice={gameData.finalPrice}
             />
           </div>
         </div>
@@ -80,10 +148,10 @@ export default async function GameDetailPage() {
         <div className="mb-16">
           <h2 className="text-xl font-bold text-white mb-6">Acerca del juego</h2>
           <GameMetadata
-            developer={MOCK_GAME.developer}
-            publisher={MOCK_GAME.publisher}
-            releaseDate={MOCK_GAME.releaseDate}
-            ageRating={MOCK_GAME.ageRating}
+            developer={gameData.developer}
+            publisher={gameData.publisher}
+            releaseDate={gameData.releaseDate}
+            ageRating={gameData.ageRating}
           />
         </div>
 
@@ -96,7 +164,7 @@ export default async function GameDetailPage() {
         {/* MIDDLE SECTION 3: Reseñas */}
         <div className="mb-16">
           <h2 className="text-xl font-bold text-white mb-6">Reseñas de la comunidad</h2>
-          <GameReviews />
+          <GameReviews gameId={gameData.id} gameTitle={gameData.title} />
         </div>
 
         {/* BOTTOM SECTION: También te puede gustar */}
