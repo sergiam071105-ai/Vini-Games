@@ -62,7 +62,7 @@ const MOCK_GAMES: Game[] = [
     base_price: 49.00,
     discount_percent: 0,
     final_price: 49.00,
-    cover_image_url: 'https://images.unsplash.com/photo-1612287230202-1bf1d85d1bdf?q=80&w=600&auto=format&fit=crop',
+    cover_image_url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=600&auto=format&fit=crop',
     rating_avg: 4.6
   },
   {
@@ -72,7 +72,7 @@ const MOCK_GAMES: Game[] = [
     base_price: 89.00,
     discount_percent: 25,
     final_price: 66.75,
-    cover_image_url: 'https://images.unsplash.com/photo-1580234810907-b40315b76418?q=80&w=600&auto=format&fit=crop',
+    cover_image_url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=600&auto=format&fit=crop',
     rating_avg: 4.1
   },
   {

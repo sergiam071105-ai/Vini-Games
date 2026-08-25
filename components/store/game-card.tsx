@@ -5,6 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Heart, ShoppingCart, Star, Check } from 'lucide-react';
 import { GameItem } from '@/types/catalog';
+import { useCart } from '@/lib/context/cart-context';
+import { useWishlist } from '@/lib/context/wishlist-context';
+import { useLibrary } from '@/lib/context/library-context';
 
 export interface Game {
   id: number;
@@ -28,21 +31,50 @@ interface GameCardProps {
 }
 
 export function GameCard({ game, priority = false }: GameCardProps) {
-  const [isWishlisted, setIsWishlisted] = useState(false);
-  const [isAddedToCart, setIsAddedToCart] = useState(false);
+  const { addItem, isInCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
+  const { isOwned } = useLibrary();
 
-  const handleToggleWishlist = (e: React.MouseEvent) => {
+  const [isAddedFeedback, setIsAddedFeedback] = useState(false);
+
+  const isGameOwned = isOwned(game.id);
+  const isWishlisted = isInWishlist(game.id);
+  const inCart = isInCart(game.id);
+
+  const handleToggleWishlist = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsWishlisted((prev) => !prev);
+    await toggleWishlist({
+      id: game.id,
+      title: game.title,
+      slug: game.slug,
+      coverUrl: game.cover_image_url || undefined,
+      developer: 'developer' in game ? game.developer : undefined,
+      basePrice: Number(game.base_price),
+      discountPercent: game.discount_percent,
+      finalPrice: Number(game.final_price),
+      ratingAvg: Number(game.rating_avg),
+    });
   };
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsAddedToCart(true);
+    if (isGameOwned) return;
+
+    await addItem({
+      id: game.id,
+      title: game.title,
+      slug: game.slug,
+      coverUrl: game.cover_image_url || undefined,
+      developer: 'developer' in game ? game.developer : undefined,
+      basePrice: Number(game.base_price),
+      discountPercent: game.discount_percent,
+      finalPrice: Number(game.final_price),
+    });
+    setIsAddedFeedback(true);
     setTimeout(() => {
-      setIsAddedToCart(false);
+      setIsAddedFeedback(false);
     }, 2000);
   };
 
@@ -81,15 +113,23 @@ export function GameCard({ game, priority = false }: GameCardProps) {
 
           {/* Badges superiores */}
           <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1.5 z-10">
-            {isDiscounted && (
-              <span className="inline-flex items-center rounded-md bg-gradient-to-r from-[#783DF2] to-[#9D68FF] px-2 py-0.5 text-xs font-black tracking-wider text-white shadow-md">
-                -{game.discount_percent}%
+            {isGameOwned ? (
+              <span className="inline-flex items-center rounded-md bg-[#1FD1EB] text-[#080A13] px-2 py-0.5 text-xs font-black tracking-wider shadow-md">
+                ✓ EN BIBLIOTECA
               </span>
-            )}
-            {'is_featured' in game && game.is_featured && !isDiscounted && (
-              <span className="inline-flex items-center rounded-md bg-[#1FD1EB]/20 border border-[#1FD1EB]/50 px-2 py-0.5 text-xs font-bold text-[#1FD1EB] backdrop-blur-md">
-                DESTACADO
-              </span>
+            ) : (
+              <>
+                {isDiscounted && (
+                  <span className="inline-flex items-center rounded-md bg-gradient-to-r from-[#783DF2] to-[#9D68FF] px-2 py-0.5 text-xs font-black tracking-wider text-white shadow-md">
+                    -{game.discount_percent}%
+                  </span>
+                )}
+                {'is_featured' in game && game.is_featured && !isDiscounted && (
+                  <span className="inline-flex items-center rounded-md bg-[#1FD1EB]/20 border border-[#1FD1EB]/50 px-2 py-0.5 text-xs font-bold text-[#1FD1EB] backdrop-blur-md">
+                    DESTACADO
+                  </span>
+                )}
+              </>
             )}
           </div>
 
@@ -111,23 +151,23 @@ export function GameCard({ game, priority = false }: GameCardProps) {
 
           {/* Puntuación Rating */}
           <div className="absolute bottom-2.5 left-2.5 z-10 flex items-center gap-1 rounded-md bg-[#090B14]/80 px-2 py-0.5 text-xs font-semibold text-[#F5F7FF] backdrop-blur-md border border-white/10">
-            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-            <span>{ratingAvg.toFixed(1)}</span>
-            {ratingCount !== undefined && (
-              <span className="text-[#949CB2] text-[10px]">({ratingCount})</span>
+            <Star className="h-3 w-3 fill-[#1FD1EB] text-[#1FD1EB]" />
+            <span>{ratingAvg > 0 ? ratingAvg.toFixed(1) : 'Nuevo'}</span>
+            {ratingCount !== undefined && ratingCount > 0 && (
+              <span className="text-[10px] text-[#949CB2]">({ratingCount})</span>
             )}
           </div>
         </div>
 
-        {/* Información del Videojuego */}
-        <div className="p-4">
-          {/* Categorías / Géneros si existen */}
+        {/* Información del juego */}
+        <div className="flex flex-col p-4 flex-1">
+          {/* Categorías */}
           {categories.length > 0 && (
-            <div className="mb-2 flex flex-wrap gap-1.5">
-              {categories.slice(0, 3).map((cat) => (
+            <div className="flex flex-wrap gap-1 mb-1.5">
+              {categories.slice(0, 2).map((cat) => (
                 <span
-                  key={cat.slug || cat.id}
-                  className="rounded-full bg-[#2D3349]/50 px-2 py-0.5 text-[11px] font-medium text-[#949CB2] transition-colors group-hover:text-[#F5F7FF]"
+                  key={cat.id}
+                  className="text-[10px] font-semibold text-[#1FD1EB] bg-[#1FD1EB]/10 px-1.5 py-0.5 rounded border border-[#1FD1EB]/20"
                 >
                   {cat.name}
                 </span>
@@ -135,21 +175,21 @@ export function GameCard({ game, priority = false }: GameCardProps) {
             </div>
           )}
 
+          {/* Desarrollador */}
+          {developer && (
+            <span className="text-[11px] text-[#949CB2] font-medium mb-1 line-clamp-1">
+              {developer}
+            </span>
+          )}
+
           {/* Título */}
-          <h3 className="line-clamp-1 text-base font-bold text-[#F5F7FF] transition-colors duration-200 group-hover:text-[#1FD1EB]">
+          <h3 className="text-base font-bold text-[#F5F7FF] leading-snug line-clamp-1 group-hover:text-[#1FD1EB] transition-colors">
             {game.title}
           </h3>
 
-          {/* Desarrollador si existe */}
-          {developer && (
-            <p className="mt-1 text-xs text-[#949CB2]">
-              {developer}
-            </p>
-          )}
-
-          {/* Breve descripción */}
+          {/* Descripción corta */}
           {shortDescription && (
-            <p className="mt-2 line-clamp-2 text-xs text-[#949CB2]/80 leading-relaxed">
+            <p className="text-xs text-[#949CB2] mt-1.5 line-clamp-2 leading-relaxed">
               {shortDescription}
             </p>
           )}
@@ -171,29 +211,39 @@ export function GameCard({ game, priority = false }: GameCardProps) {
         </div>
 
         {/* Botón de acción rápida */}
-        <button
-          type="button"
-          onClick={handleAddToCart}
-          disabled={isAddedToCart}
-          aria-label="Añadir al carrito"
-          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${
-            isAddedToCart
-              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-              : 'bg-[#783DF2] text-white hover:bg-[#6A32DB] hover:shadow-[0_0_12px_rgba(120,61,242,0.5)] active:scale-95'
-          }`}
-        >
-          {isAddedToCart ? (
-            <>
-              <Check className="h-3.5 w-3.5" />
-              <span>Añadido</span>
-            </>
-          ) : (
-            <>
-              <ShoppingCart className="h-3.5 w-3.5" />
-              <span>Comprar</span>
-            </>
-          )}
-        </button>
+        {isGameOwned ? (
+          <Link
+            href="/library"
+            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold bg-[#1FD1EB]/20 text-[#1FD1EB] border border-[#1FD1EB]/40 hover:bg-[#1FD1EB]/30 transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Check className="h-3.5 w-3.5" />
+            <span>En Biblioteca</span>
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            aria-label="Añadir al carrito"
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-200 cursor-pointer ${
+              inCart || isAddedFeedback
+                ? 'bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/40'
+                : 'bg-[#783DF2] text-white hover:bg-[#6A32DB] hover:shadow-[0_0_12px_rgba(120,61,242,0.5)] active:scale-95'
+            }`}
+          >
+            {inCart || isAddedFeedback ? (
+              <>
+                <Check className="h-3.5 w-3.5" />
+                <span>{inCart ? 'En Carrito' : 'Añadido'}</span>
+              </>
+            ) : (
+              <>
+                <ShoppingCart className="h-3.5 w-3.5" />
+                <span>Añadir</span>
+              </>
+            )}
+          </button>
+        )}
       </div>
     </div>
   );

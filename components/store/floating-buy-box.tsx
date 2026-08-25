@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ShoppingCart, Heart, Check } from "lucide-react";
+import Link from "next/link";
+import { ShoppingCart, Heart, Check, Gamepad2 } from "lucide-react";
+import { useCart } from "@/lib/context/cart-context";
+import { useWishlist } from "@/lib/context/wishlist-context";
+import { useLibrary } from "@/lib/context/library-context";
 
 interface FloatingBuyBoxProps {
   gameId: number;
@@ -18,23 +22,42 @@ export function FloatingBuyBox({
   discountPercent,
   finalPrice,
 }: FloatingBuyBoxProps) {
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const { addItem, isInCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
+  const { isOwned } = useLibrary();
+
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
 
+  const owned = isOwned(gameId);
+  const isWishlisted = isInWishlist(gameId);
   const priceToDisplay = finalPrice ?? basePrice;
   const hasDiscount = discountPercent > 0;
 
   const handleAddToCart = async () => {
+    if (owned) return;
     setIsAddingToCart(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    await addItem({
+      id: gameId,
+      title,
+      slug: `game-${gameId}`,
+      basePrice,
+      discountPercent,
+      finalPrice: priceToDisplay,
+    });
     setIsAddingToCart(false);
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
   };
 
-  const handleToggleWishlist = () => {
-    setIsWishlisted(!isWishlisted);
+  const handleToggleWishlist = async () => {
+    await toggleWishlist({
+      id: gameId,
+      title,
+      basePrice,
+      discountPercent,
+      finalPrice: priceToDisplay,
+    });
   };
 
   return (
@@ -64,30 +87,39 @@ export function FloatingBuyBox({
 
         {/* Botones de acción */}
         <div className="flex flex-col gap-3">
-          <button
-            className={`w-full py-4 rounded-lg text-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
-              addedToCart
-                ? "bg-[#10B981] text-white"
-                : "bg-[#783DF2] hover:bg-[#6A32DB] text-white hover:shadow-[0_0_20px_rgba(120,61,242,0.4)]"
-            } disabled:opacity-50 disabled:cursor-not-allowed`}
-            onClick={handleAddToCart}
-            disabled={isAddingToCart}
-          >
-            {addedToCart ? (
-              <>
-                <Check className="w-5 h-5" /> ¡Agregado!
-              </>
-            ) : isAddingToCart ? (
-              <>
-                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Agregando...
-              </>
-            ) : (
-              <>
-                <ShoppingCart className="w-5 h-5" /> Añadir al Carrito
-              </>
-            )}
-          </button>
+          {owned ? (
+            <Link
+              href="/library"
+              className="w-full py-4 rounded-lg text-sm font-bold bg-[#1FD1EB] hover:bg-[#18b5cc] text-[#080A13] flex items-center justify-center gap-2 transition-all shadow-lg shadow-[#1FD1EB]/20 uppercase tracking-wider"
+            >
+              <Gamepad2 className="w-5 h-5" /> En Biblioteca / Jugar
+            </Link>
+          ) : (
+            <button
+              className={`w-full py-4 rounded-lg text-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                addedToCart
+                  ? "bg-[#10B981] text-white"
+                  : "bg-[#783DF2] hover:bg-[#6A32DB] text-white hover:shadow-[0_0_20px_rgba(120,61,242,0.4)]"
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
+              onClick={handleAddToCart}
+              disabled={isAddingToCart}
+            >
+              {addedToCart ? (
+                <>
+                  <Check className="w-5 h-5" /> ¡Agregado!
+                </>
+              ) : isAddingToCart ? (
+                <>
+                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Agregando...
+                </>
+              ) : (
+                <>
+                  <ShoppingCart className="w-5 h-5" /> Añadir al Carrito
+                </>
+              )}
+            </button>
+          )}
 
           <button
             className={`w-full py-4 rounded-lg text-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 border ${
