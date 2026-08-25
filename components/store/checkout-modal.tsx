@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { CreditCard, Lock, Sparkles, X, Loader2, AlertCircle, ShieldCheck, LogIn, UserPlus } from 'lucide-react';
 import { useCart } from '@/lib/context/cart-context';
+import { useLibrary } from '@/lib/context/library-context';
 import { processSimulatedCheckoutAction } from '@/app/actions/cart.actions';
 import { checkoutCardSchema } from '@/lib/schemas/order.schema';
 import { OrderSummary } from '@/types/order.types';
@@ -17,6 +18,9 @@ interface CheckoutModalProps {
 
 export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
   const { items, total, clearCart } = useCart();
+  const { isOwned, refreshLibrary } = useLibrary();
+
+  const ownedItemsInCart = items.filter((item) => isOwned(item.id));
 
   const [cardNumber, setCardNumber] = useState('4532 8921 4019 9401');
   const [cardHolder, setCardHolder] = useState('Gamer Master');
@@ -90,6 +94,11 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
       return;
     }
 
+    if (ownedItemsInCart.length > 0) {
+      setError(`Ya posees ${ownedItemsInCart.map((g) => `"${g.title}"`).join(', ')} en tu biblioteca. Por favor elimínalo(s) de tu carrito antes de pagar.`);
+      return;
+    }
+
     setIsProcessing(true);
 
     try {
@@ -109,6 +118,11 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
       } else {
         setCompletedOrder(res.order);
         await clearCart();
+        try {
+          await refreshLibrary();
+        } catch {
+          // Ignorar si falla refresh local
+        }
         onClose();
         setIsReceiptOpen(true);
       }
@@ -213,6 +227,15 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                     Autocompletar Prueba
                   </button>
                 </div>
+
+                {ownedItemsInCart.length > 0 && (
+                  <div className="mb-4 p-3 bg-[#EF4444]/10 border border-[#EF4444]/40 rounded-xl flex items-start gap-2 text-xs text-[#EF4444] animate-in fade-in">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>
+                      Ya posees {ownedItemsInCart.map((g) => `"${g.title}"`).join(', ')} en tu biblioteca. Debes eliminarlo(s) de tu carrito antes de pagar.
+                    </span>
+                  </div>
+                )}
 
                 {error && (
                   <div className="mb-4 p-3 bg-[#EF4444]/10 border border-[#EF4444]/40 rounded-xl flex items-center gap-2 text-xs text-[#EF4444]">

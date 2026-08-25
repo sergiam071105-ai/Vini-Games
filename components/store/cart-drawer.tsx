@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingCart, X, Trash2, ArrowRight, ShieldCheck, ShoppingBag } from 'lucide-react';
+import { ShoppingCart, X, Trash2, ArrowRight, ShieldCheck, ShoppingBag, AlertTriangle } from 'lucide-react';
 import { useCart } from '@/lib/context/cart-context';
+import { useLibrary } from '@/lib/context/library-context';
 import { CheckoutModal } from '@/components/store/checkout-modal';
 
 export function CartDrawer() {
@@ -19,6 +20,7 @@ export function CartDrawer() {
     removeItem,
     clearCart,
   } = useCart();
+  const { isOwned } = useLibrary();
 
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
@@ -91,51 +93,66 @@ export function CartDrawer() {
               </Link>
             </div>
           ) : (
-            items.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between p-3 bg-[#1A1C2B] border border-[#2E334A] rounded-xl group hover:border-[#783DF2]/50 transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#090B14] flex-shrink-0 relative">
-                    {item.coverUrl ? (
-                      <Image
-                        src={item.coverUrl}
-                        alt={item.title}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-[#783DF2]">
-                        GAME
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-[#F5F7FF] line-clamp-1 group-hover:text-[#1FD1EB] transition-colors">
-                      {item.title}
-                    </h4>
-                    <span className="text-[10px] text-[#949CB2] block">{item.developer}</span>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="text-xs font-bold text-[#1FD1EB]">Bs. {item.finalPrice}</span>
-                      {item.discountPercent > 0 && (
-                        <span className="text-[10px] text-[#949CB2] line-through">
-                          Bs. {item.basePrice}
+            items.map((item) => {
+              const itemAlreadyOwned = isOwned(item.id);
+              return (
+                <div
+                  key={item.id}
+                  className={`flex items-center justify-between p-3 bg-[#1A1C2B] border rounded-xl group transition-all ${
+                    itemAlreadyOwned
+                      ? 'border-[#EF4444]/50 hover:border-[#EF4444]'
+                      : 'border-[#2E334A] hover:border-[#783DF2]/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#090B14] flex-shrink-0 relative">
+                      {item.coverUrl ? (
+                        <Image
+                          src={item.coverUrl}
+                          alt={item.title}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-[#783DF2]">
+                          GAME
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-[#F5F7FF] line-clamp-1 group-hover:text-[#1FD1EB] transition-colors">
+                        {item.title}
+                      </h4>
+                      <span className="text-[10px] text-[#949CB2] block">{item.developer}</span>
+                      
+                      {itemAlreadyOwned ? (
+                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-[#EF4444] mt-0.5">
+                          <AlertTriangle className="w-2.5 h-2.5" />
+                          Ya en tu biblioteca
                         </span>
+                      ) : (
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="text-xs font-bold text-[#1FD1EB]">Bs. {item.finalPrice}</span>
+                          {item.discountPercent > 0 && (
+                            <span className="text-[10px] text-[#949CB2] line-through">
+                              Bs. {item.basePrice}
+                            </span>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
-                </div>
 
-                <button
-                  onClick={() => removeItem(item.id)}
-                  className="p-2 text-[#949CB2] hover:text-[#EF4444] hover:bg-[#2E334A]/50 rounded-lg transition-colors cursor-pointer"
-                  title="Eliminar del carrito"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))
+                  <button
+                    onClick={() => removeItem(item.id)}
+                    className="p-2 text-[#949CB2] hover:text-[#EF4444] hover:bg-[#2E334A]/50 rounded-lg transition-colors cursor-pointer"
+                    title="Eliminar del carrito"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              );
+            })
           )}
         </div>
 

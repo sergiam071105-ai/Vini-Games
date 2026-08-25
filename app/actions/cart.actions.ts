@@ -151,6 +151,61 @@ export async function clearCartAction(): Promise<{ success: boolean }> {
 }
 
 /**
+ * Calcula los totales financieros (subtotal, descuento y total final) en el servidor.
+ */
+export async function getCartTotalAction(gameIds: number[]): Promise<{
+  subtotal: number;
+  discountTotal: number;
+  total: number;
+  itemCount: number;
+}> {
+  try {
+    if (!gameIds || gameIds.length === 0) {
+      return { subtotal: 0, discountTotal: 0, total: 0, itemCount: 0 };
+    }
+
+    const supabase = await createClient();
+    const { data: dbGames } = await supabase
+      .from('games')
+      .select('id, base_price, discount_percent, final_price')
+      .in('id', gameIds);
+
+    let gamesToCalculate = [];
+
+    if (dbGames && dbGames.length > 0) {
+      gamesToCalculate = dbGames.map((g: any) => {
+        const base = Number(g.base_price);
+        const discount = g.discount_percent || 0;
+        const finalPrice = g.final_price
+          ? Number(g.final_price)
+          : Math.round(base * (1 - discount / 100));
+        return { basePrice: base, discountPercent: discount, finalPrice };
+      });
+    } else {
+      gamesToCalculate = MOCK_GAMES.filter((g) => gameIds.includes(g.id)).map((g) => ({
+        basePrice: Number(g.base_price),
+        discountPercent: g.discount_percent || 0,
+        finalPrice: Number(g.final_price),
+      }));
+    }
+
+    const subtotal = gamesToCalculate.reduce((acc, g) => acc + g.basePrice, 0);
+    const total = gamesToCalculate.reduce((acc, g) => acc + g.finalPrice, 0);
+    const discountTotal = Math.max(0, subtotal - total);
+
+    return {
+      subtotal,
+      discountTotal,
+      total,
+      itemCount: gamesToCalculate.length,
+    };
+  } catch (err) {
+    console.warn('Error calculating cart total in server:', err);
+    return { subtotal: 0, discountTotal: 0, total: 0, itemCount: 0 };
+  }
+}
+
+/**
  * Procesa la compra simulada con pasarela virtual y genera el recibo digital TX-XXXX.
  */
 export async function processSimulatedCheckoutAction(rawInput: ProcessOrderInput): Promise<{
