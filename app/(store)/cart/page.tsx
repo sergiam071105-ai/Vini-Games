@@ -3,13 +3,17 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingCart, Trash2, ArrowLeft, ShieldCheck, Sparkles, Lock, ShoppingBag, ArrowRight } from 'lucide-react';
+import { ShoppingCart, Trash2, ArrowLeft, ShieldCheck, Sparkles, Lock, ShoppingBag, ArrowRight, AlertTriangle } from 'lucide-react';
 import { useCart } from '@/lib/context/cart-context';
+import { useLibrary } from '@/lib/context/library-context';
 import { CheckoutModal } from '@/components/store/checkout-modal';
 
 export default function CartPage() {
   const { items, itemCount, subtotal, discountTotal, total, removeItem, clearCart } = useCart();
+  const { isOwned } = useLibrary();
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+
+  const ownedItemsInCart = items.filter((item) => isOwned(item.id));
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
@@ -44,6 +48,19 @@ export default function CartPage() {
         )}
       </div>
 
+      {/* Alerta de duplicados si el usuario ya posee algún juego */}
+      {ownedItemsInCart.length > 0 && (
+        <div className="bg-[#EF4444]/10 border border-[#EF4444]/40 rounded-2xl p-4 flex items-start gap-3 text-xs text-[#F5F7FF] animate-in fade-in">
+          <AlertTriangle className="w-5 h-5 text-[#EF4444] flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <span className="font-bold block text-[#EF4444] text-sm mb-0.5">Atención: Videojuegos ya adquiridos</span>
+            <span className="text-[#949CB2]">
+              Ya posees {ownedItemsInCart.map((g) => `"${g.title}"`).join(', ')} en tu biblioteca personal. Te recomendamos eliminarlo(s) de tu carrito antes de pagar para evitar compras duplicadas.
+            </span>
+          </div>
+        </div>
+      )}
+
       {items.length === 0 ? (
         /* Carrito Vacío */
         <div className="bg-[#131521] border border-[#2E334A] rounded-2xl p-12 text-center flex flex-col items-center justify-center max-w-xl mx-auto shadow-xl">
@@ -69,62 +86,74 @@ export default function CartPage() {
           {/* Columna Izquierda: Listado de Juegos (8 cols) */}
           <div className="lg:col-span-8 space-y-4">
             <div className="bg-[#131521] border border-[#2E334A] rounded-2xl p-5 md:p-6 divide-y divide-[#2E334A]/60">
-              {items.map((item) => (
-                <div
-                  key={item.id}
-                  className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-20 h-20 rounded-xl overflow-hidden bg-[#090B14] flex-shrink-0 relative border border-[#2E334A]">
-                      {item.coverUrl ? (
-                        <Image
-                          src={item.coverUrl}
-                          alt={item.title}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-xs font-bold text-[#783DF2]">
-                          GAME
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <Link
-                        href={`/games/${item.slug}`}
-                        className="text-base font-bold text-[#F5F7FF] hover:text-[#1FD1EB] transition-colors"
-                      >
-                        {item.title}
-                      </Link>
-                      <p className="text-xs text-[#949CB2] mt-0.5">{item.developer}</p>
-                      <div className="flex items-center gap-2 mt-2">
-                        {item.discountPercent > 0 && (
-                          <span className="px-2 py-0.5 rounded bg-[#10B981]/20 text-[#10B981] text-[10px] font-extrabold">
-                            -{item.discountPercent}% OFF
-                          </span>
+              {items.map((item) => {
+                const itemAlreadyOwned = isOwned(item.id);
+                return (
+                  <div
+                    key={item.id}
+                    className={`py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
+                      itemAlreadyOwned ? 'opacity-90' : ''
+                    }`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 h-20 rounded-xl overflow-hidden bg-[#090B14] flex-shrink-0 relative border border-[#2E334A]">
+                        {item.coverUrl ? (
+                          <Image
+                            src={item.coverUrl}
+                            alt={item.title}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-xs font-bold text-[#783DF2]">
+                            GAME
+                          </div>
                         )}
-                        <span className="text-[11px] text-[#949CB2]">Entrega Digital</span>
+                      </div>
+                      <div>
+                        <Link
+                          href={`/games/${item.slug}`}
+                          className="text-base font-bold text-[#F5F7FF] hover:text-[#1FD1EB] transition-colors"
+                        >
+                          {item.title}
+                        </Link>
+                        <p className="text-xs text-[#949CB2] mt-0.5">{item.developer}</p>
+                        <div className="flex flex-wrap items-center gap-2 mt-2">
+                          {item.discountPercent > 0 && (
+                            <span className="px-2 py-0.5 rounded bg-[#10B981]/20 text-[#10B981] text-[10px] font-extrabold">
+                              -{item.discountPercent}% OFF
+                            </span>
+                          )}
+                          {itemAlreadyOwned ? (
+                            <span className="px-2 py-0.5 rounded bg-[#EF4444]/20 border border-[#EF4444]/40 text-[#EF4444] text-[10px] font-extrabold flex items-center gap-1">
+                              <AlertTriangle className="w-3 h-3" />
+                              Ya en tu Biblioteca
+                            </span>
+                          ) : (
+                            <span className="text-[11px] text-[#949CB2]">Entrega Digital</span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-[#2E334A]/40">
-                    <div className="text-left sm:text-right">
-                      <div className="text-base font-bold text-[#1FD1EB]">Bs. {item.finalPrice}</div>
-                      {item.discountPercent > 0 && (
-                        <div className="text-xs text-[#949CB2] line-through">Bs. {item.basePrice}</div>
-                      )}
+                    <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-[#2E334A]/40">
+                      <div className="text-left sm:text-right">
+                        <div className="text-base font-bold text-[#1FD1EB]">Bs. {item.finalPrice}</div>
+                        {item.discountPercent > 0 && (
+                          <div className="text-xs text-[#949CB2] line-through">Bs. {item.basePrice}</div>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => removeItem(item.id)}
+                        className="mt-2 text-xs text-[#949CB2] hover:text-[#EF4444] transition-colors flex items-center gap-1 cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Eliminar</span>
+                      </button>
                     </div>
-                    <button
-                      onClick={() => removeItem(item.id)}
-                      className="mt-2 text-xs text-[#949CB2] hover:text-[#EF4444] transition-colors flex items-center gap-1 cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Eliminar</span>
-                    </button>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
