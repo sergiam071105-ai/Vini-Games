@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Heart, ShoppingCart, Star, Check } from 'lucide-react';
+import { Heart, ShoppingCart, Star, Check, Loader2 } from 'lucide-react';
 import { GameItem } from '@/types/catalog';
+import { toggleWishlistAction } from '@/app/actions/wishlist.actions';
 
 export interface Game {
   id: number;
@@ -28,13 +29,23 @@ interface GameCardProps {
 }
 
 export function GameCard({ game, priority = false }: GameCardProps) {
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [isWishlisted, setIsWishlisted] = useState(false); // In a real app we would pass initial state
   const [isAddedToCart, setIsAddedToCart] = useState(false);
 
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsWishlisted((prev) => !prev);
+    setIsWishlisted((prev) => !prev); // optimistic
+    startTransition(async () => {
+      const result = await toggleWishlistAction(game.id);
+      if (!result.success) {
+        setIsWishlisted((prev) => !prev); // revert
+        if (result.error === "Debes iniciar sesión para usar la wishlist") {
+          alert("Debes iniciar sesión para agregar a la lista de deseos.");
+        }
+      }
+    });
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -97,16 +108,21 @@ export function GameCard({ game, priority = false }: GameCardProps) {
           <button
             type="button"
             onClick={handleToggleWishlist}
+            disabled={isPending}
             aria-label={isWishlisted ? 'Quitar de lista de deseos' : 'Añadir a lista de deseos'}
-            className={`absolute top-2.5 right-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full border backdrop-blur-md transition-all duration-200 ${
+            className={`absolute top-2.5 right-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full border backdrop-blur-md transition-all duration-200 disabled:opacity-50 ${
               isWishlisted
                 ? 'border-red-500/80 bg-red-500/20 text-red-400 shadow-[0_0_12px_rgba(239,68,68,0.5)]'
                 : 'border-white/10 bg-[#090B14]/60 text-[#949CB2] hover:border-white/30 hover:bg-[#090B14]/90 hover:text-white'
             }`}
           >
-            <Heart
-              className={`h-4 w-4 transition-transform ${isWishlisted ? 'fill-current scale-110' : ''}`}
-            />
+            {isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin text-white" />
+            ) : (
+              <Heart
+                className={`h-4 w-4 transition-transform ${isWishlisted ? 'fill-current scale-110' : ''}`}
+              />
+            )}
           </button>
 
           {/* Puntuación Rating */}

@@ -1,6 +1,11 @@
-import { Star, ShoppingCart, Heart, ArrowRight } from "lucide-react";
+"use client";
+
+import { useState, useTransition } from "react";
+import { Star, ShoppingCart, Heart, ArrowRight, Loader2 } from "lucide-react";
+import { toggleWishlistAction } from "@/app/actions/wishlist.actions";
 
 interface GameInfoBoxProps {
+  gameId: number;
   title: string;
   categories: { id: number; name: string }[];
   ratingAvg: number;
@@ -9,9 +14,11 @@ interface GameInfoBoxProps {
   basePrice: number;
   discountPercent: number;
   finalPrice: number | null;
+  initialIsWishlisted?: boolean;
 }
 
 export function GameInfoBox({
+  gameId,
   title,
   categories,
   ratingAvg,
@@ -20,9 +27,28 @@ export function GameInfoBox({
   basePrice,
   discountPercent,
   finalPrice,
+  initialIsWishlisted = false,
 }: GameInfoBoxProps) {
+  const [isPending, startTransition] = useTransition();
+  // Estado local optimista
+  const [isWishlisted, setIsWishlisted] = useState(initialIsWishlisted);
+
   const priceToDisplay = finalPrice ?? basePrice;
   const hasDiscount = discountPercent > 0;
+
+  const handleToggleWishlist = () => {
+    setIsWishlisted(!isWishlisted); // optimistic update
+    startTransition(async () => {
+      const result = await toggleWishlistAction(gameId);
+      if (!result.success) {
+        setIsWishlisted(isWishlisted); // revert on failure
+        // Idealmente mostrar un toast de error si falla (ej. si no ha iniciado sesión)
+        if (result.error === "Debes iniciar sesión para usar la wishlist") {
+          alert("Debes iniciar sesión para agregar a la lista de deseos.");
+        }
+      }
+    });
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -64,8 +90,21 @@ export function GameInfoBox({
           <button className="flex-1 bg-[#783DF2] hover:bg-[#6A32DB] text-white py-4 px-6 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all">
             Comprar ahora <ArrowRight className="w-5 h-5" />
           </button>
-          <button className="w-14 h-14 border border-[#2E334A] hover:border-[#783DF2] bg-[#1A1C2B] rounded-xl flex items-center justify-center text-zinc-400 hover:text-pink-400 transition-all group">
-            <Heart className="w-6 h-6 group-hover:fill-pink-400/20" />
+          
+          <button 
+            onClick={handleToggleWishlist}
+            disabled={isPending}
+            className={`w-14 h-14 border rounded-xl flex items-center justify-center transition-all group disabled:opacity-50 ${
+              isWishlisted 
+                ? "bg-pink-500/10 border-pink-500/50 text-pink-500" 
+                : "bg-[#1A1C2B] border-[#2E334A] text-zinc-400 hover:border-[#783DF2] hover:text-pink-400"
+            }`}
+          >
+            {isPending ? (
+              <Loader2 className="w-6 h-6 animate-spin" />
+            ) : (
+              <Heart className={`w-6 h-6 ${isWishlisted ? "fill-current" : "group-hover:fill-pink-400/20"}`} />
+            )}
           </button>
         </div>
       </div>
