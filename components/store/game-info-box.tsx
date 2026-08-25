@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Star, ShoppingCart, Heart, ArrowRight, Loader2 } from "lucide-react";
-import { toggleWishlistAction } from "@/app/actions/wishlist.actions";
+import { Star, ShoppingCart, Heart, ArrowRight } from "lucide-react";
+import { useWishlist } from "@/lib/context/wishlist-context";
 
 interface GameInfoBoxProps {
   gameId: number;
@@ -27,26 +26,21 @@ export function GameInfoBox({
   basePrice,
   discountPercent,
   finalPrice,
-  initialIsWishlisted = false,
 }: GameInfoBoxProps) {
-  const [isPending, startTransition] = useTransition();
-  // Estado local optimista
-  const [isWishlisted, setIsWishlisted] = useState(initialIsWishlisted);
+  const { isWishlisted: checkIsWishlisted, toggleWishlist } = useWishlist();
+  const isWishlisted = checkIsWishlisted(gameId);
 
   const priceToDisplay = finalPrice ?? basePrice;
   const hasDiscount = discountPercent > 0;
 
   const handleToggleWishlist = () => {
-    setIsWishlisted(!isWishlisted); // optimistic update
-    startTransition(async () => {
-      const result = await toggleWishlistAction(gameId);
-      if (!result.success) {
-        setIsWishlisted(isWishlisted); // revert on failure
-        // Idealmente mostrar un toast de error si falla (ej. si no ha iniciado sesión)
-        if (result.error === "Debes iniciar sesión para usar la wishlist") {
-          alert("Debes iniciar sesión para agregar a la lista de deseos.");
-        }
-      }
+    toggleWishlist({
+      id: gameId,
+      title,
+      base_price: basePrice,
+      discount_percent: discountPercent,
+      final_price: finalPrice,
+      short_description: shortDescription,
     });
   };
 
@@ -87,24 +81,21 @@ export function GameInfoBox({
         </div>
 
         <div className="flex items-center gap-3">
-          <button className="flex-1 bg-[#783DF2] hover:bg-[#6A32DB] text-white py-4 px-6 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all">
+          <button className="flex-1 bg-[#783DF2] hover:bg-[#6A32DB] text-white py-4 px-6 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all hover:shadow-[0_0_20px_rgba(120,61,242,0.4)] active:scale-[0.99]">
             Comprar ahora <ArrowRight className="w-5 h-5" />
           </button>
           
           <button 
+            type="button"
             onClick={handleToggleWishlist}
-            disabled={isPending}
-            className={`w-14 h-14 border rounded-xl flex items-center justify-center transition-all group disabled:opacity-50 ${
+            aria-label={isWishlisted ? 'Quitar de lista de deseos' : 'Añadir a lista de deseos'}
+            className={`w-14 h-14 border rounded-xl flex items-center justify-center transition-all duration-200 group active:scale-95 ${
               isWishlisted 
-                ? "bg-pink-500/10 border-pink-500/50 text-pink-500" 
-                : "bg-[#1A1C2B] border-[#2E334A] text-zinc-400 hover:border-[#783DF2] hover:text-pink-400"
+                ? "bg-pink-500/20 border-pink-500/70 text-pink-400 shadow-[0_0_15px_rgba(236,72,153,0.4)]" 
+                : "bg-[#1A1C2B] border-[#2E334A] text-zinc-400 hover:border-[#783DF2] hover:text-white"
             }`}
           >
-            {isPending ? (
-              <Loader2 className="w-6 h-6 animate-spin" />
-            ) : (
-              <Heart className={`w-6 h-6 ${isWishlisted ? "fill-current" : "group-hover:fill-pink-400/20"}`} />
-            )}
+            <Heart className={`w-6 h-6 transition-transform duration-200 ${isWishlisted ? "fill-current scale-110" : "group-hover:scale-110"}`} />
           </button>
         </div>
       </div>
