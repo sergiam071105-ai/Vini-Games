@@ -1,38 +1,96 @@
-import React from 'react';
-import Link from 'next/link';
-import { TrendingUp, DollarSign, ShoppingBag, ShieldCheck, ArrowRight } from 'lucide-react';
+import { createClient } from '@/lib/supabase/server';
+import { MOCK_ADMIN_ORDERS, calculateFinancialKPIs } from '@/lib/mock-data/sales';
+import { AdminOrder, OrderItemDetail } from '@/types/admin-sales.types';
+import { AdminSalesClientView } from '@/components/admin/admin-sales-client-view';
 
-export default function AdminSalesPage() {
+export const dynamic = 'force-dynamic';
+
+export const metadata = {
+  title: 'Auditoría de Ventas | ViniAdmin',
+  description: 'Panel de auditoría transaccional, métricas financieras y exportación CSV de ViniGames.',
+};
+
+export default async function AdminSalesPage() {
+  const supabase = await createClient();
+  let orders: AdminOrder[] = MOCK_ADMIN_ORDERS;
+
+  try {
+    // Intentar consultar órdenes reales desde Supabase
+    const { data: dbOrders, error } = await supabase
+      .from('orders')
+      .select(`
+        id,
+        order_code,
+        user_id,
+        subtotal,
+        discount_total,
+        total,
+        payment_method,
+        status,
+        created_at,
+        profiles (
+          username,
+          avatar_url
+        ),
+        order_items (
+          id,
+          game_id,
+          unit_price,
+          discount_applied,
+          final_price,
+          games (
+            title,
+            slug,
+            cover_image_url,
+            developer
+          )
+        )
+      `)
+      .order('created_at', { ascending: false });
+
+    if (!error && dbOrders && dbOrders.length > 0) {
+      orders = dbOrders.map((o: any) => {
+        const items: OrderItemDetail[] = (o.order_items || []).map((it: any) => ({
+          id: it.id,
+          gameId: it.game_id,
+          title: it.games?.title || 'Videojuego',
+          slug: it.games?.slug || 'juego',
+          coverUrl: it.games?.cover_image_url || 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=800&q=80',
+          developer: it.games?.developer || 'ViniGames Studio',
+          unitPrice: Number(it.unit_price || 0),
+          discountApplied: Number(it.discount_applied || 0),
+          finalPrice: Number(it.final_price || 0),
+        }));
+
+        const uname = o.profiles?.username || 'Gamer Desconocido';
+        const method = (o.payment_method === 'CARD' ? 'SIMULATED_CARD' : o.payment_method || 'SIMULATED_CARD');
+
+        return {
+          id: o.id,
+          orderCode: o.order_code,
+          userId: o.user_id,
+          username: uname,
+          email: `${uname.toLowerCase().replace(/\s+/g, '')}@vinigames.com`,
+          avatarUrl: o.profiles?.avatar_url || null,
+          subtotal: Number(o.subtotal),
+          discountTotal: Number(o.discount_total || 0),
+          total: Number(o.total),
+          paymentMethod: method as any,
+          status: (o.status || 'COMPLETED').toUpperCase() as any,
+          createdAt: o.created_at,
+          items,
+        };
+      });
+    }
+  } catch (err) {
+    console.warn('Usando Mock Orders debido a fallback:', err);
+  }
+
+  const initialKpis = calculateFinancialKPIs(orders);
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="flex items-center justify-between border-b border-[#2E334A] pb-6">
-        <div>
-          <h1 className="text-2xl font-extrabold text-[#F8FAFC] flex items-center gap-2.5">
-            <TrendingUp className="w-7 h-7 text-[#783DF2]" />
-            Auditoría de Órdenes & Ventas
-          </h1>
-          <p className="text-xs text-[#94A3B8] mt-1">
-            Registro transaccional de compras simuladas con códigos TX-XXXX.
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-[#131521] border border-[#2E334A] rounded-2xl p-8 text-center max-w-xl mx-auto space-y-4">
-        <div className="w-16 h-16 rounded-full bg-[#783DF2]/20 border border-[#783DF2]/40 flex items-center justify-center mx-auto text-[#1FD1EB]">
-          <ShoppingBag className="w-8 h-8" />
-        </div>
-        <h2 className="text-lg font-bold text-[#F8FAFC]">Módulo de Reportes Transaccionales</h2>
-        <p className="text-xs text-[#94A3B8] leading-relaxed">
-          Las transacciones generadas en el checkout simulado se almacenan en la tabla <code className="text-[#1FD1EB] bg-[#1A1C2B] px-1.5 py-0.5 rounded">orders</code> y <code className="text-[#1FD1EB] bg-[#1A1C2B] px-1.5 py-0.5 rounded">order_items</code>.
-        </p>
-        <Link
-          href="/admin/games"
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#783DF2] hover:bg-[#6929e4] text-[#F8FAFC] font-bold text-xs rounded-xl transition-all shadow-md shadow-[#783DF2]/30 uppercase tracking-wider"
-        >
-          Gestionar Catálogo
-          <ArrowRight className="w-4 h-4" />
-        </Link>
-      </div>
+    <div className="w-full space-y-6">
+      <AdminSalesClientView initialOrders={orders} initialKPIs={initialKpis} />
     </div>
   );
 }

@@ -16,6 +16,11 @@ import { getAdminGamesAction, getAllCategoriesAction } from '@/app/actions/games
 
 export const dynamic = 'force-dynamic';
 
+export const metadata = {
+  title: 'Dashboard ViniAdmin | ViniGames',
+  description: 'Resumen ejecutivo de catálogo, promociones y métricas comerciales.',
+};
+
 export default async function AdminDashboardPage() {
   const games = await getAdminGamesAction();
   const categories = await getAllCategoriesAction();
