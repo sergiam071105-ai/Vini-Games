@@ -3,6 +3,8 @@ import { MOCK_ADMIN_ORDERS, calculateFinancialKPIs } from '@/lib/mock-data/sales
 import { AdminOrder, OrderItemDetail } from '@/types/admin-sales.types';
 import { AdminSalesClientView } from '@/components/admin/admin-sales-client-view';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Auditoría de Ventas | ViniAdmin',
   description: 'Panel de auditoría transaccional, métricas financieras y exportación CSV de ViniGames.',
@@ -60,34 +62,35 @@ export default async function AdminSalesPage() {
           finalPrice: Number(it.final_price || 0),
         }));
 
+        const uname = o.profiles?.username || 'Gamer Desconocido';
+        const method = (o.payment_method === 'CARD' ? 'SIMULATED_CARD' : o.payment_method || 'SIMULATED_CARD');
+
         return {
           id: o.id,
-          orderCode: o.order_code || `TX-${o.id.toString().padStart(4, '0')}`,
+          orderCode: o.order_code,
           userId: o.user_id,
-          username: o.profiles?.username || 'Usuario_Gamer',
-          email: `${o.profiles?.username || 'usuario'}@vinigames.com`,
+          username: uname,
+          email: `${uname.toLowerCase().replace(/\s+/g, '')}@vinigames.com`,
           avatarUrl: o.profiles?.avatar_url || null,
-          subtotal: Number(o.subtotal || 0),
+          subtotal: Number(o.subtotal),
           discountTotal: Number(o.discount_total || 0),
-          total: Number(o.total || 0),
-          paymentMethod: o.payment_method || 'SIMULATED_CARD',
-          status: o.status || 'COMPLETED',
+          total: Number(o.total),
+          paymentMethod: method as any,
+          status: (o.status || 'COMPLETED').toUpperCase() as any,
           createdAt: o.created_at,
-          items: items,
+          items,
         };
       });
     }
   } catch (err) {
-    console.error('Error cargando órdenes de Supabase, usando respaldo mock:', err);
-    orders = MOCK_ADMIN_ORDERS;
+    console.warn('Usando Mock Orders debido a fallback:', err);
   }
 
-  const kpis = calculateFinancialKPIs(orders);
+  const initialKpis = calculateFinancialKPIs(orders);
 
   return (
-    <AdminSalesClientView
-      initialOrders={orders}
-      initialKPIs={kpis}
-    />
+    <div className="w-full space-y-6">
+      <AdminSalesClientView initialOrders={orders} initialKPIs={initialKpis} />
+    </div>
   );
 }
