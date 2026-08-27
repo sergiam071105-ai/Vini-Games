@@ -39,7 +39,7 @@ export function WishlistClientView() {
       ) : (
         <div className="bg-[#1A1C2B] border border-[#2E334A] rounded-2xl p-12 flex flex-col items-center justify-center text-center">
           <div className="bg-[#080A13] p-6 rounded-2xl mb-6 border border-[#2E334A]">
-            <Heart className="w-14 h-14 text-zinc-600" />
+            <Heart className="w-14 h-14 text-pink-400/50" />
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">Tu lista de deseos está vacía</h2>
           <p className="text-zinc-400 max-w-md text-sm mb-8">
@@ -47,6 +47,7 @@ export function WishlistClientView() {
           </p>
           <Link 
             href="/catalog" 
+            aria-label="Explorar catálogo de videojuegos"
             className="bg-[#783DF2] hover:bg-[#6A32DB] text-white font-semibold py-3 px-8 rounded-xl transition-all flex items-center gap-2 hover:shadow-[0_0_20px_rgba(120,61,242,0.4)] active:scale-95"
           >
             <Library className="w-5 h-5" />

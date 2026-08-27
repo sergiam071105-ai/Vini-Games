@@ -124,6 +124,7 @@ export function GameInfoBox({
               </Link>
               <button
                 onClick={handleToggleWishlist}
+                aria-label={inWishlist ? `Quitar ${title} de lista de deseos` : `Guardar ${title} en lista de deseos`}
                 className={`w-12 h-12 border rounded-xl flex items-center justify-center transition-all cursor-pointer ${
                   inWishlist
                     ? "bg-red-500/20 border-red-500/60 text-red-400"
@@ -138,7 +139,7 @@ export function GameInfoBox({
         ) : (
           /* Estado regular de compra */
           <>
-            <span className="text-zinc-500 text-xs uppercase font-semibold tracking-wider mb-2 block">Precio</span>
+            <span className="text-zinc-400 text-xs uppercase font-semibold tracking-wider mb-2 block">Precio</span>
             <div className="flex items-center gap-4 mb-4">
               <span className="text-3xl font-bold text-white">
                 Bs. {priceToDisplay.toFixed(2)}
@@ -153,6 +154,7 @@ export function GameInfoBox({
             <div className="flex items-center gap-3">
               <button
                 onClick={handleBuyNow}
+                aria-label={`Comprar ${title} por ${priceToDisplay.toFixed(2)} Bolivianos y añadir al carrito`}
                 className="flex-1 bg-[#783DF2] hover:bg-[#6A32DB] text-white py-4 px-6 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-[#783DF2]/30 uppercase tracking-wider cursor-pointer"
               >
                 {inCart || isAddedFeedback ? (
@@ -169,6 +171,7 @@ export function GameInfoBox({
 
               <button
                 onClick={handleToggleWishlist}
+                aria-label={inWishlist ? `Quitar ${title} de lista de deseos` : `Guardar ${title} en lista de deseos`}
                 className={`w-14 h-14 border rounded-xl flex items-center justify-center transition-all cursor-pointer ${
                   inWishlist
                     ? "bg-red-500/20 border-red-500/60 text-red-400 shadow-[0_0_12px_rgba(239,68,68,0.4)]"

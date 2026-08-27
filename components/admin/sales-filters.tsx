@@ -52,6 +52,7 @@ export function SalesFilters({
             type="text"
             value={filters.searchQuery}
             onChange={handleSearchChange}
+            aria-label="Buscar transacciones por código, usuario o correo"
             placeholder="Buscar por código TX-XXXX, usuario (@...) o email..."
             className="w-full bg-[#0D101D] border border-[#2D3349] focus:border-[#783DF2] focus:ring-2 focus:ring-[#783DF2]/30 rounded-xl pl-10 pr-4 py-2.5 text-xs md:text-sm text-[#F5F7FF] placeholder-[#949CB2] transition-all outline-none"
           />
@@ -65,6 +66,7 @@ export function SalesFilters({
             <select
               value={filters.status}
               onChange={handleStatusChange}
+              aria-label="Filtrar transacciones por estado"
               className="w-full bg-[#0D101D] border border-[#2D3349] hover:border-[#783DF2] focus:border-[#783DF2] rounded-xl pl-9 pr-8 py-2.5 text-xs font-bold text-[#F5F7FF] outline-none cursor-pointer appearance-none transition-colors"
             >
               <option value="ALL">Todos los Estados</option>
@@ -80,6 +82,7 @@ export function SalesFilters({
             <select
               value={filters.datePreset}
               onChange={handleDatePresetChange}
+              aria-label="Filtrar transacciones por período de fecha"
               className="w-full bg-[#0D101D] border border-[#2D3349] hover:border-[#783DF2] focus:border-[#783DF2] rounded-xl pl-9 pr-8 py-2.5 text-xs font-bold text-[#F5F7FF] outline-none cursor-pointer appearance-none transition-colors"
             >
               <option value="ALL">Cualquier Fecha</option>
@@ -95,6 +98,7 @@ export function SalesFilters({
             <select
               value={filters.sortBy}
               onChange={handleSortChange}
+              aria-label="Ordenar listado de transacciones"
               className="w-full bg-[#0D101D] border border-[#2D3349] hover:border-[#783DF2] focus:border-[#783DF2] rounded-xl pl-9 pr-8 py-2.5 text-xs font-bold text-[#F5F7FF] outline-none cursor-pointer appearance-none transition-colors"
             >
               <option value="newest">Más Recientes</option>
@@ -107,6 +111,7 @@ export function SalesFilters({
           {isFiltered && (
             <button
               onClick={onReset}
+              aria-label="Limpiar y restablecer todos los filtros aplicados"
               className="px-3.5 py-2.5 bg-[#0D101D] hover:bg-[#252A40] text-[#949CB2] hover:text-white border border-[#2D3349] rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
               title="Limpiar filtros"
             >

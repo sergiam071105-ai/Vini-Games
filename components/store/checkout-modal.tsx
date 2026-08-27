@@ -172,6 +172,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
             <button
               onClick={onClose}
               disabled={isProcessing}
+              aria-label="Cerrar modal de pasarela de pago"
               className="absolute top-4 right-4 p-2 text-[#949CB2] hover:text-[#F5F7FF] hover:bg-[#1A1C2B] rounded-lg transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
@@ -218,6 +219,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
 
                   <button
                     onClick={onClose}
+                    aria-label="Volver a la tienda sin iniciar sesión"
                     className="text-xs text-[#949CB2] hover:text-[#F5F7FF] pt-2 transition-colors cursor-pointer"
                   >
                     Volver a la tienda
@@ -248,6 +250,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                   <button
                     type="button"
                     onClick={handleFillTestData}
+                    aria-label="Autocompletar datos de prueba de tarjeta virtual"
                     className="px-3 py-1.5 bg-[#783DF2]/10 hover:bg-[#783DF2]/20 border border-[#783DF2]/40 rounded-lg text-xs font-bold text-[#783DF2] transition-colors flex items-center gap-1.5 cursor-pointer"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-[#1FD1EB]" />

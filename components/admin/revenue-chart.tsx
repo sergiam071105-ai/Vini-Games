@@ -55,6 +55,7 @@ export function RevenueChart({ initialRange = '7d' }: RevenueChartProps) {
                 setRange(btn.id);
                 setHoveredIndex(null);
               }}
+              aria-label={`Ver gráfica de ingresos para ${btn.label}`}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${
                 range === btn.id
                   ? 'bg-[#783DF2] text-white shadow-[0_0_15px_rgba(120,61,242,0.45)]'

@@ -69,6 +69,7 @@ export function OrderDetailModal({ order, isOpen, onClose }: OrderDetailModalPro
                 </span>
                 <button
                   onClick={handleCopyCode}
+                  aria-label="Copiar código de orden al portapapeles"
                   className="p-1 text-[#949CB2] hover:text-white rounded transition-colors cursor-pointer"
                   title="Copiar código"
                 >
@@ -85,6 +86,7 @@ export function OrderDetailModal({ order, isOpen, onClose }: OrderDetailModalPro
             {getStatusBadge(order.status)}
             <button
               onClick={onClose}
+              aria-label="Cerrar modal de detalle de orden"
               className="p-2 text-[#949CB2] hover:text-white rounded-xl bg-[#1A1C2B] border border-[#2D3349] hover:border-[#783DF2] transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />

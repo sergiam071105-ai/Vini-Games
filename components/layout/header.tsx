@@ -129,6 +129,7 @@ export function Header({ profile }: HeaderProps) {
           <input
             type="text"
             placeholder="Buscar juegos..."
+            aria-label="Buscar juegos en el catálogo"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-[#1A1C2B] border border-[#2D3349] rounded-xl pl-9 pr-4 py-1.5 text-xs text-[#F5F7FF] placeholder-[#949CB2] focus:outline-none focus:border-[#783DF2] focus:ring-1 focus:ring-[#783DF2]/30 transition-all"
@@ -139,7 +140,7 @@ export function Header({ profile }: HeaderProps) {
         <div className="hidden md:flex items-center gap-4 flex-shrink-0">
           
           {/* Level / XP Progress Widget */}
-          <div className="flex flex-col gap-1 w-44 bg-[#1A1C2B] border border-[#2D3349] rounded-lg px-3 py-1.5">
+          <div className="flex flex-col gap-1 w-44 bg-[#1A1C2B] border border-[#2D3349] rounded-lg px-3 py-1.5" aria-label={`Nivel ${level}, progreso de experiencia ${percentage} por ciento`}>
             <div className="flex justify-between items-center text-[10px] font-bold text-[#949CB2]">
               <span>LVL {level}</span>
               <span className="text-[#783DF2]">{percentage}% XP</span>
@@ -153,7 +154,7 @@ export function Header({ profile }: HeaderProps) {
           </div>
 
           {/* GameCoins Balance Widget */}
-          <div className="flex items-center gap-1.5 bg-[#1A1C2B] border border-[#2D3349] rounded-lg px-3 py-1.5">
+          <div className="flex items-center gap-1.5 bg-[#1A1C2B] border border-[#2D3349] rounded-lg px-3 py-1.5" aria-label={`Saldo de GameCoins: ${displayProfile.gamecoins_balance}`}>
             <Coins className="h-4 w-4 text-[#1FD1EB]" />
             <span className="text-xs font-bold text-[#F5F7FF]">
               ◈ {displayProfile.gamecoins_balance}
@@ -165,6 +166,7 @@ export function Header({ profile }: HeaderProps) {
             href="/gamification"
             className="flex items-center gap-1.5 bg-[#1A1C2B] hover:bg-[#25283d] border border-[#2D3349] rounded-lg px-3 py-1.5 transition-colors cursor-pointer"
             title="Ver Hub de Gamificación"
+            aria-label={`Racha activa de ${displayProfile.current_streak} días. Ver Hub de Gamificación`}
           >
             <Flame className="h-4 w-4 text-[#10B981]" />
             <span className="text-xs font-bold text-[#F5F7FF]">
@@ -177,6 +179,7 @@ export function Header({ profile }: HeaderProps) {
             onClick={openDrawer}
             className="relative flex items-center gap-1.5 bg-[#1A1C2B] hover:bg-[#25283d] border border-[#2D3349] hover:border-[#783DF2]/60 rounded-lg p-2 transition-all cursor-pointer group"
             title="Abrir carrito de compras"
+            aria-label={`Abrir carrito de compras con ${itemCount} ${itemCount === 1 ? 'juego' : 'juegos'}`}
           >
             <ShoppingCart className="h-4 w-4 text-[#783DF2] group-hover:text-[#1FD1EB] transition-colors" />
             {itemCount > 0 && (
@@ -191,6 +194,8 @@ export function Header({ profile }: HeaderProps) {
             <div className="relative">
               <button 
                 onClick={() => setDropdownOpen(!dropdownOpen)}
+                aria-label="Abrir menú de perfil de usuario"
+                aria-expanded={dropdownOpen}
                 className="flex items-center gap-2 bg-[#1A1C2B] hover:bg-[#131421] border border-[#2D3349] rounded-lg p-1.5 transition-colors cursor-pointer"
               >
                 <div className="h-6 w-6 rounded bg-[#783DF2] flex items-center justify-center font-bold text-[#F5F7FF] text-xs">
@@ -224,11 +229,11 @@ export function Header({ profile }: HeaderProps) {
                   </Link>
                   <button
                     onClick={async () => {
-                      // Import dynamic actions to prevent issues
                       const { signOutAction } = await import('@/app/actions/auth.actions');
                       await signOutAction();
                       setDropdownOpen(false);
                     }}
+                    aria-label="Cerrar sesión de la cuenta"
                     className="flex w-full items-center gap-2 px-4 py-2 text-xs text-[#EF4444] hover:bg-[#131421] transition-colors text-left"
                   >
                     <LogOut className="h-4 w-4" />
@@ -255,6 +260,7 @@ export function Header({ profile }: HeaderProps) {
             onClick={openDrawer}
             className="relative p-1.5 rounded-lg bg-[#1A1C2B] text-[#783DF2] hover:text-[#1FD1EB] transition-colors cursor-pointer"
             title="Carrito"
+            aria-label={`Abrir carrito de compras con ${itemCount} productos`}
           >
             <ShoppingCart className="h-4 w-4" />
             {itemCount > 0 && (
@@ -265,7 +271,7 @@ export function Header({ profile }: HeaderProps) {
           </button>
 
           {/* Coins for mobile */}
-          <div className="flex items-center gap-1 bg-[#1A1C2B] rounded-lg px-2.5 py-1">
+          <div className="flex items-center gap-1 bg-[#1A1C2B] rounded-lg px-2.5 py-1" aria-label={`Saldo: ${displayProfile.gamecoins_balance} monedas`}>
             <Coins className="h-3.5 w-3.5 text-[#1FD1EB]" />
             <span className="text-[11px] font-bold text-[#F5F7FF]">
               {displayProfile.gamecoins_balance}
@@ -274,6 +280,8 @@ export function Header({ profile }: HeaderProps) {
 
           <button 
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? "Cerrar menú principal" : "Abrir menú principal"}
+            aria-expanded={mobileMenuOpen}
             className="text-[#949CB2] hover:text-[#F5F7FF] p-1.5 rounded-lg bg-[#1A1C2B]"
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}

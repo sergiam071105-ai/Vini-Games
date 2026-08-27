@@ -58,6 +58,7 @@ export function CartDrawer() {
             {items.length > 0 && (
               <button
                 onClick={() => clearCart()}
+                aria-label="Vaciar todos los juegos del carrito"
                 className="p-1.5 text-[#949CB2] hover:text-[#EF4444] rounded-lg transition-colors text-xs flex items-center gap-1"
                 title="Vaciar carrito"
               >
@@ -66,6 +67,7 @@ export function CartDrawer() {
             )}
             <button
               onClick={closeDrawer}
+              aria-label="Cerrar panel lateral de carrito"
               className="p-1.5 text-[#949CB2] hover:text-[#F5F7FF] rounded-lg transition-colors"
             >
               <X className="w-5 h-5" />
@@ -87,7 +89,8 @@ export function CartDrawer() {
               <Link
                 href="/catalog"
                 onClick={closeDrawer}
-                className="px-5 py-2.5 bg-[#783DF2] hover:bg-[#6929e4] text-[#F5F7FF] font-bold text-xs rounded-xl transition-colors uppercase tracking-wider"
+                aria-label="Ir a explorar catálogo de juegos"
+                className="px-6 py-2.5 rounded-xl bg-[#783DF2] hover:bg-[#6929e4] text-[#F5F7FF] text-xs font-bold transition-all"
               >
                 Explorar Catálogo
               </Link>
@@ -145,6 +148,7 @@ export function CartDrawer() {
 
                   <button
                     onClick={() => removeItem(item.id)}
+                    aria-label={`Eliminar ${item.title} del carrito de compras`}
                     className="p-2 text-[#949CB2] hover:text-[#EF4444] hover:bg-[#2E334A]/50 rounded-lg transition-colors cursor-pointer"
                     title="Eliminar del carrito"
                   >
@@ -178,6 +182,7 @@ export function CartDrawer() {
 
             <button
               onClick={handleOpenCheckout}
+              aria-label={`Proceder al pago de la orden por un total de ${total} Bolivianos`}
               className="w-full bg-[#783DF2] hover:bg-[#6929e4] text-[#F5F7FF] font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-[#783DF2]/30 flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer"
             >
               <ShieldCheck className="w-4 h-4 text-[#1FD1EB]" />

@@ -37,13 +37,13 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-[#080A13] text-[#F8FAFC]">
-      {/* Sidebar Persistente de ViniAdmin */}
+    <div className="flex flex-col md:flex-row min-h-screen bg-[#080A13] text-[#F8FAFC]">
+      {/* Sidebar Persistente de ViniAdmin (Mobile Drawer + Desktop Sidebar) */}
       <AdminSidebar userEmail={userEmail} adminName={adminName} />
       
       {/* Contenedor Principal */}
-      <main className="flex-1 flex flex-col h-screen overflow-y-auto bg-[#090B14]">
-        <div className="p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
+      <main className="flex-1 flex flex-col min-h-screen md:h-screen md:overflow-y-auto bg-[#090B14]">
+        <div className="p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
           {children}
         </div>
       </main>

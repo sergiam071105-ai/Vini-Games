@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+// @ts-ignore
 import confetti from 'canvas-confetti';
 import { CheckCircle2, Copy, Sparkles, ArrowRight, Library, ShieldCheck, X, Check } from 'lucide-react';
 import { OrderSummary } from '@/types/order.types';
@@ -65,6 +66,7 @@ export function OrderReceiptModal({ isOpen, onClose, order }: OrderReceiptModalP
         {/* Botón Cerrar */}
         <button
           onClick={onClose}
+          aria-label="Cerrar comprobante de compra"
           className="absolute top-4 right-4 p-2 text-[#949CB2] hover:text-[#F5F7FF] hover:bg-[#1A1C2B] rounded-lg transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />
@@ -93,6 +95,7 @@ export function OrderReceiptModal({ isOpen, onClose, order }: OrderReceiptModalP
           </div>
           <button
             onClick={handleCopyCode}
+            aria-label="Copiar código de comprobante al portapapeles"
             className="flex items-center gap-1.5 px-3 py-1.5 bg-[#131521] hover:bg-[#25283d] border border-[#2E334A] hover:border-[#1FD1EB]/50 rounded-lg text-xs font-semibold text-[#F5F7FF] transition-all cursor-pointer"
           >
             {copied ? (

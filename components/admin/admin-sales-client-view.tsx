@@ -135,6 +135,7 @@ export function AdminSalesClientView({
           <button
             onClick={handleExportCSV}
             disabled={isExporting || filteredOrders.length === 0}
+            aria-label={`Exportar ${filteredOrders.length} transacciones filtradas a archivo CSV para Excel`}
             className="flex items-center gap-2 bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-white px-5 py-3 rounded-xl text-xs md:text-sm font-bold shadow-[0_0_25px_rgba(16,185,129,0.35)] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {isExporting ? (
