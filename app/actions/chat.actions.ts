@@ -337,7 +337,7 @@ export async function sendChatMessageAction(input: {
     let replyContent: string;
     let recommendedGameIds: number[] = [];
 
-    const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL;
+    const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL || process.env.NEXT_PUBLIC_N8N_VINICHAT_WEBHOOK_URL;
     let n8nSuccess = false;
 
     if (n8nWebhookUrl) {
