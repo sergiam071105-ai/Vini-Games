@@ -159,7 +159,7 @@ export default function ChatPage() {
       <div className="flex flex-1 h-full min-h-0 overflow-hidden">
         
         {/* Sidebar de Sesiones Gamer (Desktop / Tablet) */}
-        <aside className={`${isDesktopSidebarOpen ? 'flex' : 'hidden'} md:flex flex-col w-72 lg:w-80 h-full min-h-0 bg-[#0B0D18] border-r border-[#2E334A] flex-shrink-0 transition-all`}>
+        <aside className={`${isDesktopSidebarOpen ? 'flex w-72 lg:w-80' : 'hidden'} flex-col h-full min-h-0 bg-[#0B0D18] border-r border-[#2E334A] flex-shrink-0 transition-all duration-200`}>
           
           {/* Header del Sidebar */}
           <div className="p-4 border-b border-[#2E334A]">
