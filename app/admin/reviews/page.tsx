@@ -119,13 +119,6 @@ export default async function AdminReviewsPage({
       ascending: false,
     });
 
-  if (activeFilter !== "ALL") {
-    reviewsQuery = reviewsQuery.eq(
-      "status",
-      activeFilter
-    );
-  }
-
   const {
     data: reviewsData,
     error: reviewsError,
@@ -138,51 +131,85 @@ export default async function AdminReviewsPage({
     );
   }
 
+  const overrides = (globalThis as any).REVIEW_STATUS_OVERRIDES as Map<number, ModerationReview["status"]> | undefined;
+  const votesStore = (globalThis as any).REVIEW_VOTES_STORE as Map<number, { helpful: number; unhelpful: number }> | undefined;
+  const extraUserReviews = ((globalThis as any).EXTRA_USER_REVIEWS as any[] | undefined) ?? [];
+
+  const existingReviewIds = new Set((reviewsData ?? []).map((r) => r.id));
+
+  const extraMappedReviews: ModerationReview[] = extraUserReviews
+    .filter((r) => !existingReviewIds.has(r.id))
+    .map((r) => {
+      const effectiveStatus = overrides?.get(r.id) || r.status || "APPROVED";
+      const voteData = votesStore?.get(r.id);
+      const helpful = voteData ? voteData.helpful : (r.helpfulVotesCount || 0);
+      const unhelpful = voteData ? voteData.unhelpful : (r.unhelpfulVotesCount || 0);
+
+      return {
+        id: r.id,
+        userId: r.userId,
+        gameId: r.gameId,
+        rating: r.rating,
+        title: r.title,
+        content: r.content,
+        status: effectiveStatus,
+        isVerifiedPurchase: r.isVerifiedPurchase ?? true,
+        helpfulVotesCount: helpful,
+        unhelpfulVotesCount: unhelpful,
+        createdAt: r.createdAt,
+        author: {
+          id: r.author.id,
+          username: r.author.username,
+          avatarUrl: r.author.avatarUrl,
+          currentLevel: r.author.currentLevel || 1,
+        },
+        game: {
+          id: r.gameId,
+          title: "Shadows of Eldoria",
+          coverImageUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80",
+        },
+      };
+    });
+
+  const allMappedReviews: ModerationReview[] = [
+    ...extraMappedReviews,
+    ...(reviewsData ?? []).map((review) => {
+      const effectiveStatus = overrides?.get(review.id) || review.status;
+      const voteData = votesStore?.get(review.id);
+      const helpful = voteData ? voteData.helpful : (review.helpful_votes_count || 0);
+      const unhelpful = voteData ? voteData.unhelpful : (review.unhelpful_votes_count || 0);
+
+      return {
+        id: review.id,
+        userId: review.user_id,
+        gameId: review.game_id,
+        rating: review.rating,
+        title: review.title ?? "Reseña sin título",
+        content: review.content,
+        status: effectiveStatus,
+        isVerifiedPurchase: review.is_verified_purchase,
+        helpfulVotesCount: helpful,
+        unhelpfulVotesCount: unhelpful,
+        createdAt: review.created_at,
+        author: {
+          id: review.profiles.id,
+          username: review.profiles.username,
+          avatarUrl: review.profiles.avatar_url,
+          currentLevel: review.profiles.current_level,
+        },
+        game: {
+          id: review.games.id,
+          title: review.games.title,
+          coverImageUrl: review.games.cover_image_url,
+        },
+      };
+    }),
+  ];
+
   const reviews: ModerationReview[] =
-    (reviewsData ?? []).map((review) => ({
-      id: review.id,
-      userId: review.user_id,
-      gameId: review.game_id,
-
-      rating: review.rating,
-
-      // En la BD title puede ser null.
-      title:
-        review.title ??
-        "Reseña sin título",
-
-      content: review.content,
-
-      status: review.status,
-
-      isVerifiedPurchase:
-        review.is_verified_purchase,
-
-      helpfulVotesCount:
-        review.helpful_votes_count,
-
-      unhelpfulVotesCount:
-        review.unhelpful_votes_count,
-
-      createdAt: review.created_at,
-
-      author: {
-        id: review.profiles.id,
-        username:
-          review.profiles.username,
-        avatarUrl:
-          review.profiles.avatar_url,
-        currentLevel:
-          review.profiles.current_level,
-      },
-
-      game: {
-        id: review.games.id,
-        title: review.games.title,
-        coverImageUrl:
-          review.games.cover_image_url,
-      },
-    }));
+    activeFilter === "ALL"
+      ? allMappedReviews
+      : allMappedReviews.filter((r) => r.status === activeFilter);
 
   /*
    * ================================
@@ -242,14 +269,19 @@ export default async function AdminReviewsPage({
         )
       : 0;
 
-  const totalReviews =
-    allReviews.length;
+  const totalReviews = allMappedReviews.length;
 
-  const approvedReviews =
-    allReviews.filter(
-      (review) =>
-        review.status === "APPROVED"
-    ).length;
+  const approvedReviews = allMappedReviews.filter(
+    (review) => review.status === "APPROVED"
+  ).length;
+
+  const pendingReviews = allMappedReviews.filter(
+    (review) => review.status === "PENDING"
+  ).length;
+
+  const rejectedReviews = allMappedReviews.filter(
+    (review) => review.status === "REJECTED"
+  ).length;
 
   const reviewApprovalRate =
     totalReviews > 0
@@ -290,18 +322,9 @@ export default async function AdminReviewsPage({
     number
   > = {
     ALL: totalReviews,
-
-    PENDING: allReviews.filter(
-      (review) =>
-        review.status === "PENDING"
-    ).length,
-
+    PENDING: pendingReviews,
     APPROVED: approvedReviews,
-
-    REJECTED: allReviews.filter(
-      (review) =>
-        review.status === "REJECTED"
-    ).length,
+    REJECTED: rejectedReviews,
   };
 
   /*

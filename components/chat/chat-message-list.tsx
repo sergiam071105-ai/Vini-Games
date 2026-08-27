@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { Bot, User, Sparkles, Terminal } from 'lucide-react';
+import { Bot, User, Sparkles } from 'lucide-react';
 import { ChatMessage } from '@/types/chat.types';
 import { ChatProductCard } from '@/components/chat/chat-product-card';
 
@@ -25,7 +25,6 @@ function FormattedContent({ text }: { text: string }) {
         return (
           <p key={pIdx}>
             {lines.map((line, lIdx) => {
-              // Parse simple **bold** tags
               const parts = line.split(/(\*\*.*?\*\*)/g);
               return (
                 <React.Fragment key={lIdx}>
@@ -55,14 +54,23 @@ export function ChatMessageList({
   isLoading,
   userName = 'Gamer',
 }: ChatMessageListProps) {
-  const scrollEndRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
+  // Auto-scroll contenido EXCLUSIVAMENTE dentro del contenedor de chat
   useEffect(() => {
-    scrollEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (containerRef.current) {
+      containerRef.current.scrollTo({
+        top: containerRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
   }, [messages, isLoading]);
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+    <div
+      ref={containerRef}
+      className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-6 scrollbar-thin scrollbar-thumb-[#2E334A] hover:scrollbar-thumb-[#783DF2]"
+    >
       {messages.map((message) => {
         const isAssistant = message.role === 'assistant';
 
@@ -154,8 +162,6 @@ export function ChatMessageList({
           </div>
         </div>
       )}
-
-      <div ref={scrollEndRef} />
     </div>
   );
 }

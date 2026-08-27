@@ -56,7 +56,7 @@ export function ChatInput({ onSendMessage, isLoading }: ChatInputProps) {
   };
 
   return (
-    <div className="border-t border-[#2E334A] bg-[#0B0D18]/90 backdrop-blur-md p-4 space-y-3">
+    <div className="flex-shrink-0 border-t border-[#2E334A] bg-[#0B0D18]/95 backdrop-blur-md p-4 space-y-3">
       
       {/* Chips de Preguntas Frecuentes Gamer */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">

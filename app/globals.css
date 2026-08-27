@@ -51,3 +51,30 @@ body {
   padding: 0;
 }
 
+/* Custom Dark Gamer Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0B0D18;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2E334A;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #783DF2;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2E334A #0B0D18;
+}
+
+

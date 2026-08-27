@@ -1,8 +1,20 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Bot, MessageSquare, Plus, Trash2, Sparkles, Zap, Shield, ArrowLeft, Menu, X } from 'lucide-react';
-import { ChatSession, ChatMessage } from '@/types/chat.types';
+import {
+  Send,
+  Plus,
+  Trash2,
+  Sparkles,
+  Bot,
+  MessageSquare,
+  Zap,
+  ArrowLeft,
+  Menu,
+  X,
+  PanelLeft,
+} from 'lucide-react';
+import Link from 'next/link';
 import {
   getChatSessionsAction,
   createChatSessionAction,
@@ -10,17 +22,18 @@ import {
   sendChatMessageAction,
   deleteChatSessionAction,
 } from '@/app/actions/chat.actions';
+import { ChatSession, ChatMessage } from '@/types/chat.types';
 import { ChatMessageList } from '@/components/chat/chat-message-list';
 import { ChatInput } from '@/components/chat/chat-input';
-import Link from 'next/link';
 
 export default function ChatPage() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
-  const [currentSessionId, setCurrentSessionId] = useState<string>('default');
+  const [currentSessionId, setCurrentSessionId] = useState<string>('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSessionsLoading, setIsSessionsLoading] = useState(true);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isSessionsLoading, setIsSessionsLoading] = useState<boolean>(true);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
+  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState<boolean>(true);
 
   // Cargar sesiones al montar
   const loadSessions = useCallback(async () => {
@@ -32,8 +45,10 @@ export default function ChatPage() {
         setCurrentSessionId(res[0].id);
       } else {
         const newSession = await createChatSessionAction('Consultas de Descubrimiento Gamer');
-        setSessions([newSession]);
-        setCurrentSessionId(newSession.id);
+        if (newSession) {
+          setSessions([newSession]);
+          setCurrentSessionId(newSession.id);
+        }
       }
     } finally {
       setIsSessionsLoading(false);
@@ -68,9 +83,11 @@ export default function ChatPage() {
     setIsLoading(true);
     try {
       const newSession = await createChatSessionAction(`Consulta Gamer #${sessions.length + 1}`);
-      setSessions((prev) => [newSession, ...prev]);
-      setCurrentSessionId(newSession.id);
-      setIsMobileSidebarOpen(false);
+      if (newSession) {
+        setSessions((prev) => [newSession, ...prev]);
+        setCurrentSessionId(newSession.id);
+        setIsMobileSidebarOpen(false);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -137,12 +154,12 @@ export default function ChatPage() {
   const activeSession = sessions.find((s) => s.id === currentSessionId);
 
   return (
-    <div className="flex-1 flex flex-col h-[calc(100vh-12rem)] min-h-[600px] bg-[#090B14] border border-[#2E334A] rounded-2xl overflow-hidden shadow-2xl relative">
+    <div className="w-full flex flex-col h-[calc(100vh-8.5rem)] min-h-[500px] max-h-[820px] bg-[#090B14] border border-[#2E334A] rounded-2xl overflow-hidden shadow-2xl relative">
       
-      <div className="flex flex-1 h-full overflow-hidden">
+      <div className="flex flex-1 h-full min-h-0 overflow-hidden">
         
-        {/* Sidebar de Sesiones Gamer (Desktop) */}
-        <aside className="hidden md:flex flex-col w-72 lg:w-80 bg-[#0B0D18] border-r border-[#2E334A] flex-shrink-0">
+        {/* Sidebar de Sesiones Gamer (Desktop / Tablet) */}
+        <aside className={`${isDesktopSidebarOpen ? 'flex' : 'hidden'} md:flex flex-col w-72 lg:w-80 h-full min-h-0 bg-[#0B0D18] border-r border-[#2E334A] flex-shrink-0 transition-all`}>
           
           {/* Header del Sidebar */}
           <div className="p-4 border-b border-[#2E334A]">
@@ -229,16 +246,21 @@ export default function ChatPage() {
         </aside>
 
         {/* Panel Principal de Chat */}
-        <section className="flex-1 flex flex-col h-full overflow-hidden bg-[#090B14]">
+        <section className="flex-1 flex flex-col h-full min-h-0 overflow-hidden bg-[#090B14]">
           
           {/* Header Superior del Chat */}
           <div className="flex items-center justify-between p-3.5 sm:p-4 border-b border-[#2E334A] bg-[#0B0D18]/70">
             <div className="flex items-center gap-3">
               <button
-                onClick={() => setIsMobileSidebarOpen(true)}
-                className="md:hidden p-2 bg-[#1A1C2B] text-[#94A3B8] hover:text-[#F8FAFC] rounded-lg"
+                onClick={() => {
+                  setIsDesktopSidebarOpen(!isDesktopSidebarOpen);
+                  setIsMobileSidebarOpen(true);
+                }}
+                className="p-2 bg-[#1A1C2B] text-[#94A3B8] hover:text-[#1FD1EB] rounded-lg border border-[#2E334A] transition-colors cursor-pointer flex items-center gap-1.5"
+                title="Historial de chats"
               >
-                <Menu className="w-5 h-5" />
+                <PanelLeft className="w-4 h-4 text-[#783DF2]" />
+                <span className="text-xs font-semibold hidden sm:inline">Chats</span>
               </button>
 
               <div>

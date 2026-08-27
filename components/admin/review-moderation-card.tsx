@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   BadgeCheck,
   CheckCircle2,
@@ -24,7 +25,9 @@ interface ReviewModerationCardProps {
 export default function ReviewModerationCard({
   review,
 }: ReviewModerationCardProps) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [status, setStatus] = useState<ModerationReview["status"]>(review.status);
 
   const [showRejectModal, setShowRejectModal] =
     useState(false);
@@ -42,6 +45,11 @@ export default function ReviewModerationCard({
     startTransition(async () => {
       const result =
         await approveReviewAction(review.id);
+
+      if (result.success) {
+        setStatus("APPROVED");
+        router.refresh();
+      }
 
       setFeedback({
         type: result.success
@@ -72,14 +80,11 @@ export default function ReviewModerationCard({
           reason
         );
 
-      console.log(
-        "REJECT RESULT:",
-        result
-      );
-
       if (result.success) {
+        setStatus("REJECTED");
         setShowRejectModal(false);
         setReason("");
+        router.refresh();
 
         setFeedback({
           type: "success",
@@ -145,7 +150,7 @@ export default function ReviewModerationCard({
             </div>
 
             <ReviewStatusBadge
-              status={review.status}
+              status={status}
             />
           </header>
 
@@ -236,7 +241,7 @@ export default function ReviewModerationCard({
               type="button"
               disabled={
                 isPending ||
-                review.status ===
+                status ===
                   "APPROVED"
               }
               onClick={handleApprove}
@@ -253,7 +258,7 @@ export default function ReviewModerationCard({
               type="button"
               disabled={
                 isPending ||
-                review.status ===
+                status ===
                   "REJECTED"
               }
               onClick={() => {

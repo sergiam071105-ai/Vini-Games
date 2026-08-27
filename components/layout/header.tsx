@@ -52,7 +52,7 @@ export function Header({ profile }: HeaderProps) {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/catalog?search=${encodeURIComponent(searchQuery.trim())}`);
+      router.push(`/catalog?q=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
 

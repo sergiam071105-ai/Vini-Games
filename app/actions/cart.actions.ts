@@ -42,7 +42,9 @@ export async function getCartItemsAction(): Promise<CartGameItem[]> {
           if (!g) return null;
           const base = Number(g.base_price);
           const discount = g.discount_percent || 0;
-          const finalPrice = g.final_price ? Number(g.final_price) : Math.round(base * (1 - discount / 100));
+          const finalPrice = g.final_price
+            ? Number(g.final_price)
+            : Math.round(base * (1 - discount / 100) * 100) / 100;
 
           return {
             id: g.id,
@@ -178,7 +180,7 @@ export async function getCartTotalAction(gameIds: number[]): Promise<{
         const discount = g.discount_percent || 0;
         const finalPrice = g.final_price
           ? Number(g.final_price)
-          : Math.round(base * (1 - discount / 100));
+          : Math.round(base * (1 - discount / 100) * 100) / 100;
         return { basePrice: base, discountPercent: discount, finalPrice };
       });
     } else {
@@ -189,9 +191,9 @@ export async function getCartTotalAction(gameIds: number[]): Promise<{
       }));
     }
 
-    const subtotal = gamesToCalculate.reduce((acc, g) => acc + g.basePrice, 0);
-    const total = gamesToCalculate.reduce((acc, g) => acc + g.finalPrice, 0);
-    const discountTotal = Math.max(0, subtotal - total);
+    const subtotal = Math.round(gamesToCalculate.reduce((acc, g) => acc + g.basePrice, 0) * 100) / 100;
+    const total = Math.round(gamesToCalculate.reduce((acc, g) => acc + g.finalPrice, 0) * 100) / 100;
+    const discountTotal = Math.round(Math.max(0, subtotal - total) * 100) / 100;
 
     return {
       subtotal,
@@ -251,14 +253,21 @@ export async function processSimulatedCheckoutAction(rawInput: ProcessOrderInput
       .in('id', gameIds);
 
     if (dbGames && dbGames.length > 0) {
-      purchasedGames = dbGames.map((g: any) => ({
-        id: g.id,
-        title: g.title,
-        coverUrl: g.cover_image_url,
-        basePrice: Number(g.base_price),
-        discountPercent: g.discount_percent || 0,
-        finalPrice: g.final_price ? Number(g.final_price) : Math.round(Number(g.base_price) * (1 - (g.discount_percent || 0) / 100)),
-      }));
+      purchasedGames = dbGames.map((g: any) => {
+        const base = Number(g.base_price);
+        const discount = g.discount_percent || 0;
+        const finalPrice = g.final_price
+          ? Number(g.final_price)
+          : Math.round(base * (1 - discount / 100) * 100) / 100;
+        return {
+          id: g.id,
+          title: g.title,
+          coverUrl: g.cover_image_url,
+          basePrice: base,
+          discountPercent: discount,
+          finalPrice,
+        };
+      });
     } else {
       // Fallback a Mock Games
       purchasedGames = MOCK_GAMES.filter((g) => gameIds.includes(g.id)).map((g) => ({
@@ -296,9 +305,9 @@ export async function processSimulatedCheckoutAction(rawInput: ProcessOrderInput
     }
 
     // 2. Calcular totales financieros en Bolivianos (Bs.)
-    const subtotal = purchasedGames.reduce((acc, g) => acc + g.basePrice, 0);
-    const total = purchasedGames.reduce((acc, g) => acc + g.finalPrice, 0);
-    const discountTotal = Math.max(0, subtotal - total);
+    const subtotal = Math.round(purchasedGames.reduce((acc, g) => acc + g.basePrice, 0) * 100) / 100;
+    const total = Math.round(purchasedGames.reduce((acc, g) => acc + g.finalPrice, 0) * 100) / 100;
+    const discountTotal = Math.round(Math.max(0, subtotal - total) * 100) / 100;
 
     // 3. Generar código transaccional único TX-XXXX
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
