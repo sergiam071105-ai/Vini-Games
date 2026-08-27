@@ -7,11 +7,60 @@ import XpBar from "@/components/gamification/xp-bar";
 import StreakCard from "@/components/gamification/streak-card";
 import GameCoinsCard from "@/components/gamification/gamecoins-card";
 import BadgeGrid, {
-  GamerBadge,
+  type GamerBadge,
+  type BadgeRarity,
 } from "@/components/gamification/badge-grid";
 
 type AchievementRow =
   Database["public"]["Tables"]["achievements"]["Row"];
+
+function getAchievementRarity(
+  achievement: AchievementRow
+): BadgeRarity {
+  const title = achievement.title.toLowerCase();
+
+  // Logros especiales conocidos
+  if (
+    title.includes("racha legendaria") ||
+    title.includes("biblioteca de oro")
+  ) {
+    return "Legendaria";
+  }
+
+  if (
+    title.includes("épico") ||
+    title.includes("élite") ||
+    title.includes("dominador")
+  ) {
+    return "Épica";
+  }
+
+  if (
+    title.includes("cazador") ||
+    title.includes("coleccionista")
+  ) {
+    return "Rara";
+  }
+
+  // También usamos la recompensa como criterio de rareza.
+  const totalReward =
+    achievement.xp_reward +
+    achievement.gamecoins_reward;
+
+  if (totalReward >= 500) {
+    return "Legendaria";
+  }
+
+  if (totalReward >= 250) {
+    return "Épica";
+  }
+
+  if (totalReward >= 150) {
+    return "Rara";
+  }
+
+  return "Común";
+}
 
 export default async function GamificationPage() {
   const supabase = await createClient();
@@ -47,10 +96,11 @@ export default async function GamificationPage() {
 
     achievements = achievementsData ?? [];
 
-    const { data: userAchievementsData } = await supabase
-      .from("user_achievements")
-      .select("achievement_id")
-      .eq("user_id", user.id);
+    const { data: userAchievementsData } =
+      await supabase
+        .from("user_achievements")
+        .select("achievement_id")
+        .eq("user_id", user.id);
 
     unlockedAchievementIds = new Set(
       (userAchievementsData ?? []).map(
@@ -66,30 +116,38 @@ export default async function GamificationPage() {
     SOCIAL: "Social",
   } as const;
 
-  const badges: GamerBadge[] = achievements.length > 0
-    ? achievements.map((achievement) => {
-        const rewards: string[] = [];
+  const badges: GamerBadge[] =
+    achievements.length > 0
+      ? achievements.map((achievement) => {
+          const rewards: string[] = [];
 
-        if (achievement.xp_reward > 0) {
-          rewards.push(`+${achievement.xp_reward} XP`);
-        }
+          if (achievement.xp_reward > 0) {
+            rewards.push(
+              `+${achievement.xp_reward} XP`
+            );
+          }
 
-        if (achievement.gamecoins_reward > 0) {
-          rewards.push(
-            `+${achievement.gamecoins_reward} GameCoins`
-          );
-        }
+          if (achievement.gamecoins_reward > 0) {
+            rewards.push(
+              `+${achievement.gamecoins_reward} GameCoins`
+            );
+          }
 
-        return {
-          id: achievement.id,
-          name: achievement.title,
-          description: achievement.description,
-          category: categoryMap[achievement.category] || "Social",
-          unlocked: unlockedAchievementIds.has(achievement.id),
-          reward: rewards.join(" · "),
-        };
-      })
-    : mockAchievements;
+          return {
+            id: achievement.id,
+            name: achievement.title,
+            description: achievement.description,
+            category:
+              categoryMap[achievement.category] ||
+              "Social",
+            rarity: getAchievementRarity(achievement),
+            unlocked: unlockedAchievementIds.has(
+              achievement.id
+            ),
+            reward: rewards.join(" · "),
+          };
+        })
+      : mockAchievements;
 
   return (
     <div className="w-full space-y-8 text-white">
@@ -108,8 +166,8 @@ export default async function GamificationPage() {
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[#949CB2]">
-            Mantén tu racha, sube de nivel y desbloquea medallas mientras
-            exploras ViniGames.
+            Mantén tu racha, sube de nivel y desbloquea
+            medallas mientras exploras ViniGames.
           </p>
         </div>
 
@@ -128,18 +186,28 @@ export default async function GamificationPage() {
 
       <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
         <StreakCard
-          currentStreak={profile?.current_streak ?? 0}
-          longestStreak={profile?.longest_streak ?? 0}
+          currentStreak={
+            profile?.current_streak ?? 0
+          }
+          longestStreak={
+            profile?.longest_streak ?? 0
+          }
         />
 
         <GameCoinsCard
-          balance={profile?.gamecoins_balance ?? 0}
+          balance={
+            profile?.gamecoins_balance ?? 0
+          }
         />
       </div>
 
-<BadgeGrid
-  badges={badges.length > 0 ? badges : mockAchievements}
-/>
+      <BadgeGrid
+        badges={
+          badges.length > 0
+            ? badges
+            : mockAchievements
+        }
+      />
     </div>
   );
 }

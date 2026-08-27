@@ -93,6 +93,7 @@ export default async function GameDetailPage({ params }: GameDetailPageProps) {
       finalPrice: Number(fallback.final_price),
       coverUrl: fallback.cover_image_url || "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&q=80",
       trailerUrl: fallback.trailer_url || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+      gallery: fallback.gallery || MOCK_GALLERY,
       developer: fallback.developer || "Vini Studio",
       publisher: fallback.publisher || "Vini Games",
       releaseDate: fallback.release_date || "2026-08-18",
@@ -121,7 +122,7 @@ export default async function GameDetailPage({ params }: GameDetailPageProps) {
             <GameMediaGallery
               coverUrl={gameData.coverUrl}
               trailerUrl={gameData.trailerUrl}
-              gallery={MOCK_GALLERY}
+              gallery={gameData.gallery || MOCK_GALLERY}
             />
           </div>
           
