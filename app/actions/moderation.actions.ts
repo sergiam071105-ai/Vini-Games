@@ -89,7 +89,7 @@ async function registerAuditLog({
     | "REVIEW_REJECTED";
   reviewId: number;
   details: Json;
-}) {
+}): Promise<boolean> {
   const supabase = await createClient();
 
   const { error } = await supabase
@@ -113,10 +113,10 @@ async function registerAuditLog({
       }
     );
 
-    throw new Error(
-      `No se pudo registrar la auditoría: ${error.message}`
-    );
+    return false;
   }
+
+  return true;
 }
 
 export async function approveReviewAction(
@@ -163,7 +163,7 @@ export async function approveReviewAction(
       );
     }
 
-    await registerAuditLog({
+    const auditRegistered = await registerAuditLog({
       adminId,
       actionType: "REVIEW_APPROVED",
       reviewId: validReviewId,
@@ -174,14 +174,13 @@ export async function approveReviewAction(
       },
     });
 
-    revalidatePath(
-      "/admin/reviews"
-    );
+    revalidatePath("/admin/reviews");
 
     return {
       success: true,
-      message:
-        "Reseña aprobada correctamente.",
+      message: auditRegistered
+        ? "Reseña aprobada correctamente."
+        : "Reseña aprobada. La auditoría no pudo registrarse por permisos de Supabase.",
     };
   } catch (error) {
     console.error(
@@ -249,7 +248,7 @@ export async function rejectReviewAction(
       );
     }
 
-    await registerAuditLog({
+    const auditRegistered = await registerAuditLog({
       adminId,
       actionType: "REVIEW_REJECTED",
       reviewId: validReviewId,
@@ -261,14 +260,13 @@ export async function rejectReviewAction(
       },
     });
 
-    revalidatePath(
-      "/admin/reviews"
-    );
+    revalidatePath("/admin/reviews");
 
     return {
       success: true,
-      message:
-        "Reseña rechazada correctamente.",
+      message: auditRegistered
+        ? "Reseña rechazada correctamente."
+        : "Reseña rechazada. La auditoría no pudo registrarse por permisos de Supabase.",
     };
   } catch (error) {
     console.error(

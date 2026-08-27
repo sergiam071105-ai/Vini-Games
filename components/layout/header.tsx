@@ -206,7 +206,7 @@ export function Header({ profile }: HeaderProps) {
                   </div>
                   {displayProfile.role === 'ADMIN' && (
                     <Link 
-                      href="/admin" 
+                      href="/admin/reviews" 
                       onClick={() => setDropdownOpen(false)}
                       className="flex items-center gap-2 px-4 py-2 text-xs text-[#1FD1EB] hover:bg-[#131421] transition-colors"
                     >
@@ -359,7 +359,7 @@ export function Header({ profile }: HeaderProps) {
                 </div>
                 {displayProfile.role === 'ADMIN' && (
                   <Link
-                    href="/admin"
+                    href="/admin/reviews"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center justify-center gap-2 border border-[#1FD1EB] text-[#1FD1EB] text-xs font-bold py-2 rounded-lg hover:bg-[#1FD1EB]/10 transition-colors"
                   >

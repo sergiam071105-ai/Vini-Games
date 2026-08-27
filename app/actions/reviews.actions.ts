@@ -241,7 +241,7 @@ export async function createReviewAction(rawInput: CreateReviewInput): Promise<{
         title,
         content,
         is_verified_purchase: isVerified,
-        status: 'APPROVED',
+        status: 'PENDING',
         helpful_votes_count: 0,
         unhelpful_votes_count: 0,
       })

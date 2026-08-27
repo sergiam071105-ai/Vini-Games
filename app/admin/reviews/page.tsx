@@ -220,6 +220,16 @@ export default async function AdminReviewsPage({
     allReviewsData ?? [];
 
   /*
+   * DEBUG TEMPORAL:
+   * Nos permite comprobar qué estado
+   * viene realmente desde Supabase.
+   */
+  console.log(
+    "ESTADOS REALES DE REVIEWS:",
+    allReviews
+  );
+
+  /*
    * ================================
    * KPIs
    * ================================

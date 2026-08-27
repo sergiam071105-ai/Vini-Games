@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
   BadgeCheck,
@@ -234,11 +235,6 @@ export default function ReviewModerationCard({
           <div className="flex flex-col gap-3 border-t border-[#2E334A] pt-4 sm:flex-row">
             <button
               type="button"
-              disabled={
-                isPending ||
-                review.status ===
-                  "APPROVED"
-              }
               onClick={handleApprove}
               className="flex items-center justify-center gap-2 rounded-lg bg-[#10B981] px-4 py-2.5 text-sm font-bold text-[#07120E] transition hover:bg-[#34D399] disabled:cursor-not-allowed disabled:opacity-40"
             >
@@ -251,11 +247,6 @@ export default function ReviewModerationCard({
 
             <button
               type="button"
-              disabled={
-                isPending ||
-                review.status ===
-                  "REJECTED"
-              }
               onClick={() => {
                 setFeedback(null);
 
