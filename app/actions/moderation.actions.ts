@@ -18,12 +18,22 @@ const rejectionReasonSchema = z
   .min(3, "El motivo debe tener al menos 3 caracteres.")
   .max(300, "El motivo no puede superar los 300 caracteres.");
 
-// Shared memory store for persisted review status across revalidations
-const getOverridesMap = (): Map<number, ReviewStatus> => {
+/**
+ * Estados temporales para reseñas demo/mock.
+ * También permiten reflejar inmediatamente la moderación
+ * en la ficha pública durante la sesión.
+ */
+const getOverridesMap = (): Map<
+  number,
+  ReviewStatus
+> => {
   if (!(globalThis as any).REVIEW_STATUS_OVERRIDES) {
-    (globalThis as any).REVIEW_STATUS_OVERRIDES = new Map<number, ReviewStatus>();
+    (globalThis as any).REVIEW_STATUS_OVERRIDES =
+      new Map<number, ReviewStatus>();
   }
-  return (globalThis as any).REVIEW_STATUS_OVERRIDES;
+
+  return (globalThis as any)
+    .REVIEW_STATUS_OVERRIDES;
 };
 
 async function requireAdmin() {
@@ -34,21 +44,24 @@ async function requireAdmin() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return {
-      supabase,
-      adminId: "admin-demo-id",
-    };
+    throw new Error(
+      "Debes iniciar sesión como administrador."
+    );
   }
 
-  const {
-    data: profile,
-  } = await supabase
+  const { data: profile, error } = await supabase
     .from("profiles")
     .select("id, role")
     .eq("id", user.id)
     .single();
 
-  if (profile && profile.role !== "ADMIN") {
+  if (error || !profile) {
+    throw new Error(
+      "No se pudo verificar el perfil del administrador."
+    );
+  }
+
+  if (profile.role !== "ADMIN") {
     throw new Error(
       "No tienes permisos de administrador para realizar acciones de moderación."
     );
@@ -60,31 +73,45 @@ async function requireAdmin() {
   };
 }
 
-async function getCurrentReviewStatus(
+/**
+ * Comprueba si la reseña existe realmente en Supabase.
+ */
+async function getDatabaseReview(
   reviewId: number
-): Promise<ReviewStatus> {
-  const overrides = getOverridesMap();
-  if (overrides.has(reviewId)) {
-    return overrides.get(reviewId)!;
+): Promise<{
+  exists: boolean;
+  status: ReviewStatus;
+}> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("id, status")
+    .eq("id", reviewId)
+    .maybeSingle();
+
+  if (error) {
+    console.error(
+      "Error consultando reseña:",
+      error
+    );
+
+    throw new Error(
+      "No se pudo consultar la reseña."
+    );
   }
 
-  try {
-    const supabase = await createClient();
-
-    const { data, error } = await supabase
-      .from("reviews")
-      .select("status")
-      .eq("id", reviewId)
-      .single();
-
-    if (error || !data) {
-      return "PENDING";
-    }
-
-    return data.status as ReviewStatus;
-  } catch {
-    return "PENDING";
+  if (!data) {
+    return {
+      exists: false,
+      status: "PENDING",
+    };
   }
+
+  return {
+    exists: true,
+    status: data.status as ReviewStatus,
+  };
 }
 
 async function registerAuditLog({
@@ -114,20 +141,47 @@ async function registerAuditLog({
       });
 
     if (error) {
-      console.warn("Advertencia de auditoría (RLS):", error.message);
+      console.warn(
+        "Advertencia de auditoría (RLS):",
+        error.message
+      );
     }
-  } catch (err) {
-    console.warn("Error no bloqueante al registrar auditoría:", err);
+  } catch (error) {
+    console.warn(
+      "Error no bloqueante al registrar auditoría:",
+      error
+    );
   }
+}
+
+function revalidateReviewPages() {
+  revalidatePath("/admin/reviews");
+  revalidatePath("/games");
+  revalidatePath("/catalog");
+
+  // También refresca las fichas dinámicas /games/[slug].
+  revalidatePath("/games/[slug]", "page");
 }
 
 export async function approveReviewAction(
   reviewId: number
 ): Promise<ModerationActionResult> {
   try {
-    const validReviewId = reviewIdSchema.parse(reviewId);
-    const { supabase, adminId } = await requireAdmin();
-    const previousStatus = await getCurrentReviewStatus(validReviewId);
+    const validReviewId =
+      reviewIdSchema.parse(reviewId);
+
+    const { supabase, adminId } =
+      await requireAdmin();
+
+    const databaseReview =
+      await getDatabaseReview(validReviewId);
+
+    const overrides = getOverridesMap();
+
+    const previousStatus = databaseReview.exists
+      ? databaseReview.status
+      : overrides.get(validReviewId) ??
+        "PENDING";
 
     if (previousStatus === "APPROVED") {
       return {
@@ -136,24 +190,64 @@ export async function approveReviewAction(
       };
     }
 
-    // Persistir en memoria del servidor
-    getOverridesMap().set(validReviewId, "APPROVED");
-
-    // Persistir en Supabase
-    try {
-      const { error: updateError } = await supabase
-        .from("reviews")
-        .update({
-          status: "APPROVED",
-        })
-        .eq("id", validReviewId);
+    /*
+     * RESEÑA REAL DE SUPABASE
+     */
+    if (databaseReview.exists) {
+      const { error: updateError } =
+        await supabase
+          .from("reviews")
+          .update({
+            status: "APPROVED",
+          })
+          .eq("id", validReviewId);
 
       if (updateError) {
-        console.warn("Actualización en Supabase advertencia:", updateError.message);
+        console.error(
+          "Error aprobando reseña:",
+          updateError
+        );
+
+        return {
+          success: false,
+          message:
+            "No se pudo aprobar la reseña en la base de datos.",
+        };
       }
-    } catch (dbErr) {
-      console.warn("Error actualizando reseña en base de datos:", dbErr);
+
+      // Verificar que realmente cambió.
+      const {
+        data: verifiedReview,
+        error: verificationError,
+      } = await supabase
+        .from("reviews")
+        .select("status")
+        .eq("id", validReviewId)
+        .maybeSingle();
+
+      if (
+        verificationError ||
+        !verifiedReview ||
+        verifiedReview.status !== "APPROVED"
+      ) {
+        console.error(
+          "No se pudo verificar la aprobación:",
+          verificationError
+        );
+
+        return {
+          success: false,
+          message:
+            "No se pudo verificar que la reseña haya sido aprobada.",
+        };
+      }
     }
+
+    /*
+     * Una vez confirmado el cambio real, o si es una
+     * reseña demo, actualizamos el estado temporal.
+     */
+    overrides.set(validReviewId, "APPROVED");
 
     await registerAuditLog({
       adminId,
@@ -162,19 +256,23 @@ export async function approveReviewAction(
       details: {
         previous_status: previousStatus,
         new_status: "APPROVED",
+        source: databaseReview.exists
+          ? "database"
+          : "demo",
       },
     });
 
-    revalidatePath("/admin/reviews");
-    revalidatePath("/games");
-    revalidatePath("/catalog");
+    revalidateReviewPages();
 
     return {
       success: true,
       message: "Reseña aprobada correctamente.",
     };
   } catch (error) {
-    console.error("APPROVE REVIEW ACTION ERROR:", error);
+    console.error(
+      "APPROVE REVIEW ACTION ERROR:",
+      error
+    );
 
     return {
       success: false,
@@ -191,11 +289,24 @@ export async function rejectReviewAction(
   reason: string
 ): Promise<ModerationActionResult> {
   try {
-    const validReviewId = reviewIdSchema.parse(reviewId);
-    const validReason = rejectionReasonSchema.parse(reason);
+    const validReviewId =
+      reviewIdSchema.parse(reviewId);
 
-    const { supabase, adminId } = await requireAdmin();
-    const previousStatus = await getCurrentReviewStatus(validReviewId);
+    const validReason =
+      rejectionReasonSchema.parse(reason);
+
+    const { supabase, adminId } =
+      await requireAdmin();
+
+    const databaseReview =
+      await getDatabaseReview(validReviewId);
+
+    const overrides = getOverridesMap();
+
+    const previousStatus = databaseReview.exists
+      ? databaseReview.status
+      : overrides.get(validReviewId) ??
+        "PENDING";
 
     if (previousStatus === "REJECTED") {
       return {
@@ -204,24 +315,64 @@ export async function rejectReviewAction(
       };
     }
 
-    // Persistir en memoria del servidor
-    getOverridesMap().set(validReviewId, "REJECTED");
-
-    // Persistir en Supabase
-    try {
-      const { error: updateError } = await supabase
-        .from("reviews")
-        .update({
-          status: "REJECTED",
-        })
-        .eq("id", validReviewId);
+    /*
+     * RESEÑA REAL DE SUPABASE
+     */
+    if (databaseReview.exists) {
+      const { error: updateError } =
+        await supabase
+          .from("reviews")
+          .update({
+            status: "REJECTED",
+          })
+          .eq("id", validReviewId);
 
       if (updateError) {
-        console.warn("Actualización de rechazo en Supabase advertencia:", updateError.message);
+        console.error(
+          "Error rechazando reseña:",
+          updateError
+        );
+
+        return {
+          success: false,
+          message:
+            "No se pudo rechazar la reseña en la base de datos.",
+        };
       }
-    } catch (dbErr) {
-      console.warn("Error actualizando rechazo en base de datos:", dbErr);
+
+      // Verificar que realmente quedó REJECTED.
+      const {
+        data: verifiedReview,
+        error: verificationError,
+      } = await supabase
+        .from("reviews")
+        .select("status")
+        .eq("id", validReviewId)
+        .maybeSingle();
+
+      if (
+        verificationError ||
+        !verifiedReview ||
+        verifiedReview.status !== "REJECTED"
+      ) {
+        console.error(
+          "No se pudo verificar el rechazo:",
+          verificationError
+        );
+
+        return {
+          success: false,
+          message:
+            "No se pudo verificar que la reseña haya sido rechazada.",
+        };
+      }
     }
+
+    /*
+     * Solo guardamos el override después de confirmar
+     * el cambio real. Para mocks actúa como persistencia demo.
+     */
+    overrides.set(validReviewId, "REJECTED");
 
     await registerAuditLog({
       adminId,
@@ -231,19 +382,23 @@ export async function rejectReviewAction(
         previous_status: previousStatus,
         new_status: "REJECTED",
         reason: validReason,
+        source: databaseReview.exists
+          ? "database"
+          : "demo",
       },
     });
 
-    revalidatePath("/admin/reviews");
-    revalidatePath("/games");
-    revalidatePath("/catalog");
+    revalidateReviewPages();
 
     return {
       success: true,
       message: "Reseña rechazada correctamente.",
     };
   } catch (error) {
-    console.error("REJECT REVIEW ACTION ERROR:", error);
+    console.error(
+      "REJECT REVIEW ACTION ERROR:",
+      error
+    );
 
     return {
       success: false,

@@ -38,9 +38,15 @@ export default function StreakCard({
 
       <div className="grid grid-cols-7 gap-2">
         {days.map((day) => {
-          const isCompleted = day < currentStreak;
-          const isCurrent = day === currentStreak;
-          const isGoal = day === 7;
+         const isCompleted =
+  currentStreak >= 7 ? day <= 7 : day < currentStreak;
+
+const isCurrent =
+  currentStreak > 0 &&
+  currentStreak < 7 &&
+  day === currentStreak;
+
+const isGoal = day === 7;
 
           return (
             <div

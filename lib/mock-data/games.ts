@@ -16,11 +16,35 @@ export const MOCK_GAMES: GameItem[] = [
     id: 1,
     title: 'Neon Odyssey: Cyber Genesis',
     slug: 'neon-odyssey-cyber-genesis',
-    description: 'Sumérgete en un futuro distópico dominado por mega-corporaciones e inteligencias artificiales rebeldes. Forja tu propio destino con implantes cibernéticos de combate.',
-    short_description: 'Un RPG de acción cyberpunk con combates vertiginosos y narrativa ramificada.',
-    cover_image_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=800&q=80',
-    banner_image_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1600&q=80',
+    description:
+      'Sumérgete en un futuro distópico dominado por mega-corporaciones e inteligencias artificiales rebeldes. Forja tu propio destino con implantes cibernéticos de combate.',
+    short_description:
+      'Un RPG de acción cyberpunk con combates vertiginosos y narrativa ramificada.',
+    cover_image_url:
+      'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=800&q=80',
+    banner_image_url:
+      'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1600&q=80',
     trailer_url: 'https://www.youtube.com/watch?v=8X2kIfS6fb8',
+    gallery: [
+      {
+        id: 1,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 2,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1535223289827-42f1e9919769?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 3,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=85',
+      },
+    ],
     developer: 'ViniStudios',
     publisher: 'ViniGames Publishing',
     release_date: '2026-03-15',
@@ -38,15 +62,40 @@ export const MOCK_GAMES: GameItem[] = [
       { id: 8, name: 'Ciencia Ficción', slug: 'sci-fi' },
     ],
   },
+
   {
     id: 2,
     title: 'Shadows of Eldoria',
     slug: 'shadows-of-eldoria',
-    description: 'Explora un vasto reino en ruinas poblado por criaturas míticas y dioses caídos. Domina el arte de la esgrima arcana y desentraña los secretos del Eclipse Eterno.',
-    short_description: 'Aventura de fantasía oscura épica con mundo abierto desafiante.',
-    cover_image_url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80',
-    banner_image_url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1600&q=80',
+    description:
+      'Explora un vasto reino en ruinas poblado por criaturas míticas y dioses caídos. Domina el arte de la esgrima arcana y desentraña los secretos del Eclipse Eterno.',
+    short_description:
+      'Aventura de fantasía oscura épica con mundo abierto desafiante.',
+    cover_image_url:
+      'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80',
+    banner_image_url:
+      'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1600&q=80',
     trailer_url: null,
+    gallery: [
+      {
+        id: 1,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 2,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1511447333015-45b65e60f6d5?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 3,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=1200&q=85',
+      },
+    ],
     developer: 'Mythic Forge',
     publisher: 'Arcane Interactive',
     release_date: '2025-11-20',
@@ -63,15 +112,40 @@ export const MOCK_GAMES: GameItem[] = [
       { id: 3, name: 'Aventura', slug: 'aventura' },
     ],
   },
+
   {
     id: 3,
     title: 'Hollow Abyss: Remnants',
     slug: 'hollow-abyss-remnants',
-    description: 'Un metroidvania 2D dibujado a mano donde descenderás a cavernas olvidadas habitadas por insectos guerreros y vestigios de una civilización perdida.',
-    short_description: 'Metroidvania de atmósfera melancólica y combate de precisión.',
-    cover_image_url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80',
-    banner_image_url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1600&q=80',
+    description:
+      'Un metroidvania 2D dibujado a mano donde descenderás a cavernas olvidadas habitadas por insectos guerreros y vestigios de una civilización perdida.',
+    short_description:
+      'Metroidvania de atmósfera melancólica y combate de precisión.',
+    cover_image_url:
+      'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80',
+    banner_image_url:
+      'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1600&q=80',
     trailer_url: null,
+    gallery: [
+      {
+        id: 1,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 2,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1551103782-8ab07afd45c1?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 3,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1200&q=85',
+      },
+    ],
     developer: 'Team Velvet',
     publisher: 'Velvet Arts',
     release_date: '2025-08-10',
@@ -89,15 +163,40 @@ export const MOCK_GAMES: GameItem[] = [
       { id: 3, name: 'Aventura', slug: 'aventura' },
     ],
   },
+
   {
     id: 4,
     title: 'Quantum Velocity',
     slug: 'quantum-velocity',
-    description: 'Carreras antigravitatorias a velocidades hipersónicas a través de pistas suspendidas sobre megalópolis flotantes con bandas sonoras synthwave.',
-    short_description: 'Carreras antigravedad futuristas a más de 1000 km/h.',
-    cover_image_url: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80',
-    banner_image_url: null,
+    description:
+      'Carreras antigravitatorias a velocidades hipersónicas a través de pistas suspendidas sobre megalópolis flotantes con bandas sonoras synthwave.',
+    short_description:
+      'Carreras antigravedad futuristas a más de 1000 km/h.',
+    cover_image_url:
+      'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80',
+    banner_image_url:
+      'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1600&q=80',
     trailer_url: null,
+    gallery: [
+      {
+        id: 1,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 2,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 3,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1535223289827-42f1e9919769?auto=format&fit=crop&w=1200&q=85',
+      },
+    ],
     developer: 'HyperDrive Studio',
     publisher: 'NextGen Motors',
     release_date: '2026-01-28',
@@ -114,15 +213,40 @@ export const MOCK_GAMES: GameItem[] = [
       { id: 8, name: 'Ciencia Ficción', slug: 'sci-fi' },
     ],
   },
+
   {
     id: 5,
     title: 'Echoes of the Asylum',
     slug: 'echoes-of-the-asylum',
-    description: 'Survival horror psicológico en primera persona. Explora un hospital psiquiátrico abandonado armado únicamente con una grabadora de audio y baterías limitadas.',
-    short_description: 'Terror psicológico inmersivo con sonido binaural aterrador.',
-    cover_image_url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80',
-    banner_image_url: null,
+    description:
+      'Survival horror psicológico en primera persona. Explora un hospital psiquiátrico abandonado armado únicamente con una grabadora de audio y baterías limitadas.',
+    short_description:
+      'Terror psicológico inmersivo con sonido binaural aterrador.',
+    cover_image_url:
+      'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80',
+    banner_image_url:
+      'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=1600&q=80',
     trailer_url: null,
+    gallery: [
+      {
+        id: 1,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 2,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1514533450685-4493e01d1fdc?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 3,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=85',
+      },
+    ],
     developer: 'Nightmare Works',
     publisher: 'Fright Games',
     release_date: '2025-10-31',
@@ -139,15 +263,40 @@ export const MOCK_GAMES: GameItem[] = [
       { id: 3, name: 'Aventura', slug: 'aventura' },
     ],
   },
+
   {
     id: 6,
     title: 'Galactic Imperium IV',
     slug: 'galactic-imperium-iv',
-    description: 'Estrategia espacial 4X a escala cósmica. Gestiona economías planetarias, diplomacia interestelar, árboles tecnológicos y flotas estelares masivas.',
-    short_description: 'Estrategia 4X espacial con diplomacia profunda y combate táctico.',
-    cover_image_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
-    banner_image_url: null,
+    description:
+      'Estrategia espacial 4X a escala cósmica. Gestiona economías planetarias, diplomacia interestelar, árboles tecnológicos y flotas estelares masivas.',
+    short_description:
+      'Estrategia 4X espacial con diplomacia profunda y combate táctico.',
+    cover_image_url:
+      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+    banner_image_url:
+      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1600&q=80',
     trailer_url: null,
+    gallery: [
+      {
+        id: 1,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 2,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 3,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=85',
+      },
+    ],
     developer: 'Stellar Logic',
     publisher: 'Grand Strategy Lab',
     release_date: '2025-06-14',
@@ -164,15 +313,40 @@ export const MOCK_GAMES: GameItem[] = [
       { id: 8, name: 'Ciencia Ficción', slug: 'sci-fi' },
     ],
   },
+
   {
     id: 7,
     title: 'Pixel Dungeons & Dragons',
     slug: 'pixel-dungeons-and-dragons',
-    description: 'Roguelike táctico por turnos en pixel art con generación procedural de mazmorras, más de 500 objetos mágicos y muerte permanente opcional.',
-    short_description: 'Roguelike táctico por turnos con cientos de combinaciones de hechizos.',
-    cover_image_url: 'https://images.unsplash.com/photo-1551103782-8ab07afd45c1?auto=format&fit=crop&w=800&q=80',
-    banner_image_url: null,
+    description:
+      'Roguelike táctico por turnos en pixel art con generación procedural de mazmorras, más de 500 objetos mágicos y muerte permanente opcional.',
+    short_description:
+      'Roguelike táctico por turnos con cientos de combinaciones de hechizos.',
+    cover_image_url:
+      'https://images.unsplash.com/photo-1551103782-8ab07afd45c1?auto=format&fit=crop&w=800&q=80',
+    banner_image_url:
+      'https://images.unsplash.com/photo-1551103782-8ab07afd45c1?auto=format&fit=crop&w=1600&q=80',
     trailer_url: null,
+    gallery: [
+      {
+        id: 1,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1551103782-8ab07afd45c1?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 2,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 3,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=85',
+      },
+    ],
     developer: 'BitKnight Studios',
     publisher: 'RetroWave Indie',
     release_date: '2025-04-02',
@@ -190,15 +364,40 @@ export const MOCK_GAMES: GameItem[] = [
       { id: 6, name: 'Estrategia', slug: 'estrategia' },
     ],
   },
+
   {
     id: 8,
     title: 'Cyber Ronin: Zero',
     slug: 'cyber-ronin-zero',
-    description: 'Conviértete en un samurái cibernético renegado en las calles lluviosas de Neo-Tokio. Domina el parry milimétrico y desata combos con katana de plasma.',
-    short_description: 'Hack & slash cyberpunk con combate técnico y estilo visual deslumbrante.',
-    cover_image_url: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=800&q=80',
-    banner_image_url: null,
+    description:
+      'Conviértete en un samurái cibernético renegado en las calles lluviosas de Neo-Tokio. Domina el parry milimétrico y desata combos con katana de plasma.',
+    short_description:
+      'Hack & slash cyberpunk con combate técnico y estilo visual deslumbrante.',
+    cover_image_url:
+      'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=800&q=80',
+    banner_image_url:
+      'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=1600&q=80',
     trailer_url: null,
+    gallery: [
+      {
+        id: 1,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 2,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 3,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1535223289827-42f1e9919769?auto=format&fit=crop&w=1200&q=85',
+      },
+    ],
     developer: 'KatanaByte',
     publisher: 'ViniGames Publishing',
     release_date: '2026-02-12',
@@ -215,15 +414,40 @@ export const MOCK_GAMES: GameItem[] = [
       { id: 8, name: 'Ciencia Ficción', slug: 'sci-fi' },
     ],
   },
+
   {
     id: 9,
     title: 'Forest of Whispers',
     slug: 'forest-of-whispers',
-    description: 'Una fábula interactiva sobre la conexión con la naturaleza, puzzles ambientales relajantes y una orquesta en vivo que reacciona a tus pasos.',
-    short_description: 'Aventura pacífica y artística de exploración en un bosque ancestral.',
-    cover_image_url: 'https://images.unsplash.com/photo-1511447333015-45b65e60f6d5?auto=format&fit=crop&w=800&q=80',
-    banner_image_url: null,
+    description:
+      'Una fábula interactiva sobre la conexión con la naturaleza, puzzles ambientales relajantes y una orquesta en vivo que reacciona a tus pasos.',
+    short_description:
+      'Aventura pacífica y artística de exploración en un bosque ancestral.',
+    cover_image_url:
+      'https://images.unsplash.com/photo-1511447333015-45b65e60f6d5?auto=format&fit=crop&w=800&q=80',
+    banner_image_url:
+      'https://images.unsplash.com/photo-1511447333015-45b65e60f6d5?auto=format&fit=crop&w=1600&q=80',
     trailer_url: null,
+    gallery: [
+      {
+        id: 1,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1511447333015-45b65e60f6d5?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 2,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 3,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1200&q=85',
+      },
+    ],
     developer: 'GreenLeaf Interactive',
     publisher: 'Calm Interactive',
     release_date: '2025-09-18',
@@ -240,15 +464,40 @@ export const MOCK_GAMES: GameItem[] = [
       { id: 4, name: 'Indie', slug: 'indie' },
     ],
   },
+
   {
     id: 10,
     title: 'Bloodmoon Manor',
     slug: 'bloodmoon-manor',
-    description: 'Una mansión gótica victoriana infestada de pesadillas sobrenaturales y enigmas ocultistas. Administra tus recursos limitados para sobrevivir la noche.',
-    short_description: 'Horror de supervivencia gótico con gestión estricta de inventario.',
-    cover_image_url: 'https://images.unsplash.com/photo-1514533450685-4493e01d1fdc?auto=format&fit=crop&w=800&q=80',
-    banner_image_url: null,
+    description:
+      'Una mansión gótica victoriana infestada de pesadillas sobrenaturales y enigmas ocultistas. Administra tus recursos limitados para sobrevivir la noche.',
+    short_description:
+      'Horror de supervivencia gótico con gestión estricta de inventario.',
+    cover_image_url:
+      'https://images.unsplash.com/photo-1514533450685-4493e01d1fdc?auto=format&fit=crop&w=800&q=80',
+    banner_image_url:
+      'https://images.unsplash.com/photo-1514533450685-4493e01d1fdc?auto=format&fit=crop&w=1600&q=80',
     trailer_url: null,
+    gallery: [
+      {
+        id: 1,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1514533450685-4493e01d1fdc?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 2,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 3,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=1200&q=85',
+      },
+    ],
     developer: 'Gothic Soul',
     publisher: 'DarkRealm Entertainment',
     release_date: '2025-12-05',
@@ -265,15 +514,40 @@ export const MOCK_GAMES: GameItem[] = [
       { id: 1, name: 'Acción', slug: 'accion' },
     ],
   },
+
   {
     id: 11,
     title: 'Apex Rally 2026',
     slug: 'apex-rally-2026',
-    description: 'Simulador definitivo de rally todoterreno con física de neumáticos hiperrealista, clima dinámico en tiempo real y más de 80 etapas internacionales.',
-    short_description: 'El simulador de rally más exigente con física y telemetría profesional.',
-    cover_image_url: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=800&q=80',
-    banner_image_url: null,
+    description:
+      'Simulador definitivo de rally todoterreno con física de neumáticos hiperrealista, clima dinámico en tiempo real y más de 80 etapas internacionales.',
+    short_description:
+      'El simulador de rally más exigente con física y telemetría profesional.',
+    cover_image_url:
+      'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=800&q=80',
+    banner_image_url:
+      'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=1600&q=80',
     trailer_url: null,
+    gallery: [
+      {
+        id: 1,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 2,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 3,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=85',
+      },
+    ],
     developer: 'Torque Dynamics',
     publisher: 'Speed Motorsport',
     release_date: '2026-01-10',
@@ -289,15 +563,40 @@ export const MOCK_GAMES: GameItem[] = [
       { id: 7, name: 'Carreras', slug: 'carreras' },
     ],
   },
+
   {
     id: 12,
     title: 'Kingdoms of Iron & Magic',
     slug: 'kingdoms-of-iron-and-magic',
-    description: 'Construye tu propio imperio medieval fantástico, comanda ejércitos masivos en asedios en tiempo real y forja alianzas en un mapa persistente.',
-    short_description: 'Estrategia en tiempo real con asedios épicos y gestión de reinos.',
-    cover_image_url: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=800&q=80',
-    banner_image_url: null,
+    description:
+      'Construye tu propio imperio medieval fantástico, comanda ejércitos masivos en asedios en tiempo real y forja alianzas en un mapa persistente.',
+    short_description:
+      'Estrategia en tiempo real con asedios épicos y gestión de reinos.',
+    cover_image_url:
+      'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=800&q=80',
+    banner_image_url:
+      'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=1600&q=80',
     trailer_url: null,
+    gallery: [
+      {
+        id: 1,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 2,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=85',
+      },
+      {
+        id: 3,
+        media_type: 'image',
+        media_url:
+          'https://images.unsplash.com/photo-1511447333015-45b65e60f6d5?auto=format&fit=crop&w=1200&q=85',
+      },
+    ],
     developer: 'Crown & Blade Games',
     publisher: 'Iron Gate Global',
     release_date: '2025-07-22',

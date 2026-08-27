@@ -16,6 +16,13 @@ export interface GameItem {
   cover_image_url: string;
   banner_image_url?: string | null;
   trailer_url?: string | null;
+
+  gallery?: {
+    id: number;
+    media_type: "image" | "video";
+    media_url: string;
+  }[];
+
   developer: string;
   publisher?: string | null;
   release_date: string;
