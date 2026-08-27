@@ -43,5 +43,8 @@ next-env.d.ts
 
 # documentation & docs (kept local)
 /docs
+!/docs/n8n-workflows/
+!/docs/n8n-workflows/**
+!/docs/N8N_DEEPSEEK_WORKFLOW_GUIDE.md
 /documentos
 *.pdf
