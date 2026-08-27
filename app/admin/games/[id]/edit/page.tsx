@@ -405,12 +405,26 @@ export default function EditGamePage() {
               </div>
 
               {/* Estado Activo Switch */}
-              <div className="flex items-center justify-between p-3.5 bg-[#1A1C2B] rounded-xl border border-[#2E334A]">
+              <div
+                onClick={() => setIsActive(!isActive)}
+                className="flex items-center justify-between p-4 bg-[#1A1C2B] hover:bg-[#202336] rounded-xl border border-[#2E334A] hover:border-[#783DF2]/50 transition-all cursor-pointer select-none"
+              >
                 <div>
-                  <span className="text-xs font-bold text-[#F8FAFC] block">
-                    Estado en Catálogo
-                  </span>
-                  <span className="text-[11px] text-[#94A3B8]">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-[#F8FAFC]">
+                      Estado en Catálogo
+                    </span>
+                    <span
+                      className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
+                        isActive
+                          ? 'bg-[#10B981]/20 border-[#10B981]/40 text-[#10B981]'
+                          : 'bg-[#EF4444]/20 border-[#EF4444]/40 text-[#EF4444]'
+                      }`}
+                    >
+                      {isActive ? 'ACTIVO' : 'INACTIVO'}
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-[#94A3B8] block mt-0.5">
                     {isActive
                       ? 'Visible para todos los jugadores en la tienda.'
                       : 'Oculto / Baja lógica aplicada.'}
@@ -419,8 +433,13 @@ export default function EditGamePage() {
 
                 <button
                   type="button"
-                  onClick={() => setIsActive(!isActive)}
-                  className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${
+                  aria-checked={isActive}
+                  role="switch"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsActive(!isActive);
+                  }}
+                  className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer flex-shrink-0 ${
                     isActive ? 'bg-[#10B981]' : 'bg-[#2E334A]'
                   }`}
                 >

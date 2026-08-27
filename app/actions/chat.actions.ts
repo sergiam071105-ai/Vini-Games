@@ -2,8 +2,9 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-import { ChatSession, ChatMessage, ChatProductItem } from '@/types/chat.types';
+import { ChatSession, ChatMessage, ChatProductItem, N8nChatPayload, N8nChatResponse } from '@/types/chat.types';
 import { MOCK_GAMES } from '@/lib/mock-data/games';
+import { sendChatMessageSchema } from '@/lib/schemas/chat.schema';
 
 /**
  * Obtiene los detalles de una lista de videojuegos por sus IDs.
@@ -98,27 +99,30 @@ export async function getChatSessionsAction(): Promise<ChatSession[]> {
 }
 
 /**
- * Crea una nueva sesión de chat en Supabase.
+ * Crea una nueva sesión de chat.
  */
-export async function createChatSessionAction(title: string = 'Nueva Consulta Gamer'): Promise<ChatSession> {
-  const defaultSession: ChatSession = {
-    id: `session-${Date.now()}`,
-    userId: 'guest',
-    title,
-    createdAt: new Date().toISOString(),
-  };
+export async function createChatSessionAction(title?: string): Promise<ChatSession | null> {
+  const sessionTitle = title || 'Nueva Consulta Gamer';
+  const now = new Date().toISOString();
 
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) return defaultSession;
+    if (!user) {
+      return {
+        id: `guest-${Date.now()}`,
+        userId: 'guest',
+        title: sessionTitle,
+        createdAt: now,
+      };
+    }
 
     const { data, error } = await supabase
       .from('chat_sessions')
       .insert({
         user_id: user.id,
-        title,
+        title: sessionTitle,
       })
       .select('id, user_id, title, created_at')
       .single();
@@ -133,16 +137,44 @@ export async function createChatSessionAction(title: string = 'Nueva Consulta Ga
       };
     }
   } catch (err) {
-    console.warn('Error creating chat session:', err);
+    console.warn('Error creating chat session in DB:', err);
   }
 
-  return defaultSession;
+  return {
+    id: `local-${Date.now()}`,
+    userId: 'guest',
+    title: sessionTitle,
+    createdAt: now,
+  };
 }
 
 /**
- * Obtiene los mensajes de una sesión específica.
+ * Elimina una sesión de chat existente.
+ */
+export async function deleteChatSessionAction(sessionId: string): Promise<boolean> {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from('chat_sessions')
+      .delete()
+      .eq('id', sessionId);
+
+    if (!error) {
+      revalidatePath('/chat');
+      return true;
+    }
+  } catch (err) {
+    console.warn('Error deleting chat session:', err);
+  }
+  return false;
+}
+
+/**
+ * Obtiene los mensajes de una sesión de chat específica.
  */
 export async function getChatMessagesAction(sessionId: string): Promise<ChatMessage[]> {
+  if (!sessionId) return [];
+
   try {
     const supabase = await createClient();
     const { data: dbMessages, error } = await supabase
@@ -152,7 +184,6 @@ export async function getChatMessagesAction(sessionId: string): Promise<ChatMess
       .order('created_at', { ascending: true });
 
     if (!error && dbMessages && dbMessages.length > 0) {
-      // Recopilar todos los IDs de juegos recomendados desde metadata_json
       const allGameIds = Array.from(
         new Set(
           dbMessages.flatMap((m: any) => {
@@ -213,9 +244,9 @@ export async function getChatMessagesAction(sessionId: string): Promise<ChatMess
 }
 
 /**
- * Genera una respuesta inteligente gamer basada en el texto del usuario.
+ * Genera una respuesta gamer de contingencia basada en el texto del usuario.
  */
-function generateAssistantReply(userQuery: string): {
+function generateLocalAssistantReply(userQuery: string): {
   content: string;
   recommendedGameIds: number[];
 } {
@@ -256,7 +287,6 @@ function generateAssistantReply(userQuery: string): {
     };
   }
 
-  // Respuesta general de catálogo
   return {
     content: `He explorado el catálogo de **ViniGames** para responder a tu consulta sobre *"${userQuery}"*.\n\nTe sugiero echarle un vistazo a estos títulos destacados que se adaptan a lo que buscas:`,
     recommendedGameIds: [1, 2],
@@ -264,23 +294,31 @@ function generateAssistantReply(userQuery: string): {
 }
 
 /**
- * Envía un mensaje en la sesión de chat, genera la respuesta del asistente y la persiste.
+ * Envía un mensaje en la sesión de chat, invoca el webhook n8n/DeepSeek o fallback, y persiste en Supabase.
  */
 export async function sendChatMessageAction(input: {
   sessionId: string;
-  content: string;
+  content?: string;
+  message?: string;
 }): Promise<{
   success: boolean;
   userMessage?: ChatMessage;
   assistantMessage?: ChatMessage;
+  recommendedGames?: ChatProductItem[];
   error?: string;
 }> {
   try {
-    const { sessionId, content } = input;
-    if (!content.trim()) {
-      return { success: false, error: 'El mensaje no puede estar vacío.' };
+    const rawMessage = input.content || input.message || '';
+    const parsed = sendChatMessageSchema.safeParse({
+      sessionId: input.sessionId,
+      message: rawMessage.trim(),
+    });
+
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0]?.message || 'Mensaje inválido.' };
     }
 
+    const { sessionId, message: userContent } = parsed.data;
     const now = new Date().toISOString();
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -291,12 +329,105 @@ export async function sendChatMessageAction(input: {
       id: userMsgId,
       sessionId,
       role: 'user',
-      content: content.trim(),
+      content: userContent,
       createdAt: now,
     };
 
-    // 2. Generar Respuesta Asistente
-    const { content: replyContent, recommendedGameIds } = generateAssistantReply(content);
+    // 2. Extraer contexto del usuario para n8n (Gamer DNA & Biblioteca)
+    let replyContent: string;
+    let recommendedGameIds: number[] = [];
+
+    const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL;
+    let n8nSuccess = false;
+
+    if (n8nWebhookUrl) {
+      try {
+        let userProfileData = undefined;
+        let ownedGamesData = undefined;
+
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('username, total_xp, current_level, dna_exploration, dna_competitive, dna_narrative, dna_collection')
+            .eq('id', user.id)
+            .single();
+
+          if (profile) {
+            userProfileData = {
+              username: profile.username,
+              total_xp: profile.total_xp || 0,
+              current_level: profile.current_level || 1,
+              gamer_dna: {
+                exploration: profile.dna_exploration || 25,
+                competitive: profile.dna_competitive || 25,
+                narrative: profile.dna_narrative || 25,
+                collection: profile.dna_collection || 25,
+              },
+            };
+          }
+
+          const { data: library } = await supabase
+            .from('user_library')
+            .select('game_id, games ( id, title )')
+            .eq('user_id', user.id);
+
+          if (library) {
+            ownedGamesData = library.map((l: any) => ({
+              id: l.game_id,
+              title: l.games?.title || `Juego #${l.game_id}`,
+            }));
+          }
+        }
+
+        const payload: N8nChatPayload = {
+          session_id: sessionId,
+          user_id: user?.id,
+          message: userContent,
+          user_profile: userProfileData,
+          owned_games: ownedGamesData,
+          available_games_catalog: MOCK_GAMES.map((g) => ({
+            id: g.id,
+            title: g.title,
+            slug: g.slug,
+            developer: g.developer,
+            base_price: g.base_price,
+            discount_percent: g.discount_percent,
+            final_price: g.final_price,
+            categories: g.categories.map((c) => c.name),
+          })),
+        };
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+        const res = await fetch(n8nWebhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const n8nData: N8nChatResponse = await res.json();
+          if (n8nData && n8nData.reply) {
+            replyContent = n8nData.reply;
+            recommendedGameIds = n8nData.recommended_game_ids || [];
+            n8nSuccess = true;
+          }
+        }
+      } catch (webhookErr) {
+        console.warn('n8n webhook timeout or unreachable, using smart gamer fallback:', webhookErr);
+      }
+    }
+
+    if (!n8nSuccess) {
+      const fallback = generateLocalAssistantReply(userContent);
+      replyContent = fallback.content;
+      recommendedGameIds = fallback.recommendedGameIds;
+    }
+
     const recommendedGames = await getGamesByIds(recommendedGameIds);
 
     const assistantMsgId = `assistant-${Date.now() + 1}`;
@@ -304,7 +435,7 @@ export async function sendChatMessageAction(input: {
       id: assistantMsgId,
       sessionId,
       role: 'assistant',
-      content: replyContent,
+      content: replyContent!,
       recommendedGameIds,
       recommendedGames,
       createdAt: new Date(Date.now() + 100).toISOString(),
@@ -330,11 +461,10 @@ export async function sendChatMessageAction(input: {
           },
         ]);
 
-        // Actualizar título de sesión si es el primer mensaje
         await supabase
           .from('chat_sessions')
           .update({
-            title: content.slice(0, 35) + (content.length > 35 ? '...' : ''),
+            title: userContent.slice(0, 35) + (userContent.length > 35 ? '...' : ''),
             updated_at: now,
           })
           .eq('id', sessionId);
@@ -349,30 +479,13 @@ export async function sendChatMessageAction(input: {
       success: true,
       userMessage,
       assistantMessage,
+      recommendedGames,
     };
   } catch (err: any) {
+    console.error('Error in sendChatMessageAction:', err);
     return {
       success: false,
-      error: err.message || 'Error al procesar el mensaje en ViniChat',
+      error: err?.message || 'Ocurrió un error inesperado al procesar el mensaje.',
     };
-  }
-}
-
-/**
- * Elimina una sesión de chat.
- */
-export async function deleteChatSessionAction(sessionId: string): Promise<{ success: boolean }> {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (user) {
-      await supabase.from('chat_sessions').delete().eq('id', sessionId).eq('user_id', user.id);
-    }
-
-    revalidatePath('/chat');
-    return { success: true };
-  } catch {
-    return { success: true };
   }
 }

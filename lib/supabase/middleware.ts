@@ -83,7 +83,9 @@ export async function updateSession(request: NextRequest) {
 
     if (profile?.role !== 'ADMIN') {
       // Redirigir a la tienda con advertencia si no es admin
-      return NextResponse.redirect(new URL('/', request.url));
+      const homeUrl = new URL('/', request.url);
+      homeUrl.searchParams.set('error', 'unauthorized_admin');
+      return NextResponse.redirect(homeUrl);
     }
   }
 

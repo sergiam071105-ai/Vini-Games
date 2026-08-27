@@ -13,7 +13,6 @@ export async function getCategories(): Promise<CategoryItem[]> {
       .select('id, name, slug, description, icon_name');
 
     if (!error && dbCategories && dbCategories.length > 0) {
-      // Obtener el conteo por categoría si es posible
       const { data: gameCategories } = await supabase
         .from('game_categories')
         .select('category_id');
@@ -33,7 +32,7 @@ export async function getCategories(): Promise<CategoryItem[]> {
       }));
     }
   } catch {
-    // Si falla Supabase, usamos el mock fallback
+    // Fail silently in development
   }
 
   // Fallback con conteo dinámico desde MOCK_GAMES
@@ -89,7 +88,6 @@ export async function getFilteredGames(filters: CatalogFilters = {}): Promise<Ca
       .eq('is_active', true);
 
     if (!error && dbGames && dbGames.length > 0) {
-      // Mapear el formato de Supabase a nuestro GameItem
       allGames = dbGames.map((g: any) => {
         const categories: CategoryItem[] = (g.game_categories || [])
           .map((gc: any) => gc.categories)
@@ -128,17 +126,27 @@ export async function getFilteredGames(filters: CatalogFilters = {}): Promise<Ca
       });
     }
   } catch {
-    // Si falla Supabase o no hay conexión, usamos Mock Data
+    // Fail silently in development
   }
 
-  if (allGames.length === 0) {
-    allGames = [...MOCK_GAMES];
-  }
+  const overrides = (globalThis as any).GAME_ACTIVE_OVERRIDES as Map<number, boolean> | undefined;
+
+  // Fusión con MOCK_GAMES activos para que los juegos nuevos o editados en admin aparezcan siempre en la tienda
+  const existingDbIds = new Set(allGames.map((g) => g.id));
+  const existingDbSlugs = new Set(allGames.map((g) => g.slug));
+  const activeMockGames = MOCK_GAMES.filter(
+    (g) => !existingDbIds.has(g.id) && !existingDbSlugs.has(g.slug)
+  );
+
+  allGames = [...allGames, ...activeMockGames].filter((g) => {
+    const isAct = overrides?.has(g.id) ? overrides.get(g.id)! : g.is_active;
+    return isAct !== false;
+  });
 
   // Precios mínimos y máximos globales del catálogo para los límites de los sliders
   const allPrices = allGames.map((g) => g.final_price);
   const minCatalogPrice = allPrices.length > 0 ? Math.floor(Math.min(...allPrices)) : 0;
-  const maxCatalogPrice = allPrices.length > 0 ? Math.ceil(Math.max(...allPrices)) : 200;
+  const maxCatalogPrice = allPrices.length > 0 ? Math.ceil(Math.max(...allPrices)) : 250;
 
   // 1. Filtrado por Búsqueda de Texto
   let filtered = [...allGames];
@@ -154,7 +162,7 @@ export async function getFilteredGames(filters: CatalogFilters = {}): Promise<Ca
     );
   }
 
-  // 2. Filtrado Multicategoría (OR o AND - si el juego tiene al menos una de las categorías seleccionadas)
+  // 2. Filtrado Multicategoría
   if (filters.categories && filters.categories.length > 0) {
     const selectedSlugs = new Set(filters.categories.map((c) => c.toLowerCase()));
     filtered = filtered.filter((g) =>

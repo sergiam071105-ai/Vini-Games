@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 interface CatalogPageProps {
   searchParams: Promise<{
     q?: string;
+    search?: string;
     categories?: string;
     minPrice?: string;
     maxPrice?: string;
@@ -25,7 +26,7 @@ interface CatalogPageProps {
 export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const resolvedParams = await searchParams;
 
-  const query = resolvedParams.q || undefined;
+  const query = resolvedParams.q || resolvedParams.search || undefined;
   const categories = resolvedParams.categories
     ? resolvedParams.categories.split(',').filter(Boolean)
     : undefined;
