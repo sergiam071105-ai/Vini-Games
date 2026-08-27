@@ -203,7 +203,7 @@ BEGIN
     ALTER TABLE public.chat_sessions ENABLE ROW LEVEL SECURITY;
     DROP POLICY IF EXISTS "chat_sessions_owner_policy" ON public.chat_sessions;
 
-    CREATE POLICY "chat_sessions_owner_policy" ON public.chat_sessions FOR ALL USING (auth.uid() = user_id OR user_id = 'guest' OR auth.uid() IS NOT NULL) WITH CHECK (auth.uid() = user_id OR user_id = 'guest' OR auth.uid() IS NOT NULL);
+    CREATE POLICY "chat_sessions_owner_policy" ON public.chat_sessions FOR ALL USING (auth.uid() = user_id OR auth.uid() IS NOT NULL) WITH CHECK (auth.uid() = user_id OR auth.uid() IS NOT NULL);
   END IF;
 
   -- ------------------------------------------------------------------------------
