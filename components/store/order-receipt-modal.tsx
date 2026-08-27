@@ -1,9 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { CheckCircle2, Copy, Sparkles, ArrowRight, Library, ShieldCheck, X } from 'lucide-react';
+import confetti from 'canvas-confetti';
+import { CheckCircle2, Copy, Sparkles, ArrowRight, Library, ShieldCheck, X, Check } from 'lucide-react';
 import { OrderSummary } from '@/types/order.types';
 
 interface OrderReceiptModalProps {
@@ -13,7 +14,37 @@ interface OrderReceiptModalProps {
 }
 
 export function OrderReceiptModal({ isOpen, onClose, order }: OrderReceiptModalProps) {
-  const [copied, setCopied] = React.useState(false);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && order) {
+      // Disparo de ráfaga de confeti gamer con tokens de Figma
+      try {
+        const count = 200;
+        const defaults = {
+          origin: { y: 0.6 },
+          colors: ['#783DF2', '#1FD1EB', '#10B981', '#F59E0B', '#FFFFFF'],
+          zIndex: 9999,
+        };
+
+        const fire = (particleRatio: number, opts: confetti.Options) => {
+          confetti({
+            ...defaults,
+            ...opts,
+            particleCount: Math.floor(count * particleRatio),
+          });
+        };
+
+        fire(0.25, { spread: 26, startVelocity: 55 });
+        fire(0.2, { spread: 60 });
+        fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+        fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+        fire(0.1, { spread: 120, startVelocity: 45 });
+      } catch (err) {
+        console.warn('Confetti effect failed gracefully:', err);
+      }
+    }
+  }, [isOpen, order]);
 
   if (!isOpen || !order) return null;
 
@@ -25,26 +56,26 @@ export function OrderReceiptModal({ isOpen, onClose, order }: OrderReceiptModalP
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#090B14]/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-[#131521] border border-[#2E334A] rounded-2xl p-6 md:p-8 shadow-2xl shadow-[#783DF2]/15 overflow-hidden max-h-[90vh] flex flex-col">
+      <div className="relative w-full max-w-lg bg-[#131521] border border-[#2E334A] rounded-2xl p-6 md:p-8 shadow-2xl shadow-[#783DF2]/20 overflow-hidden max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-200">
         
-        {/* Glow ambiental */}
+        {/* Glow ambiental con acentos Figma */}
         <div className="absolute -top-20 -right-20 w-44 h-44 bg-[#10B981]/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-20 -left-20 w-44 h-44 bg-[#783DF2]/20 rounded-full blur-3xl pointer-events-none" />
 
         {/* Botón Cerrar */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-[#949CB2] hover:text-[#F5F7FF] hover:bg-[#1A1C2B] rounded-lg transition-colors"
+          className="absolute top-4 right-4 p-2 text-[#949CB2] hover:text-[#F5F7FF] hover:bg-[#1A1C2B] rounded-lg transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Cabecera del Recibo */}
         <div className="text-center mb-6">
-          <div className="w-14 h-14 rounded-full bg-[#10B981]/20 border border-[#10B981] flex items-center justify-center mx-auto mb-3 text-[#10B981]">
+          <div className="w-14 h-14 rounded-full bg-[#10B981]/20 border border-[#10B981] flex items-center justify-center mx-auto mb-3 text-[#10B981] shadow-lg shadow-[#10B981]/20">
             <CheckCircle2 className="w-7 h-7 animate-in zoom-in-50 duration-300" />
           </div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#10B981]/10 text-[#10B981] text-xs font-bold uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#10B981]/10 text-[#10B981] text-xs font-bold uppercase tracking-wider mb-2 border border-[#10B981]/30">
             <ShieldCheck className="w-3.5 h-3.5" />
             Transacción Completada
           </div>
@@ -55,22 +86,31 @@ export function OrderReceiptModal({ isOpen, onClose, order }: OrderReceiptModalP
         </div>
 
         {/* Código de Transacción TX-XXXX */}
-        <div className="bg-[#1A1C2B] border border-[#2E334A] rounded-xl p-3.5 mb-5 flex items-center justify-between">
+        <div className="bg-[#1A1C2B] border border-[#2E334A] rounded-xl p-3.5 mb-4 flex items-center justify-between shadow-inner">
           <div>
             <span className="text-[10px] text-[#949CB2] uppercase tracking-wider block">Código de Comprobante</span>
             <span className="text-base font-mono font-bold text-[#1FD1EB]">{order.orderCode}</span>
           </div>
           <button
             onClick={handleCopyCode}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#131521] hover:bg-[#25283d] border border-[#2E334A] rounded-lg text-xs font-semibold text-[#F5F7FF] transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#131521] hover:bg-[#25283d] border border-[#2E334A] hover:border-[#1FD1EB]/50 rounded-lg text-xs font-semibold text-[#F5F7FF] transition-all cursor-pointer"
           >
-            <Copy className="w-3.5 h-3.5 text-[#1FD1EB]" />
-            <span>{copied ? '¡Copiado!' : 'Copiar'}</span>
+            {copied ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-[#10B981]" />
+                <span className="text-[#10B981]">¡Copiado!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3.5 h-3.5 text-[#1FD1EB]" />
+                <span>Copiar</span>
+              </>
+            )}
           </button>
         </div>
 
         {/* Recompensa XP Destacada */}
-        <div className="bg-gradient-to-r from-[#783DF2]/20 to-[#1FD1EB]/20 border border-[#783DF2]/40 rounded-xl p-3.5 mb-5 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-[#783DF2]/20 to-[#1FD1EB]/20 border border-[#783DF2]/40 rounded-xl p-3.5 mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <Sparkles className="w-5 h-5 text-[#783DF2]" />
             <div>
@@ -84,14 +124,14 @@ export function OrderReceiptModal({ isOpen, onClose, order }: OrderReceiptModalP
         </div>
 
         {/* Listado de Juegos (Scrollable) */}
-        <div className="overflow-y-auto pr-1 flex-1 mb-5 space-y-2.5 max-h-40">
+        <div className="overflow-y-auto pr-1 flex-1 mb-4 space-y-2 max-h-36 scrollbar-none">
           {order.items.map((item, idx) => (
             <div
               key={idx}
               className="flex items-center justify-between p-2.5 bg-[#1A1C2B]/60 rounded-xl border border-[#2E334A]/60"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg overflow-hidden bg-[#090B14] flex-shrink-0 relative">
+                <div className="w-10 h-10 rounded-lg overflow-hidden bg-[#090B14] flex-shrink-0 relative border border-[#2E334A]">
                   {item.coverUrl ? (
                     <Image
                       src={item.coverUrl}
@@ -121,7 +161,7 @@ export function OrderReceiptModal({ isOpen, onClose, order }: OrderReceiptModalP
         </div>
 
         {/* Resumen Financiero */}
-        <div className="border-t border-[#2E334A] pt-3 mb-6 space-y-1.5 text-xs">
+        <div className="border-t border-[#2E334A] pt-3 mb-5 space-y-1.5 text-xs">
           <div className="flex justify-between text-[#949CB2]">
             <span>Subtotal:</span>
             <span>Bs. {order.subtotal}</span>
@@ -134,7 +174,7 @@ export function OrderReceiptModal({ isOpen, onClose, order }: OrderReceiptModalP
           )}
           <div className="flex justify-between text-[#F5F7FF] font-bold text-sm pt-1 border-t border-[#2E334A]/50">
             <span>Total Pagado:</span>
-            <span className="text-[#1FD1EB] text-base">Bs. {order.total}</span>
+            <span className="text-[#1FD1EB] text-base font-black">Bs. {order.total}</span>
           </div>
         </div>
 
@@ -143,14 +183,14 @@ export function OrderReceiptModal({ isOpen, onClose, order }: OrderReceiptModalP
           <Link
             href="/library"
             onClick={onClose}
-            className="w-full bg-[#783DF2] hover:bg-[#6929e4] text-[#F5F7FF] font-bold py-3 rounded-xl transition-all shadow-lg shadow-[#783DF2]/30 flex items-center justify-center gap-2 text-xs uppercase tracking-wider"
+            className="w-full bg-[#783DF2] hover:bg-[#6929e4] text-[#F5F7FF] font-bold py-3 rounded-xl transition-all shadow-lg shadow-[#783DF2]/30 flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer"
           >
             <Library className="w-4 h-4" />
             Ir a mi Biblioteca
           </Link>
           <button
             onClick={onClose}
-            className="w-full sm:w-auto px-5 py-3 bg-[#1A1C2B] hover:bg-[#25283d] text-[#949CB2] hover:text-[#F5F7FF] font-semibold rounded-xl transition-colors text-xs"
+            className="w-full sm:w-auto px-5 py-3 bg-[#1A1C2B] hover:bg-[#25283d] text-[#949CB2] hover:text-[#F5F7FF] font-semibold rounded-xl transition-colors text-xs cursor-pointer"
           >
             Seguir Comprando
           </button>

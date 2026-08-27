@@ -77,6 +77,28 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
     setError(null);
   };
 
+  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/\D/g, '').slice(0, 16);
+    const formatted = raw.match(/.{1,4}/g)?.join(' ') || raw;
+    setCardNumber(formatted);
+    if (error) setError(null);
+  };
+
+  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let raw = e.target.value.replace(/\D/g, '').slice(0, 4);
+    if (raw.length >= 2) {
+      raw = `${raw.slice(0, 2)}/${raw.slice(2)}`;
+    }
+    setExpiryDate(raw);
+    if (error) setError(null);
+  };
+
+  const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/\D/g, '').slice(0, 4);
+    setCvv(raw);
+    if (error) setError(null);
+  };
+
   const handleProcessPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -115,19 +137,22 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
 
       if (!res.success || !res.order) {
         setError(res.error || 'No se pudo procesar el pago simulado.');
-      } else {
-        setCompletedOrder(res.order);
-        await clearCart();
-        try {
-          await refreshLibrary();
-        } catch {
-          // Ignorar si falla refresh local
-        }
-        onClose();
-        setIsReceiptOpen(true);
+        setIsProcessing(false);
+        return;
       }
-    } catch {
-      setError('Ocurrió un error inesperado al conectar con el servidor.');
+
+      // 1. Limpiar carrito local
+      clearCart();
+
+      // 2. Refrescar estado de biblioteca
+      await refreshLibrary();
+
+      // 3. Abrir comprobante
+      setCompletedOrder(res.order);
+      setIsReceiptOpen(true);
+      onClose();
+    } catch (err: any) {
+      setError(err.message || 'Error inesperado durante la transacción.');
     } finally {
       setIsProcessing(false);
     }
@@ -137,14 +162,16 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
     <>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#090B14]/85 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="relative w-full max-w-lg bg-[#131521] border border-[#2E334A] rounded-2xl p-6 md:p-8 shadow-2xl shadow-[#783DF2]/15 overflow-hidden">
+          <div className="relative w-full max-w-md bg-[#131521] border border-[#2E334A] rounded-2xl p-6 md:p-8 shadow-2xl shadow-[#783DF2]/20 overflow-hidden animate-in zoom-in-95 duration-200">
             
-            {/* Glow de fondo */}
-            <div className="absolute -top-20 -right-20 w-44 h-44 bg-[#783DF2]/20 rounded-full blur-3xl pointer-events-none" />
+            {/* Glow ambiental */}
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#783DF2]/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-[#1FD1EB]/15 rounded-full blur-3xl pointer-events-none" />
 
             {/* Botón Cerrar */}
             <button
               onClick={onClose}
+              disabled={isProcessing}
               className="absolute top-4 right-4 p-2 text-[#949CB2] hover:text-[#F5F7FF] hover:bg-[#1A1C2B] rounded-lg transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
@@ -158,7 +185,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
             ) : !isAuthenticated ? (
               /* Bloque de Autenticación Requerida */
               <div className="text-center py-2 animate-in fade-in">
-                <div className="w-16 h-16 rounded-2xl bg-[#783DF2]/15 border border-[#783DF2]/40 flex items-center justify-center mx-auto mb-4 text-[#1FD1EB]">
+                <div className="w-16 h-16 rounded-2xl bg-[#783DF2]/15 border border-[#783DF2]/40 flex items-center justify-center mx-auto mb-4 text-[#1FD1EB] shadow-lg shadow-[#783DF2]/15">
                   <Lock className="w-8 h-8" />
                 </div>
                 
@@ -174,7 +201,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                   <Link
                     href="/login?redirect=/cart"
                     onClick={onClose}
-                    className="w-full bg-[#783DF2] hover:bg-[#6929e4] text-[#F5F7FF] font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-[#783DF2]/30 flex items-center justify-center gap-2 text-xs uppercase tracking-wider"
+                    className="w-full bg-[#783DF2] hover:bg-[#6929e4] text-[#F5F7FF] font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-[#783DF2]/30 flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer"
                   >
                     <LogIn className="w-4 h-4" />
                     Iniciar Sesión
@@ -183,7 +210,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                   <Link
                     href="/register?redirect=/cart"
                     onClick={onClose}
-                    className="w-full bg-[#1A1C2B] hover:bg-[#25283d] border border-[#2E334A] text-[#F5F7FF] font-bold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2 text-xs uppercase tracking-wider"
+                    className="w-full bg-[#1A1C2B] hover:bg-[#25283d] border border-[#2E334A] text-[#F5F7FF] font-bold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer"
                   >
                     <UserPlus className="w-4 h-4 text-[#1FD1EB]" />
                     Crear Cuenta Gratis
@@ -259,7 +286,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                     <div className="flex justify-between items-end text-xs">
                       <div>
                         <span className="text-[9px] uppercase tracking-wider text-white/60 block">Titular</span>
-                        <span className="font-bold tracking-wide">{cardHolder || 'TITULAR GAMER'}</span>
+                        <span className="font-bold tracking-wide uppercase">{cardHolder || 'TITULAR GAMER'}</span>
                       </div>
                       <div className="text-right">
                         <span className="text-[9px] uppercase tracking-wider text-white/60 block">Expira</span>
@@ -278,7 +305,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                       required
                       placeholder="4532 8921 4019 9401"
                       value={cardNumber}
-                      onChange={(e) => setCardNumber(e.target.value)}
+                      onChange={handleCardNumberChange}
                       className="w-full bg-[#1A1C2B] border border-[#2E334A] rounded-xl px-3.5 py-2.5 text-sm text-[#F5F7FF] placeholder-[#949CB2]/60 focus:outline-none focus:border-[#783DF2] focus:ring-1 focus:ring-[#783DF2]/40 transition-all font-mono"
                     />
                   </div>
@@ -291,7 +318,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                     <input
                       type="text"
                       required
-                      placeholder="Gamer Name"
+                      placeholder="Gamer Master"
                       value={cardHolder}
                       onChange={(e) => setCardHolder(e.target.value)}
                       className="w-full bg-[#1A1C2B] border border-[#2E334A] rounded-xl px-3.5 py-2.5 text-sm text-[#F5F7FF] placeholder-[#949CB2]/60 focus:outline-none focus:border-[#783DF2] focus:ring-1 focus:ring-[#783DF2]/40 transition-all"
@@ -310,7 +337,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                         placeholder="12/28"
                         maxLength={5}
                         value={expiryDate}
-                        onChange={(e) => setExpiryDate(e.target.value)}
+                        onChange={handleExpiryChange}
                         className="w-full bg-[#1A1C2B] border border-[#2E334A] rounded-xl px-3.5 py-2.5 text-sm text-[#F5F7FF] placeholder-[#949CB2]/60 focus:outline-none focus:border-[#783DF2] focus:ring-1 focus:ring-[#783DF2]/40 transition-all text-center font-mono"
                       />
                     </div>
@@ -324,7 +351,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                         placeholder="888"
                         maxLength={4}
                         value={cvv}
-                        onChange={(e) => setCvv(e.target.value)}
+                        onChange={handleCvvChange}
                         className="w-full bg-[#1A1C2B] border border-[#2E334A] rounded-xl px-3.5 py-2.5 text-sm text-[#F5F7FF] placeholder-[#949CB2]/60 focus:outline-none focus:border-[#783DF2] focus:ring-1 focus:ring-[#783DF2]/40 transition-all text-center font-mono"
                       />
                     </div>
@@ -339,7 +366,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                     >
                       {isProcessing ? (
                         <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <Loader2 className="w-4 h-4 animate-spin text-[#1FD1EB]" />
                           Procesando Compra...
                         </>
                       ) : (
@@ -359,7 +386,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
         </div>
       )}
 
-      {/* Recibo Transaccional Emitido */}
+      {/* Recibo Transaccional Emitido con Confeti Gamer */}
       <OrderReceiptModal
         isOpen={isReceiptOpen}
         onClose={() => setIsReceiptOpen(false)}
