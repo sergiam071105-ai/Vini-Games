@@ -223,6 +223,7 @@ export default function ChatPage() {
 
                     <button
                       onClick={(e) => handleDeleteSession(s.id, e)}
+                      aria-label={`Eliminar conversación: ${s.title}`}
                       className="opacity-0 group-hover:opacity-100 p-1 text-[#94A3B8] hover:text-[#EF4444] rounded transition-opacity"
                       title="Eliminar conversación"
                     >
@@ -256,6 +257,7 @@ export default function ChatPage() {
                   setIsDesktopSidebarOpen(!isDesktopSidebarOpen);
                   setIsMobileSidebarOpen(true);
                 }}
+                aria-label="Abrir historial de conversaciones de chat"
                 className="p-2 bg-[#1A1C2B] text-[#94A3B8] hover:text-[#1FD1EB] rounded-lg border border-[#2E334A] transition-colors cursor-pointer flex items-center gap-1.5"
                 title="Historial de chats"
               >
@@ -316,6 +318,7 @@ export default function ChatPage() {
               </div>
               <button
                 onClick={() => setIsMobileSidebarOpen(false)}
+                aria-label="Cerrar panel de historial de chat"
                 className="p-1 text-[#94A3B8] hover:text-[#F8FAFC]"
               >
                 <X className="w-5 h-5" />

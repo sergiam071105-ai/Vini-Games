@@ -145,6 +145,7 @@ export function SalesTable({ orders, onSelectOrder }: SalesTableProps) {
                         e.stopPropagation();
                         onSelectOrder(order);
                       }}
+                      aria-label={`Ver desglose detallado de la transacción ${order.orderCode}`}
                       className="p-2 text-[#949CB2] hover:text-white bg-[#0D101D] hover:bg-[#783DF2] border border-[#2D3349] hover:border-[#783DF2] rounded-xl transition-all shadow-sm hover:shadow-[0_0_15px_rgba(120,61,242,0.5)] cursor-pointer"
                       title="Inspeccionar detalle de la orden"
                     >
@@ -183,6 +184,7 @@ export function SalesTable({ orders, onSelectOrder }: SalesTableProps) {
             <button
               onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
               disabled={currentPage === 1}
+              aria-label="Página anterior de transacciones"
               className="p-2 rounded-lg bg-[#0D101D] border border-[#2D3349] text-[#949CB2] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -192,6 +194,7 @@ export function SalesTable({ orders, onSelectOrder }: SalesTableProps) {
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
+                aria-label={`Ir a la página ${page}`}
                 className={`w-8 h-8 rounded-lg font-bold transition-all cursor-pointer ${
                   currentPage === page
                     ? 'bg-[#783DF2] text-white shadow-[0_0_12px_rgba(120,61,242,0.5)]'
@@ -205,6 +208,7 @@ export function SalesTable({ orders, onSelectOrder }: SalesTableProps) {
             <button
               onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
               disabled={currentPage === totalPages}
+              aria-label="Página siguiente de transacciones"
               className="p-2 rounded-lg bg-[#0D101D] border border-[#2D3349] text-[#949CB2] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />

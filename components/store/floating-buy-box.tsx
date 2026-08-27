@@ -90,13 +90,15 @@ export function FloatingBuyBox({
           {owned ? (
             <Link
               href="/library"
+              aria-label="Juego ya adquirido. Ir a Biblioteca para jugar"
               className="w-full py-4 rounded-lg text-sm font-bold bg-[#1FD1EB] hover:bg-[#18b5cc] text-[#080A13] flex items-center justify-center gap-2 transition-all shadow-lg shadow-[#1FD1EB]/20 uppercase tracking-wider"
             >
               <Gamepad2 className="w-5 h-5" /> En Biblioteca / Jugar
             </Link>
           ) : (
             <button
-              className={`w-full py-4 rounded-lg text-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+              aria-label={`Añadir ${title} al carrito de compras por Bs. ${priceToDisplay.toFixed(2)}`}
+              className={`w-full py-4 rounded-lg text-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer ${
                 addedToCart
                   ? "bg-[#10B981] text-white"
                   : "bg-[#783DF2] hover:bg-[#6A32DB] text-white hover:shadow-[0_0_20px_rgba(120,61,242,0.4)]"
@@ -122,7 +124,8 @@ export function FloatingBuyBox({
           )}
 
           <button
-            className={`w-full py-4 rounded-lg text-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 border ${
+            aria-label={isWishlisted ? `Quitar ${title} de tu lista de deseos` : `Añadir ${title} a tu lista de deseos`}
+            className={`w-full py-4 rounded-lg text-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 border cursor-pointer ${
               isWishlisted
                 ? "text-pink-400 bg-pink-500/10 border-pink-500/40 hover:bg-pink-500/20"
                 : "text-zinc-300 border-[#2E334A] hover:border-[#783DF2]/50 hover:bg-[#1E2033]"

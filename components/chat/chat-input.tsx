@@ -68,6 +68,7 @@ export function ChatInput({ onSendMessage, isLoading }: ChatInputProps) {
               type="button"
               onClick={() => handleQuickPromptClick(prompt.query)}
               disabled={isLoading}
+              aria-label={`Preguntar sugerencia: ${prompt.label}`}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1A1C2B] hover:bg-[#25283d] border border-[#2E334A] hover:border-[#783DF2]/50 rounded-full text-xs font-semibold text-[#94A3B8] hover:text-[#1FD1EB] whitespace-nowrap transition-all cursor-pointer disabled:opacity-50"
             >
               <Icon className="w-3.5 h-3.5 text-[#783DF2]" />
@@ -87,6 +88,7 @@ export function ChatInput({ onSendMessage, isLoading }: ChatInputProps) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={isLoading}
+            aria-label="Escribe tu consulta para ViniChat"
             placeholder="Pregúntale a ViniChat sobre géneros, ofertas, requisitos o recomendaciones..."
             className="w-full bg-transparent border-0 text-xs sm:text-sm text-[#F8FAFC] placeholder-[#94A3B8]/60 focus:outline-none resize-none max-h-28 py-1 px-2"
           />
@@ -95,6 +97,7 @@ export function ChatInput({ onSendMessage, isLoading }: ChatInputProps) {
         <button
           type="submit"
           disabled={!input.trim() || isLoading}
+          aria-label="Enviar mensaje a ViniChat"
           className="p-3 bg-[#783DF2] hover:bg-[#6929e4] disabled:bg-[#1A1C2B] text-[#F8FAFC] disabled:text-[#94A3B8] rounded-2xl transition-all shadow-lg shadow-[#783DF2]/20 cursor-pointer disabled:cursor-not-allowed flex-shrink-0"
           title="Enviar mensaje"
         >

@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import confetti from 'canvas-confetti';
 import { CheckCircle2, Copy, Sparkles, ArrowRight, Library, ShieldCheck, X, Check } from 'lucide-react';
 import { OrderSummary } from '@/types/order.types';
 
@@ -19,30 +18,37 @@ export function OrderReceiptModal({ isOpen, onClose, order }: OrderReceiptModalP
   useEffect(() => {
     if (isOpen && order) {
       // Disparo de ráfaga de confeti gamer con tokens de Figma
-      try {
-        const count = 200;
-        const defaults = {
-          origin: { y: 0.6 },
-          colors: ['#783DF2', '#1FD1EB', '#10B981', '#F59E0B', '#FFFFFF'],
-          zIndex: 9999,
-        };
+      const triggerConfetti = async () => {
+        try {
+          // @ts-ignore
+          const confettiModule = await import('canvas-confetti');
+          const confetti = confettiModule.default || confettiModule;
+          const count = 200;
+          const defaults = {
+            origin: { y: 0.6 },
+            colors: ['#783DF2', '#1FD1EB', '#10B981', '#F59E0B', '#FFFFFF'],
+            zIndex: 9999,
+          };
 
-        const fire = (particleRatio: number, opts: confetti.Options) => {
-          confetti({
-            ...defaults,
-            ...opts,
-            particleCount: Math.floor(count * particleRatio),
-          });
-        };
+          const fire = (particleRatio: number, opts: any) => {
+            confetti({
+              ...defaults,
+              ...opts,
+              particleCount: Math.floor(count * particleRatio),
+            });
+          };
 
-        fire(0.25, { spread: 26, startVelocity: 55 });
-        fire(0.2, { spread: 60 });
-        fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
-        fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
-        fire(0.1, { spread: 120, startVelocity: 45 });
-      } catch (err) {
-        console.warn('Confetti effect failed gracefully:', err);
-      }
+          fire(0.25, { spread: 26, startVelocity: 55 });
+          fire(0.2, { spread: 60 });
+          fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+          fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+          fire(0.1, { spread: 120, startVelocity: 45 });
+        } catch (err) {
+          // Si canvas-confetti no está instalado, continúa sin error
+        }
+      };
+
+      triggerConfetti();
     }
   }, [isOpen, order]);
 
@@ -65,6 +71,7 @@ export function OrderReceiptModal({ isOpen, onClose, order }: OrderReceiptModalP
         {/* Botón Cerrar */}
         <button
           onClick={onClose}
+          aria-label="Cerrar comprobante de compra"
           className="absolute top-4 right-4 p-2 text-[#949CB2] hover:text-[#F5F7FF] hover:bg-[#1A1C2B] rounded-lg transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />
@@ -93,6 +100,7 @@ export function OrderReceiptModal({ isOpen, onClose, order }: OrderReceiptModalP
           </div>
           <button
             onClick={handleCopyCode}
+            aria-label="Copiar código de comprobante al portapapeles"
             className="flex items-center gap-1.5 px-3 py-1.5 bg-[#131521] hover:bg-[#25283d] border border-[#2E334A] hover:border-[#1FD1EB]/50 rounded-lg text-xs font-semibold text-[#F5F7FF] transition-all cursor-pointer"
           >
             {copied ? (

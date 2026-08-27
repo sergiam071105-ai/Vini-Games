@@ -91,6 +91,7 @@ export function ChatProductCard({ game }: ChatProductCardProps) {
       <div className="flex items-center gap-2 w-full sm:w-auto justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-[#2E334A]/50">
         <Link
           href={`/games/${game.slug}`}
+          aria-label={`Ver ficha de producto de ${game.title}`}
           className="p-2 bg-[#131521] hover:bg-[#25283d] text-[#94A3B8] hover:text-[#F8FAFC] rounded-lg text-xs transition-colors border border-[#2E334A]"
           title="Ver ficha técnica"
         >
@@ -100,6 +101,7 @@ export function ChatProductCard({ game }: ChatProductCardProps) {
         <button
           onClick={handleAddToCart}
           disabled={alreadyInCart || isAdding}
+          aria-label={`Añadir ${game.title} al carrito de compras por Bs. ${game.finalPrice}`}
           className={`flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
             alreadyInCart || added
               ? 'bg-[#10B981]/20 border border-[#10B981]/50 text-[#10B981]'

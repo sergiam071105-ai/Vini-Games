@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -14,6 +14,8 @@ import {
   Layers,
   Sparkles,
   ChevronRight,
+  Menu,
+  X,
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -50,13 +52,13 @@ const ADMIN_NAV_LINKS = [
 
 export function AdminSidebar({ userEmail, adminName = 'Vinicius (Lead)' }: AdminSidebarProps) {
   const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  return (
-    <aside className="w-64 lg:w-72 bg-[#0B0D18] border-r border-[#2E334A] flex flex-col h-screen sticky top-0 flex-shrink-0">
-      
+  const sidebarContent = (
+    <div className="flex flex-col h-full bg-[#0B0D18] text-[#F8FAFC]">
       {/* Encabezado del Panel */}
-      <div className="p-5 border-b border-[#2E334A]">
-        <div className="flex items-center gap-3 mb-3">
+      <div className="p-5 border-b border-[#2E334A] flex items-center justify-between">
+        <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#783DF2] to-[#1FD1EB] flex items-center justify-center text-white shadow-lg shadow-[#783DF2]/30">
             <Shield className="w-5 h-5" />
           </div>
@@ -68,7 +70,18 @@ export function AdminSidebar({ userEmail, adminName = 'Vinicius (Lead)' }: Admin
           </div>
         </div>
 
-        {/* Badge de Rol */}
+        {/* Botón cerrar en mobile */}
+        <button
+          onClick={() => setMobileMenuOpen(false)}
+          className="md:hidden p-1.5 text-[#94A3B8] hover:text-white rounded-lg hover:bg-[#1A1C2B] transition-colors"
+          aria-label="Cerrar menú de administración"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Badge de Rol */}
+      <div className="px-4 pt-3">
         <div className="bg-[#1A1C2B] border border-[#783DF2]/40 rounded-xl p-2.5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-[#783DF2]" />
@@ -97,6 +110,7 @@ export function AdminSidebar({ userEmail, adminName = 'Vinicius (Lead)' }: Admin
             <Link
               key={link.href}
               href={link.href}
+              onClick={() => setMobileMenuOpen(false)}
               className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all group ${
                 isActive
                   ? 'bg-[#783DF2] text-[#F8FAFC] shadow-lg shadow-[#783DF2]/25'
@@ -137,12 +151,55 @@ export function AdminSidebar({ userEmail, adminName = 'Vinicius (Lead)' }: Admin
         <Link
           href="/"
           className="w-full bg-[#1A1C2B] hover:bg-[#25283d] border border-[#2E334A] hover:border-[#1FD1EB]/50 text-[#94A3B8] hover:text-[#1FD1EB] text-xs font-bold py-2.5 px-3 rounded-xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider"
+          aria-label="Volver a la tienda pública de ViniGames"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Volver a la Tienda
         </Link>
       </div>
+    </div>
+  );
 
-    </aside>
+  return (
+    <>
+      {/* Mobile Top Bar */}
+      <div className="md:hidden w-full bg-[#0B0D18] border-b border-[#2E334A] p-4 flex items-center justify-between sticky top-0 z-40">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#783DF2] to-[#1FD1EB] flex items-center justify-center text-white">
+            <Shield className="w-4 h-4" />
+          </div>
+          <div>
+            <h2 className="text-xs font-extrabold text-[#F8FAFC]">ViniAdmin</h2>
+            <span className="text-[9px] text-[#1FD1EB] font-bold">Consola de Control</span>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="p-2 bg-[#1A1C2B] text-[#94A3B8] hover:text-white rounded-lg border border-[#2E334A]"
+          aria-label={mobileMenuOpen ? 'Cerrar menú de administración' : 'Abrir menú de administración'}
+        >
+          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+      </div>
+
+      {/* Mobile Overlay Drawer */}
+      {mobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 z-50 flex">
+          <div
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <div className="relative w-72 max-w-[85vw] h-full shadow-2xl z-10 border-r border-[#2E334A]">
+            {sidebarContent}
+          </div>
+        </div>
+      )}
+
+      {/* Desktop Persistent Sidebar */}
+      <aside className="hidden md:flex w-64 lg:w-72 border-r border-[#2E334A] flex-col h-screen sticky top-0 flex-shrink-0">
+        {sidebarContent}
+      </aside>
+    </>
   );
 }

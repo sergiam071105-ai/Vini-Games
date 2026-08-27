@@ -88,6 +88,7 @@ export function WishlistItem({ game }: WishlistItemProps) {
           <button 
             type="button"
             onClick={() => removeFromWishlist(game.id)}
+            aria-label={`Eliminar ${game.title} de la lista de deseos`}
             className="text-zinc-400 hover:text-pink-400 bg-[#131521] border border-[#2E334A] hover:border-pink-500/50 hover:bg-pink-500/10 p-3 rounded-xl flex items-center justify-center transition-all active:scale-95 cursor-pointer"
             title="Eliminar de la Wishlist"
           >
@@ -97,6 +98,7 @@ export function WishlistItem({ game }: WishlistItemProps) {
           <button 
             type="button"
             onClick={handleMoveToCart}
+            aria-label={`Mover ${game.title} al carrito de compras`}
             className="flex-1 sm:flex-none bg-[#783DF2] hover:bg-[#6A32DB] text-white py-3 px-6 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all hover:shadow-[0_0_15px_rgba(120,61,242,0.4)] active:scale-95 cursor-pointer"
           >
             <ShoppingCart className="w-5 h-5" /> Mover al Carrito

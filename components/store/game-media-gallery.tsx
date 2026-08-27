@@ -105,6 +105,7 @@ export function GameMediaGallery({ coverUrl, trailerUrl, gallery }: GameMediaGal
                 <button
                   type="button"
                   onClick={() => setIsPlaying(true)}
+                  aria-label="Reproducir tráiler oficial del videojuego"
                   className="w-20 h-20 rounded-full bg-[#783DF2] hover:bg-[#6929e4] text-white flex items-center justify-center shadow-[0_0_30px_rgba(120,61,242,0.7)] hover:scale-110 active:scale-95 transition-all cursor-pointer group/btn"
                   title="Reproducir tráiler"
                 >
@@ -131,6 +132,7 @@ export function GameMediaGallery({ coverUrl, trailerUrl, gallery }: GameMediaGal
                   href={videoMeta.rawUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Abrir video del tráiler en pestaña externa"
                   className="px-4 py-2 bg-[#783DF2] hover:bg-[#6929e4] text-[#F5F7FF] rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-md shadow-[#783DF2]/30"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
@@ -139,6 +141,7 @@ export function GameMediaGallery({ coverUrl, trailerUrl, gallery }: GameMediaGal
                 <button
                   type="button"
                   onClick={() => setHasVideoError(false)}
+                  aria-label="Reintentar reproducción del video"
                   className="px-4 py-2 bg-[#1A1C2B] hover:bg-[#25283d] text-[#949CB2] hover:text-[#F5F7FF] rounded-xl text-xs font-semibold border border-[#2E334A] transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
@@ -181,6 +184,7 @@ export function GameMediaGallery({ coverUrl, trailerUrl, gallery }: GameMediaGal
         <button
           type="button"
           onClick={() => handleSelectThumbnail(effectiveTrailer, "video")}
+          aria-label="Ver tráiler oficial en video"
           className={cn(
             "relative h-[72px] w-[128px] flex-shrink-0 overflow-hidden rounded-xl border-2 transition-all duration-200 cursor-pointer group",
             activeType === "video"
@@ -200,6 +204,7 @@ export function GameMediaGallery({ coverUrl, trailerUrl, gallery }: GameMediaGal
         <button
           type="button"
           onClick={() => handleSelectThumbnail(coverUrl, "image")}
+          aria-label="Ver imagen de portada"
           className={cn(
             "relative h-[72px] w-[128px] flex-shrink-0 overflow-hidden rounded-xl border-2 transition-all duration-200 cursor-pointer",
             activeType === "image" && activeImageUrl === coverUrl
@@ -211,11 +216,12 @@ export function GameMediaGallery({ coverUrl, trailerUrl, gallery }: GameMediaGal
         </button>
 
         {/* Miniaturas de la galería */}
-        {gallery.map((media) => (
+        {gallery.map((media, idx) => (
           <button
             key={media.id}
             type="button"
             onClick={() => handleSelectThumbnail(media.media_url, media.media_type as any)}
+            aria-label={`Ver ${media.media_type === 'video' ? 'video' : 'captura de pantalla'} número ${idx + 1}`}
             className={cn(
               "relative h-[72px] w-[128px] flex-shrink-0 overflow-hidden rounded-xl border-2 transition-all duration-200 cursor-pointer group",
               activeType === "image" && activeImageUrl === media.media_url
