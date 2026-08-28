@@ -29,31 +29,8 @@ const WishlistContext = createContext<WishlistContextType | undefined>(undefined
 
 const STORAGE_KEY = 'vinigames_wishlist_v1';
 
-const INITIAL_DEMO_ITEMS: WishlistGame[] = [
-  {
-    id: 1,
-    title: 'Neon Odyssey: Cyber Genesis',
-    slug: 'neon-odyssey',
-    developer: 'ViniStudios',
-    base_price: 120,
-    discount_percent: 25,
-    final_price: 90,
-    cover_image_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    id: 2,
-    title: 'Shadows of Eldoria',
-    slug: 'shadows-of-eldoria',
-    developer: 'Mythic Forge',
-    base_price: 150,
-    discount_percent: 15,
-    final_price: 127.5,
-    cover_image_url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80',
-  }
-];
-
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
-  const [wishlistItems, setWishlistItems] = useState<WishlistGame[]>(INITIAL_DEMO_ITEMS);
+  const [wishlistItems, setWishlistItems] = useState<WishlistGame[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Cargar una única vez al montar el componente en el navegador
@@ -65,8 +42,6 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         if (Array.isArray(parsed)) {
           setWishlistItems(parsed);
         }
-      } else {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_DEMO_ITEMS));
       }
     } catch (e) {
       console.error('Error loading wishlist from localStorage:', e);

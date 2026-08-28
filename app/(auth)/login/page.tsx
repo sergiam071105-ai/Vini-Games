@@ -141,12 +141,6 @@ function LoginForm() {
     }
   };
 
-  const handleQuickFill = (demoEmail: string, demoPass: string) => {
-    setFormData({ email: demoEmail, password: demoPass });
-    setFieldErrors({});
-    setGlobalError(null);
-  };
-
   const activeSlide = HERO_SLIDES[currentSlideIndex];
 
   return (
@@ -312,30 +306,6 @@ function LoginForm() {
               Crear una cuenta
             </Link>
           </form>
-
-          {/* Acceso rápido para evaluación */}
-          <div className="mt-8 pt-4 border-t border-[#252A40]/40">
-            <p className="text-xs text-[#949CB2] mb-2.5 flex items-center gap-1.5">
-              <ShieldCheck className="h-3.5 w-3.5 text-[#1FD1EB]" />
-              Acceso rápido para evaluación:
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickFill('admin@vinigames.com', 'Admin123*')}
-                className="text-xs rounded-lg bg-[#131625] border border-[#252A40] px-3 py-1.5 text-zinc-300 hover:border-[#783DF2] hover:text-white transition-colors cursor-pointer"
-              >
-                👤 Admin Demo
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickFill('gamer@vinigames.com', 'Gamer123*')}
-                className="text-xs rounded-lg bg-[#131625] border border-[#252A40] px-3 py-1.5 text-zinc-300 hover:border-[#1FD1EB] hover:text-white transition-colors cursor-pointer"
-              >
-                🎮 Gamer Demo
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Footer legal */}

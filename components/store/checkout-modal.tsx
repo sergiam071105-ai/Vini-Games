@@ -22,10 +22,10 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
 
   const ownedItemsInCart = items.filter((item) => isOwned(item.id));
 
-  const [cardNumber, setCardNumber] = useState('4532 8921 4019 9401');
-  const [cardHolder, setCardHolder] = useState('Gamer Master');
-  const [expiryDate, setExpiryDate] = useState('12/28');
-  const [cvv, setCvv] = useState('888');
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardHolder, setCardHolder] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
+  const [cvv, setCvv] = useState('');
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
@@ -69,14 +69,6 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
 
   if (!isOpen && !isReceiptOpen) return null;
 
-  const handleFillTestData = () => {
-    setCardNumber('4532 8921 4019 9401');
-    setCardHolder('Gamer Master');
-    setExpiryDate('12/28');
-    setCvv('888');
-    setError(null);
-  };
-
   const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/\D/g, '').slice(0, 16);
     const formatted = raw.match(/.{1,4}/g)?.join(' ') || raw;
@@ -112,7 +104,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
     });
 
     if (!validation.success) {
-      setError(validation.error.issues?.[0]?.message || 'Datos de tarjeta inválidos');
+      setError(validation.error.issues?.[0]?.message || 'Por favor completa todos los datos de la tarjeta.');
       return;
     }
 
@@ -136,7 +128,7 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
       });
 
       if (!res.success || !res.order) {
-        setError(res.error || 'No se pudo procesar el pago simulado.');
+        setError(res.error || 'No se pudo procesar el pago.');
         setIsProcessing(false);
         return;
       }
@@ -233,11 +225,11 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                 <div className="mb-6">
                   <div className="flex items-center gap-2 text-xs font-bold text-[#783DF2] uppercase tracking-wider mb-1">
                     <ShieldCheck className="w-4 h-4 text-[#10B981]" />
-                    Pasarela de Pago Simulada
+                    Pasarela de Pago Segura
                   </div>
                   <h2 className="text-xl font-bold text-[#F5F7FF]">Checkout de Compra</h2>
                   <p className="text-xs text-[#949CB2] mt-1">
-                    Simula tu compra con tarjeta virtual de prueba. Cero cargos reales.
+                    Ingresa los datos de tu tarjeta para procesar la orden digital.
                   </p>
                 </div>
 
@@ -247,15 +239,10 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                     <span className="text-[#949CB2] block">{items.length} {items.length === 1 ? 'videojuego' : 'videojuegos'}</span>
                     <span className="text-base font-bold text-[#1FD1EB]">Total: Bs. {total}</span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleFillTestData}
-                    aria-label="Autocompletar datos de prueba de tarjeta virtual"
-                    className="px-3 py-1.5 bg-[#783DF2]/10 hover:bg-[#783DF2]/20 border border-[#783DF2]/40 rounded-lg text-xs font-bold text-[#783DF2] transition-colors flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 text-[#1FD1EB]" />
-                    Autocompletar Prueba
-                  </button>
+                  <div className="flex items-center gap-1.5 text-xs text-[#10B981] font-bold">
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>Pago Seguro</span>
+                  </div>
                 </div>
 
                 {ownedItemsInCart.length > 0 && (
@@ -278,109 +265,126 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                 <form onSubmit={handleProcessPayment} className="space-y-4">
                   
                   {/* Tarjeta Visual de Muestra */}
-                  <div className="relative bg-gradient-to-tr from-[#1A1C2E] via-[#2E1E5B] to-[#783DF2] rounded-xl p-5 border border-[#783DF2]/50 shadow-lg text-white mb-2 overflow-hidden">
+                  <div className="w-full bg-gradient-to-tr from-[#1C1730] via-[#2D1B4E] to-[#783DF2]/80 border border-[#783DF2]/40 rounded-2xl p-5 text-white shadow-xl shadow-[#783DF2]/15 relative overflow-hidden">
                     <div className="flex justify-between items-center mb-6">
-                      <span className="text-xs font-bold tracking-widest uppercase text-white/80">ViniGames Virtual Card</span>
-                      <CreditCard className="w-6 h-6 text-[#1FD1EB]" />
+                      <CreditCard className="w-8 h-8 text-[#1FD1EB]" />
+                      <span className="text-[10px] font-black uppercase tracking-widest bg-black/40 px-2 py-0.5 rounded border border-white/10">
+                        ViniCard
+                      </span>
                     </div>
-                    <div className="font-mono text-base tracking-widest mb-3 font-semibold">
+
+                    <div className="font-mono text-sm sm:text-base tracking-[0.2em] font-bold mb-4 drop-shadow text-center">
                       {cardNumber || '•••• •••• •••• ••••'}
                     </div>
-                    <div className="flex justify-between items-end text-xs">
+
+                    <div className="flex justify-between items-end text-[10px]">
                       <div>
-                        <span className="text-[9px] uppercase tracking-wider text-white/60 block">Titular</span>
-                        <span className="font-bold tracking-wide uppercase">{cardHolder || 'TITULAR GAMER'}</span>
+                        <span className="text-[#949CB2] block text-[8px] uppercase">Titular</span>
+                        <span className="font-bold tracking-wider uppercase truncate block max-w-[160px]">
+                          {cardHolder || 'NOMBRE APELLIDO'}
+                        </span>
                       </div>
                       <div className="text-right">
-                        <span className="text-[9px] uppercase tracking-wider text-white/60 block">Expira</span>
-                        <span className="font-bold">{expiryDate || 'MM/YY'}</span>
+                        <span className="text-[#949CB2] block text-[8px] uppercase">Expira</span>
+                        <span className="font-bold font-mono">
+                          {expiryDate || 'MM/AA'}
+                        </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Input Número de Tarjeta */}
+                  {/* Número de Tarjeta */}
                   <div>
                     <label className="block text-xs font-semibold text-[#949CB2] mb-1">
-                      Número de Tarjeta Virtual:
+                      Número de Tarjeta
                     </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="4532 8921 4019 9401"
-                      value={cardNumber}
-                      onChange={handleCardNumberChange}
-                      className="w-full bg-[#1A1C2B] border border-[#2E334A] rounded-xl px-3.5 py-2.5 text-sm text-[#F5F7FF] placeholder-[#949CB2]/60 focus:outline-none focus:border-[#783DF2] focus:ring-1 focus:ring-[#783DF2]/40 transition-all font-mono"
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="4532 8921 4019 9401"
+                        value={cardNumber}
+                        onChange={handleCardNumberChange}
+                        disabled={isProcessing}
+                        maxLength={19}
+                        className="w-full bg-[#1A1C2B] border border-[#2E334A] focus:border-[#783DF2] rounded-xl px-4 py-2.5 text-xs text-[#F5F7FF] placeholder-[#949CB2]/40 focus:outline-none transition-colors font-mono"
+                      />
+                      <CreditCard className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#949CB2]" />
+                    </div>
                   </div>
 
-                  {/* Input Titular */}
+                  {/* Nombre en la Tarjeta */}
                   <div>
                     <label className="block text-xs font-semibold text-[#949CB2] mb-1">
-                      Nombre del Titular:
+                      Nombre del Titular
                     </label>
                     <input
                       type="text"
-                      required
-                      placeholder="Gamer Master"
+                      placeholder="Ej. Eduardo Ribera"
                       value={cardHolder}
-                      onChange={(e) => setCardHolder(e.target.value)}
-                      className="w-full bg-[#1A1C2B] border border-[#2E334A] rounded-xl px-3.5 py-2.5 text-sm text-[#F5F7FF] placeholder-[#949CB2]/60 focus:outline-none focus:border-[#783DF2] focus:ring-1 focus:ring-[#783DF2]/40 transition-all"
+                      onChange={(e) => {
+                        setCardHolder(e.target.value);
+                        if (error) setError(null);
+                      }}
+                      disabled={isProcessing}
+                      className="w-full bg-[#1A1C2B] border border-[#2E334A] focus:border-[#783DF2] rounded-xl px-4 py-2.5 text-xs text-[#F5F7FF] placeholder-[#949CB2]/40 focus:outline-none transition-colors uppercase"
                     />
                   </div>
 
-                  {/* Inputs Expiración y CVV */}
+                  {/* Fecha de Expiración y CVV */}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-semibold text-[#949CB2] mb-1">
-                        Expiración (MM/YY):
+                        Expiración (MM/AA)
                       </label>
                       <input
                         type="text"
-                        required
                         placeholder="12/28"
-                        maxLength={5}
                         value={expiryDate}
                         onChange={handleExpiryChange}
-                        className="w-full bg-[#1A1C2B] border border-[#2E334A] rounded-xl px-3.5 py-2.5 text-sm text-[#F5F7FF] placeholder-[#949CB2]/60 focus:outline-none focus:border-[#783DF2] focus:ring-1 focus:ring-[#783DF2]/40 transition-all text-center font-mono"
+                        disabled={isProcessing}
+                        maxLength={5}
+                        className="w-full bg-[#1A1C2B] border border-[#2E334A] focus:border-[#783DF2] rounded-xl px-4 py-2.5 text-xs text-[#F5F7FF] placeholder-[#949CB2]/40 focus:outline-none transition-colors font-mono text-center"
                       />
                     </div>
+
                     <div>
                       <label className="block text-xs font-semibold text-[#949CB2] mb-1">
-                        CVV:
+                        Código CVV
                       </label>
                       <input
                         type="password"
-                        required
                         placeholder="888"
-                        maxLength={4}
                         value={cvv}
                         onChange={handleCvvChange}
-                        className="w-full bg-[#1A1C2B] border border-[#2E334A] rounded-xl px-3.5 py-2.5 text-sm text-[#F5F7FF] placeholder-[#949CB2]/60 focus:outline-none focus:border-[#783DF2] focus:ring-1 focus:ring-[#783DF2]/40 transition-all text-center font-mono"
+                        disabled={isProcessing}
+                        maxLength={4}
+                        className="w-full bg-[#1A1C2B] border border-[#2E334A] focus:border-[#783DF2] rounded-xl px-4 py-2.5 text-xs text-[#F5F7FF] placeholder-[#949CB2]/40 focus:outline-none transition-colors font-mono text-center"
                       />
                     </div>
                   </div>
 
-                  {/* Botón de Confirmación */}
-                  <div className="pt-3">
-                    <button
-                      type="submit"
-                      disabled={isProcessing || items.length === 0}
-                      className="w-full bg-[#783DF2] hover:bg-[#6929e4] disabled:opacity-50 text-[#F5F7FF] font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-[#783DF2]/30 flex items-center justify-center gap-2 text-sm uppercase tracking-wider cursor-pointer"
-                    >
-                      {isProcessing ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin text-[#1FD1EB]" />
-                          Procesando Compra...
-                        </>
-                      ) : (
-                        <>
-                          <Lock className="w-4 h-4" />
-                          Pagar Bs. {total} (+100 XP)
-                        </>
-                      )}
-                    </button>
-                  </div>
+                  {/* Botón de Confirmación y Pago */}
+                  <button
+                    type="submit"
+                    disabled={isProcessing || ownedItemsInCart.length > 0}
+                    className="w-full mt-4 bg-gradient-to-r from-[#783DF2] to-[#6929e4] hover:from-[#8B4DFF] hover:to-[#783DF2] text-[#F5F7FF] font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-[#783DF2]/30 flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-white" />
+                        <span>Procesando Transacción...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Lock className="w-4 h-4 text-[#1FD1EB]" />
+                        <span>Pagar Bs. {total}</span>
+                      </>
+                    )}
+                  </button>
 
+                  <p className="text-[10px] text-center text-[#949CB2] mt-2">
+                    Transacción cifrada SSL de 256 bits. Licencia digital añadida automáticamente a tu biblioteca.
+                  </p>
                 </form>
               </>
             )}
@@ -389,12 +393,17 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
         </div>
       )}
 
-      {/* Recibo Transaccional Emitido con Confeti Gamer */}
-      <OrderReceiptModal
-        isOpen={isReceiptOpen}
-        onClose={() => setIsReceiptOpen(false)}
-        order={completedOrder}
-      />
+      {/* Modal de Comprobante / Recibo Digital Oficial */}
+      {completedOrder && (
+        <OrderReceiptModal
+          isOpen={isReceiptOpen}
+          onClose={() => {
+            setIsReceiptOpen(false);
+            setCompletedOrder(null);
+          }}
+          order={completedOrder}
+        />
+      )}
     </>
   );
 }

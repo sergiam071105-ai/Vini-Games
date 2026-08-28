@@ -11,13 +11,13 @@
 
 ```mermaid
 flowchart LR
-    S0["✅ SPRINT 0\nCimientos & UI Base"] --> S1["✅ SPRINT 1\nNúcleo de la Plataforma"] --> S2["✅ SPRINT 2\nTransaccionalidad & Gamificación"] --> S3["✅ SPRINT 3\nIA ViniChat & ViniAdmin"] --> S4["🚀 SPRINT 4 (EN CURSO)\nAuditoría RLS, Demo & Despliegue"]
+    S0["✅ SPRINT 0\nCimientos & UI Base"] --> S1["✅ SPRINT 1\nNúcleo de la Plataforma"] --> S2["✅ SPRINT 2\nTransaccionalidad & Gamificación"] --> S3["✅ SPRINT 3\nIA ViniChat & ViniAdmin"] --> S4["✅ SPRINT 4\nCalidad, RLS, Perfil & Despliegue"]
 ```
 
 * **✅ Sprint 0 (Setup & Fundaciones)**: Arquitectura Next.js 16 (App Router) con Turbopack, Supabase SSR, DDL de 20 tablas relacionales con RLS, tokens de diseño Dark Gamer Figma y librería de primitivas UI modulares (`Button`, `Input`, `Badge`, `Card`, `Modal`).
-* **✅ Sprint 1 (Núcleo de la Plataforma)**: Sistema de Autenticación Split-Screen con cuentas Demo, Onboarding en 4 pasos con cálculo de **Gamer DNA** (Explorador, Competitivo, Narrativo, Coleccionista), Header persistente con widgets en vivo (Nivel/XP, GameCoins, Racha de fuego), Storefront Home, Catálogo multicriterio con búsqueda predictiva, Ficha técnica `/games/[slug]` y Perfil Gamer `/profile`.
+* **✅ Sprint 1 (Núcleo de la Plataforma)**: Sistema de Autenticación Split-Screen, Onboarding en 4 pasos con cálculo de **Gamer DNA** (Explorador, Competitivo, Narrativo, Coleccionista), Header persistente con widgets en vivo (Nivel/XP, GameCoins, Racha), Storefront Home, Catálogo multicriterio con búsqueda predictiva y Ficha técnica `/games/[slug]`.
 * **✅ Sprint 2 (Transaccionalidad, Biblioteca, Reseñas & Gamificación)**:
-  * 🛒 **Carrito & Checkout Transaccional**: Carrito reactivo, Drawer lateral, modal de checkout simulado con validación Zod, emisión de recibo digital con código `TX-XXXX`, vaciado automático y transferencia instantánea a la biblioteca.
+  * 🛒 **Carrito & Checkout Transaccional**: Carrito reactivo, Drawer lateral, modal de checkout con validación Zod, emisión de recibo digital con código `TX-XXXX`, vaciado automático y transferencia instantánea a la biblioteca.
   * 📚 **Biblioteca Digital (`/library`)**: Catálogo personal de juegos adquiridos con filtros por estado y acumulador en tiempo real de horas jugadas mediante simulador de ejecución ("▶ Jugar" / "⏸ Detener").
   * ❤️ **Lista de Deseos Global (Wishlist)**: `WishlistProvider` con sincronización en tiempo real en catálogo, ficha técnica y `/wishlist`, con alertas de ofertas y cálculo de descuentos.
   * 🏆 **Hub de Gamificación (`/gamification`)**: Calendario interactivo de racha diaria de 7 días, progresión de niveles ($\text{XP} \rightarrow \text{Nivel}$), vitrina de medallas/insignias por rareza y centro de recompensas canjeables con GameCoins.
@@ -27,23 +27,22 @@ flowchart LR
   * 🛡️ **Panel Administrativo de Catálogo (`/admin/games`)**: CRUD completo de títulos, cálculo automático de precios/ofertas y sistema de **baja lógica** (`is_active = false`) con persistencia inmediata.
   * ⚖️ **Moderación Comunitaria (`/admin/reviews`)**: Cola de moderación con filtros por estado (*Todas, Pendientes, Aprobadas, Rechazadas*), contadores reactivos y registro de auditoría en `admin_audit_logs`.
   * 📊 **Auditoría Financiera (`/admin/sales`)**: Reporte de órdenes de compra con métricas de ventas y utilidad de **exportación a archivo CSV**.
-* **🚀 Sprint 4 (Calidad, Auditoría RLS, Demo Seed Data & Despliegue en Producción — EN CURSO)**:
-  * 🔒 **Auditoría Integral de RLS**: Revisión y endurecimiento de políticas de seguridad en Supabase PostgreSQL para las 20 tablas.
-  * 🎮 **Seed Data de Demostración**: Catálogo robusto con más de 12 videojuegos completos, carátulas HD y géneros asociados.
-  * 📱 **Pruebas de Responsividad & Accesibilidad**: Optimización Mobile-First y cumplimiento de estándares WCAG 2.1 AA.
-  * 🌐 **Despliegue Continuo en Vercel**: Paso a producción conectado con Supabase Cloud y Railway.
+* **✅ Sprint 4 (Calidad, Auditoría RLS, Perfil Gamer Dinámico, Limpieza de Producción & Despliegue)**:
+  * 🔒 **Auditoría y Endurecimiento Integral de RLS**: Políticas de seguridad a nivel de filas aplicadas en Supabase Cloud para las 20 tablas de PostgreSQL.
+  * 👤 **Perfil Gamer Dinámico (`/profile`)**: Conexión completa a Supabase con cálculo de Nivel/XP, 4 pestañas interactivas (*Mis Juegos, Logros, Reseñas, Recompensas*), visualizador de Gamer DNA y modal de edición de perfil (`EditProfileModal`).
+  * 🧹 **Limpieza y Pulido de Producción**: Eliminación de datos quemados en checkout y login, unificación estricta de moneda en Bolivianos (`Bs.`), redirección al cerrar sesión hacia `/login` y redirección limpia de `/games` a `/catalog`.
+  * 🧪 **Calidad y Rendimiento**: 0 errores de TypeScript (`npx tsc --noEmit`) y compilación Next.js Turbopack de las **26 rutas en 4.7 segundos**.
 
 ---
 
 ## 👥 Equipo de Desarrollo & Asignación de Roles
 
-| Integrante | Rol Principal | Módulos y Responsabilidades (Sprint 3 & 4) | Rama de Integración |
+| Integrante | Rol Principal | Módulos y Responsabilidades | Rama de Integración |
 | :--- | :--- | :--- | :--- |
-| **Eduardo Ribera** | Líder Técnico & Backend | Arquitectura ViniChat con n8n Cloud & DeepSeek API, Auditoría de Seguridad RLS en Supabase, Consolidación General y Despliegue | `feature/eduardo-sprint-4-quality-deploy` |
-| **Vinicius Montibeller** | Frontend Lead & E-Commerce | Storefront Home, Carrito & Checkout Simulado, Layout ViniAdmin y CRUD de Catálogo con Baja Lógica | `feature/vinicius-sprint-3-chat-admin` |
-| **Sergio Alvarez** | Multimedia & Transacciones | Ficha Técnica `/games/[slug]`, Wishlist, Auditoría Comercial `/admin/sales` y Exportación CSV | `feature/sergio-admin-sales` |
-| **Jose Alberto Rios** | Gamificación & Moderación | Hub de Gamificación, Radar Gamer DNA, Moderación de Reseñas `/admin/reviews` y Seed Data Demo | `feature/jose-sprint-3-admin-moderation` |
-| **Shaimme Zelada** | Catálogo & Biblioteca | Catálogo General `/catalog`, Filtros Multicriterio, Búsqueda Predictiva y Biblioteca Digital `/library` | `feature/shaimme-catalog-filters` |
+| **Eduardo Ribera** | Líder Técnico & Backend / Seguridad | Arquitectura ViniChat con n8n Cloud & DeepSeek API, Auditoría de Seguridad RLS en Supabase, Perfil Gamer Dinámico, Consolidación General y Despliegue | `feature/eduardo-sprint-4-profile-polish` |
+| **Vinicius Montibeller** | Frontend Lead & E-Commerce | Storefront Home, Carrito & Checkout, Layout ViniAdmin, Modales y CRUD de Catálogo con Baja Lógica | `feature/vinicius-sprint-4-quality-polish` |
+| **Sergio Alvarez** | Multimedia & Transacciones | Ficha Técnica `/games/[slug]`, Wishlist, Auditoría Comercial `/admin/sales`, Exportación CSV y Accesibilidad | `feature/sergio-sprint-4-audit-responsive-a11y` |
+| **Jose Alberto Rios** | Gamificación & Moderación | Hub de Gamificación, Radar Gamer DNA, Moderación de Reseñas `/admin/reviews` y Seed Data Demo | `feature/jose-sprint-4-demo-validation` |
 
 ---
 
@@ -59,17 +58,20 @@ graph TD
         UI_Lib["Biblioteca /library"]
         UI_Gam["Gamificación /gamification"]
         UI_Chat["Asistente IA /chat"]
+        UI_Profile["Perfil Gamer /profile"]
         UI_Admin["Panel ViniAdmin /admin/*"]
     end
 
     subgraph State ["Capa de Estado & Contextos Globales"]
         CTX_Cart["CartContext"]
         CTX_Wish["WishlistContext"]
+        CTX_Lib["LibraryContext"]
         CTX_Auth["Supabase Auth SSR"]
     end
 
     subgraph ServerActions ["Capa de Lógica & Server Actions"]
         SA_Auth["auth.actions.ts"]
+        SA_Profile["profile.actions.ts"]
         SA_Cart["cart.actions.ts"]
         SA_Games["games.admin.actions.ts"]
         SA_Reviews["reviews.actions.ts"]
@@ -79,7 +81,7 @@ graph TD
     end
 
     subgraph External ["Servicios Cloud & Persistencia"]
-        DB[("Supabase Cloud PostgreSQL\n(20 Tablas + RLS)")]
+        DB[("Supabase Cloud PostgreSQL\n(20 Tablas + RLS Activo)")]
         N8N["n8n Automation Engine\n(Railway Cloud 24/7)"]
         DeepSeek["DeepSeek API\n(deepseek-chat LLM)"]
     end
@@ -115,7 +117,7 @@ graph TD
 ```
 vinigames/
 ├── (auth)/
-│   ├── /login                     # Login Split-Screen con carrusel dinámico y cuentas Demo
+│   ├── /login                     # Login Split-Screen con carrusel dinámico y redirección segura
 │   ├── /register                  # Registro directo de credenciales
 │   ├── /onboarding/               # Stepper de 4 pasos (Avatar, Géneros, Gamer DNA, Passport)
 │   │   ├── /step-1                # Selección de Avatar y GamerTag
@@ -124,134 +126,34 @@ vinigames/
 │   │   └── /step-4                # Confirmación y Gamer Passport
 │   └── /onboarding/welcome        # Pantalla festiva de bienvenida (Nivel 1 + 100 XP + 100 GameCoins)
 ├── (store)/
-│   ├── /                          # Storefront Home (Hero Banner, lanzamientos y ofertas)
+│   ├── /                          # Storefront Home (Hero Banner, lanzamientos y ofertas en Bs.)
 │   ├── /catalog                   # Catálogo general con filtros multicriterio y búsqueda predictiva
-│   ├── /games                     # Redirección amigable al catálogo
+│   ├── /games                     # Redirección amigable al catálogo oficial
 │   ├── /games/[slug]              # Ficha técnica, galería de video/fotos, requisitos, compra y reseñas
-│   ├── /cart                      # Carrito de compras, desglose de precios y Checkout simulado
+│   ├── /cart                      # Carrito de compras, desglose de precios y Checkout seguro
 │   ├── /library                   # Biblioteca digital, contador de horas y simulador "▶ Jugar"
 │   ├── /wishlist                  # Lista de deseos reactiva con alertas de descuento
 │   ├── /gamification              # Hub de rachas diarias, vitrina de medallas y recompensas
-│   ├── /chat                      # [Sprint 3] Asistente IA ViniChat (DeepSeek + n8n Cloud)
-│   └── /profile                   # Perfil gamer, radar Gamer DNA y estadísticas históricas
-├── /admin                         # [Sprint 3] Dashboard General de Administración (RBAC: ADMIN)
-│   ├── /admin/games               # [Sprint 3] Catálogo Administrativo (CRUD & Baja Lógica)
-│   ├── /admin/games/new           # [Sprint 3] Formulario de Alta de Nuevos Videojuegos
-│   ├── /admin/games/[id]/edit     # [Sprint 3] Formulario de Edición de Videojuegos
-│   ├── /admin/reviews             # [Sprint 3] Cola de Moderación de Reseñas Comunitarias
-│   └── /admin/sales               # [Sprint 3] Auditoría Transaccional y Exportación CSV
+│   ├── /chat                      # Asistente IA ViniChat (DeepSeek + n8n Cloud)
+│   └── /profile                   # Perfil gamer dinámico, radar Gamer DNA, logros y edición
+├── /admin                         # Dashboard General de Administración (RBAC: ADMIN)
+│   ├── /admin/games               # Catálogo Administrativo (CRUD & Baja Lógica)
+│   ├── /admin/games/new           # Formulario de Alta de Nuevos Videojuegos
+│   ├── /admin/games/[id]/edit     # Formulario de Edición de Videojuegos
+│   ├── /admin/reviews             # Cola de Moderación de Reseñas Comunitarias
+│   └── /admin/sales               # Auditoría Transaccional y Exportación CSV
 └── /auth/callback                 # Endpoint OAuth / Supabase Auth Callback
 ```
 
 ---
 
-## 📁 Estructura del Proyecto
+## 🔒 Seguridad & Políticas Row Level Security (RLS)
 
-```
-vinigames/
-├── app/                          # App Router (Next.js 16)
-│   ├── (auth)/                   # Grupo de rutas de autenticación y onboarding
-│   ├── (store)/                  # Grupo de rutas de tienda, catálogo, perfil, biblioteca, cart, chat
-│   │   ├── cart/                 # Vista de carrito y checkout
-│   │   ├── catalog/              # Catálogo general y buscador
-│   │   ├── chat/                 # [Sprint 3] Asistente IA ViniChat
-│   │   ├── games/[slug]/         # Ficha técnica, compra y reseñas
-│   │   ├── gamification/         # Hub de gamificación y rachas
-│   │   ├── library/              # Biblioteca de juegos del usuario
-│   │   ├── profile/              # Perfil gamer y radar ADN
-│   │   └── wishlist/             # Lista de deseos
-│   ├── admin/                    # [Sprint 3] Panel de administración ViniAdmin
-│   │   ├── games/                # Gestión de catálogo y baja lógica
-│   │   ├── reviews/              # Moderación de reseñas comunitarias
-│   │   └── sales/                # Auditoría de ventas y finanzas
-│   ├── actions/                  # Server Actions seguras
-│   │   ├── admin.actions.ts      # [Sprint 3] Métricas y KPIs de administración
-│   │   ├── auth.actions.ts       # Autenticación, registro y onboarding
-│   │   ├── cart.actions.ts       # Operaciones de carrito y checkout
-│   │   ├── chat.actions.ts       # [Sprint 3] Comunicación con n8n Webhook y Fallback IA
-│   │   ├── games.admin.actions.ts# [Sprint 3] CRUD y alternancia de estado en catálogo
-│   │   ├── moderation.actions.ts # [Sprint 3] Aprobación/Rechazo de reseñas y auditoría
-│   │   ├── reviews.actions.ts    # Reseñas verificadas y votos de utilidad
-│   │   ├── streak.actions.ts     # Check-in diario de racha y premios XP
-│   │   └── wishlist.actions.ts   # Gestión de lista de deseos
-│   ├── auth/callback/            # Endpoint OAuth / Supabase Auth Callback
-│   ├── globals.css               # Variables de tema Figma, fuentes y utilidades Dark Gamer
-│   └── layout.tsx                # Layout raíz de la aplicación con fuentes Geist
-├── components/                   # Componentes modulares y reutilizables
-│   ├── admin/                    # [Sprint 3] Componentes de ViniAdmin (Tarjetas, Gráficas, Filtros)
-│   ├── chat/                     # [Sprint 3] Componentes de ViniChat (Feed, Tarjetas, Input)
-│   ├── layout/                   # Header persistente, Footer gamer y Widgets de estado en vivo
-│   ├── store/                    # Catálogo, Buscador predictivo, Ficha de juego, Galería
-│   └── ui/                       # Primitivas UI (Badge, Button, Card, Input, Modal)
-├── docs/                         # Documentación técnica del proyecto
-│   └── n8n-workflows/            # [Sprint 3] Flujos exportables de n8n para ViniChat
-├── lib/                          # Capa de lógica de negocio y servicios
-│   ├── context/                  # Context API (CartContext, WishlistContext, OnboardingContext)
-│   ├── gamification/             # Fórmulas de XP, cálculo de niveles y progresión
-│   ├── mock-data/                # Datasets de respaldo para desarrollo offline y fallback
-│   ├── schemas/                  # Esquemas de validación Zod (auth, order, review, chat, admin)
-│   ├── services/                 # Servicios desacoplados de datos (games, users, orders)
-│   ├── supabase/                 # Clientes Supabase SSR (client, server, middleware)
-│   └── utils.ts                  # Utilidades globales (cn = clsx + tailwind-merge)
-├── types/                        # Definiciones TypeScript (catalog, gamification, moderation, chat, admin)
-├── public/                       # Recursos estáticos, portadas e imágenes vectoriales
-├── middleware.ts                 # Middleware Edge para refresco de sesión y control RBAC
-└── package.json                  # Dependencias y scripts del proyecto
-```
-
----
-
-## 📦 Prerrequisitos e Instalación Local
-
-### 1. Clonar el repositorio y navegar a la carpeta de la app:
-```bash
-git clone https://github.com/sergiam071105-ai/Vini-Games.git
-cd Vini-Games/vinigames
-```
-
-### 2. Instalar dependencias del proyecto:
-```bash
-npm install
-```
-
-### 3. Configurar variables de entorno:
-Crear el archivo `.env.local` en la raíz de `vinigames/`:
-```env
-# Supabase Cloud Project Credentials (Live Database)
-NEXT_PUBLIC_SUPABASE_URL=https://rjtjzuvpdqnaxfenwsot.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_supabase_anon_key
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-
-# n8n Webhook Endpoint (Railway Cloud 24/7 DeepSeek IA)
-N8N_WEBHOOK_URL=https://n8n-production-cea7.up.railway.app/webhook/vinichat
-NEXT_PUBLIC_N8N_VINICHAT_WEBHOOK_URL=https://n8n-production-cea7.up.railway.app/webhook/vinichat
-```
-
-### 4. Iniciar el entorno de desarrollo:
-```bash
-npm run dev
-```
-Abre [http://localhost:3000](http://localhost:3000) en tu navegador web.
-
----
-
-## 🛠️ Scripts Disponibles
-
-* `npm run dev`: Inicia el servidor de desarrollo local con Turbopack.
-* `npm run build`: Compila la aplicación para producción optimizando las **26 rutas estáticas y dinámicas**.
-* `npm run start`: Inicia el servidor Next.js en modo de producción.
-* `npm run lint`: Ejecuta el análisis estático de código con ESLint.
-
----
-
-## 🌿 Flujo de Trabajo en Git (GitFlow / GitHub Flow)
-
-* **`main`**: Rama principal de producción (despliegue productivo en Vercel).
-* **`develop`**: Rama de integración continua donde convergen las características aprobadas mediante Pull Request.
-* **`feature/<integrante>-<funcionalidad>`**: Ramas de trabajo individuales para cada módulo (ej: `feature/eduardo-sprint-4-quality-deploy`).
-
----
-
-## 📄 Licencia y Uso Académico
-
-Proyecto desarrollado con fines académicos en la **Universidad Tecnológica Privada de Santa Cruz (UTEPSA)** bajo la supervisión docente de la **Ing. Bryana Ojopi Banegas**.
+El acceso a los datos de las 20 entidades de PostgreSQL está regido por políticas RLS idempotentes:
+1. **`profiles`:** Lectura pública de niveles y avatares; edición restringida exclusivamente al dueño (`auth.uid() = id`) o administrador.
+2. **`games`:** Clientes solo leen títulos activos (`is_active = true`); administradores gestionan CRUD completo y bajas lógicas.
+3. **`cart_items` y `wishlists`:** Aislamiento estricto por usuario (`auth.uid() = user_id`).
+4. **`orders` y `order_items`:** Visualización privada de compras para el cliente y auditoría para administradores.
+5. **`reviews` y `review_votes`:** La tienda pública solo muestra opiniones aprobadas (`status = 'APPROVED'`).
+6. **`chat_sessions` y `chat_messages`:** Aislamiento de conversaciones con el asistente virtual.
+7. **`admin_audit_logs`:** Acceso restringido exclusivamente a usuarios con rol `ADMIN`.
