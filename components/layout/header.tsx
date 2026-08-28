@@ -157,7 +157,7 @@ export function Header({ profile }: HeaderProps) {
           <div className="flex items-center gap-1.5 bg-[#1A1C2B] border border-[#2D3349] rounded-lg px-3 py-1.5" aria-label={`Saldo de GameCoins: ${displayProfile.gamecoins_balance}`}>
             <Coins className="h-4 w-4 text-[#1FD1EB]" />
             <span className="text-xs font-bold text-[#F5F7FF]">
-              ◈ {displayProfile.gamecoins_balance}
+              {displayProfile.gamecoins_balance} GC
             </span>
           </div>
 
@@ -170,7 +170,7 @@ export function Header({ profile }: HeaderProps) {
           >
             <Flame className="h-4 w-4 text-[#10B981]" />
             <span className="text-xs font-bold text-[#F5F7FF]">
-              🔥 {displayProfile.current_streak} días
+              {displayProfile.current_streak} días
             </span>
           </Link>
 
@@ -348,7 +348,7 @@ export function Header({ profile }: HeaderProps) {
               <div className="flex-1 flex items-center justify-center gap-1.5 bg-[#1A1C2B] border border-[#2D3349] rounded-lg py-2">
                 <Flame className="h-4 w-4 text-[#10B981]" />
                 <span className="text-xs font-bold text-[#F5F7FF]">
-                  🔥 {displayProfile.current_streak} días
+                  {displayProfile.current_streak} días
                 </span>
               </div>
             </div>

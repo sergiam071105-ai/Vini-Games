@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server';
 import { HeroBanner } from '@/components/store/hero-banner';
 import { GameCard, Game } from '@/components/store/game-card';
-import { Sparkles, Percent, Flame, Calendar, Gamepad2 } from 'lucide-react';
+import { Sparkles, Percent, Flame, Calendar, Gamepad2, Compass, BookOpen, Boxes, Swords } from 'lucide-react';
 import { MOCK_GAMES } from '@/lib/mock-data/games';
+import Link from 'next/link';
 
 export default async function StoreHomePage() {
   const supabase = await createClient();
@@ -28,6 +29,49 @@ export default async function StoreHomePage() {
     }
   } catch (error) {
     console.error('Error fetching games in page:', error);
+  }
+
+  // Cargar datos reales del usuario (Racha y Gamer DNA)
+  let userStreak = 1;
+  let dna = {
+    narrative: 35,
+    exploration: 40,
+    collection: 15,
+    competitive: 10,
+  };
+  let dominantArchetype = 'Exploración';
+  let isAuthenticated = false;
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      isAuthenticated = true;
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('current_streak, dna_narrative, dna_exploration, dna_collection, dna_competitive')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (profile) {
+        userStreak = profile.current_streak || 1;
+        dna = {
+          narrative: profile.dna_narrative ?? 25,
+          exploration: profile.dna_exploration ?? 40,
+          collection: profile.dna_collection ?? 20,
+          competitive: profile.dna_competitive ?? 15,
+        };
+
+        const list = [
+          { name: 'Exploración', val: dna.exploration },
+          { name: 'Narrativo', val: dna.narrative },
+          { name: 'Coleccionismo', val: dna.collection },
+          { name: 'Competitivo', val: dna.competitive },
+        ].sort((a, b) => b.val - a.val);
+        dominantArchetype = list[0].name;
+      }
+    }
+  } catch (err) {
+    console.error('Error loading user profile DNA in storefront:', err);
   }
 
   const overrides = (globalThis as any).GAME_ACTIVE_OVERRIDES as Map<number, boolean> | undefined;
@@ -75,6 +119,9 @@ export default async function StoreHomePage() {
   // Remaining games represent catalog recommendations
   const recommendedGames = gamesList.slice(0, 8);
 
+  // Días completados en el ciclo semanal de 7 días
+  const currentWeekDay = ((userStreak - 1) % 7) + 1;
+
   return (
     <div className="flex flex-col gap-10">
       
@@ -112,7 +159,7 @@ export default async function StoreHomePage() {
             <div className="flex items-center gap-2 border-b border-[#2D3349] pb-3 mb-6">
               <Sparkles className="h-5 w-5 text-[#1FD1EB]" />
               <h2 className="text-xl font-extrabold text-[#F5F7FF] tracking-wide">
-                Recomendados según tu Gamer DNA
+                Recomendados según tu Gamer DNA ({dominantArchetype})
               </h2>
             </div>
             
@@ -129,12 +176,20 @@ export default async function StoreHomePage() {
         <div className="flex flex-col gap-6 sticky top-24 self-start">
           
           {/* 4. Streak & Gamification Sidebar Widget */}
-          <div className="bg-[#1A1C2B] border border-[#2D3349] rounded-2xl p-5 flex flex-col gap-4">
-            <div className="flex items-center gap-2 border-b border-[#2D3349] pb-2.5">
-              <Flame className="h-5 w-5 text-[#10B981]" />
-              <h3 className="font-extrabold text-sm text-[#F5F7FF] uppercase tracking-wider">
-                Misión Diaria
-              </h3>
+          <div className="bg-[#1A1C2B] border border-[#2D3349] rounded-2xl p-5 flex flex-col gap-4 shadow-lg">
+            <div className="flex items-center justify-between border-b border-[#2D3349] pb-2.5">
+              <div className="flex items-center gap-2">
+                <Flame className="h-5 w-5 text-[#10B981]" />
+                <h3 className="font-extrabold text-sm text-[#F5F7FF] uppercase tracking-wider">
+                  Misión Diaria
+                </h3>
+              </div>
+              <Link 
+                href="/gamification" 
+                className="text-[10px] font-bold text-[#1FD1EB] hover:underline"
+              >
+                Ver Hub →
+              </Link>
             </div>
             
             <div className="flex flex-col gap-3">
@@ -145,12 +200,12 @@ export default async function StoreHomePage() {
               {/* Daily calendar check dots */}
               <div className="flex justify-between items-center bg-[#080A13] border border-[#2D3349] rounded-xl p-3 mt-1">
                 {[1, 2, 3, 4, 5, 6, 7].map((day) => {
-                  const isChecked = day <= 3;
+                  const isChecked = day <= currentWeekDay;
                   return (
                     <div key={day} className="flex flex-col items-center gap-1.5">
                       <div className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
                         isChecked 
-                          ? 'bg-[#10B981] text-[#080A13] shadow-md shadow-[#10B981]/25' 
+                          ? 'bg-[#10B981] text-[#080A13] shadow-md shadow-[#10B981]/25 scale-105' 
                           : 'bg-[#1A1C2B] border border-[#2D3349] text-[#949CB2]'
                       }`}>
                         {day}
@@ -163,39 +218,50 @@ export default async function StoreHomePage() {
 
               <div className="flex items-center gap-2 mt-2 text-xs text-[#1FD1EB]">
                 <Calendar className="h-4 w-4" />
-                <span>Racha actual: <strong>3 días consecutivos</strong></span>
+                <span>Racha actual: <strong>{userStreak} {userStreak === 1 ? 'día' : 'días consecutivos'}</strong></span>
               </div>
             </div>
           </div>
 
           {/* Gamer DNA quick info */}
-          <div className="bg-[#1A1C2B] border border-[#2D3349] rounded-2xl p-5 flex flex-col gap-3">
-            <div className="flex items-center gap-2 border-b border-[#2D3349] pb-2.5">
-              <Gamepad2 className="h-5 w-5 text-[#783DF2]" />
-              <h3 className="font-extrabold text-sm text-[#F5F7FF] uppercase tracking-wider">
-                Tu ADN Gamer
-              </h3>
+          <div className="bg-[#1A1C2B] border border-[#2D3349] rounded-2xl p-5 flex flex-col gap-3 shadow-lg">
+            <div className="flex items-center justify-between border-b border-[#2D3349] pb-2.5">
+              <div className="flex items-center gap-2">
+                <Gamepad2 className="h-5 w-5 text-[#783DF2]" />
+                <h3 className="font-extrabold text-sm text-[#F5F7FF] uppercase tracking-wider">
+                  Tu ADN Gamer
+                </h3>
+              </div>
+              <Link
+                href="/profile"
+                className="text-[10px] font-bold text-[#783DF2] hover:text-[#1FD1EB] transition-colors"
+              >
+                Ver Perfil →
+              </Link>
             </div>
             
             <div className="flex flex-col gap-2">
               <p className="text-xs text-[#949CB2] leading-relaxed">
-                Tu perfil de jugador actual se inclina a los arquetipos narrativos y de exploración.
+                Tu perfil de jugador actual se inclina al arquetipo <strong className="text-white">{dominantArchetype}</strong>.
               </p>
               
               <div className="flex flex-col gap-2.5 mt-2">
                 {[
-                  { label: 'Narrativo', pct: 60, color: 'bg-[#783DF2]' },
-                  { label: 'Exploración', pct: 24, color: 'bg-[#1FD1EB]' },
-                  { label: 'Coleccionismo', pct: 16, color: 'bg-[#10B981]' },
-                  { label: 'Competitivo', pct: 0, color: 'bg-zinc-600' }
+                  { label: 'Exploración', pct: dna.exploration, color: 'bg-[#1FD1EB]' },
+                  { label: 'Narrativo', pct: dna.narrative, color: 'bg-[#783DF2]' },
+                  { label: 'Coleccionismo', pct: dna.collection, color: 'bg-[#10B981]' },
+                  { label: 'Competitivo', pct: dna.competitive, color: 'bg-[#EF4444]' }
                 ].map((item) => (
                   <div key={item.label} className="flex flex-col gap-1">
                     <div className="flex justify-between items-center text-[10px] font-bold text-[#F5F7FF]">
                       <span>{item.label}</span>
                       <span>{item.pct}%</span>
                     </div>
-                    <div className="w-full h-1 bg-[#080A13] rounded-full overflow-hidden">
-                      <div className={`h-full ${item.color} rounded-full`} style={{ width: `${item.pct}%` }} />
+                    <div className="w-full h-1.5 bg-[#080A13] rounded-full overflow-hidden border border-[#2D3349]/40">
+                      <div 
+                        className={`h-full ${item.color} rounded-full transition-all duration-700`} 
+                        style={{ width: `${item.pct}%` }} 
+                      />
                     </div>
                   </div>
                 ))}

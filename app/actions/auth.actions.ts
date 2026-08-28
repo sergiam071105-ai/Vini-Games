@@ -198,11 +198,11 @@ export async function logoutAction() {
 }
 
 /**
- * Signs out the current gamer and revalidates the cache (alias para compatibilidad con Header de Home).
+ * Signs out the current gamer, revalidates the layout cache and redirects to /login.
  */
 export async function signOutAction() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   revalidatePath('/', 'layout');
-  redirect('/');
+  redirect('/login');
 }
