@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Sparkles, User, Check, Loader2, AlertCircle } from 'lucide-react';
+import { X, Sparkles, User, Check, Loader2, AlertCircle, Upload } from 'lucide-react';
 import { updateProfileAction } from '@/app/actions/profile.actions';
+import { uploadUserAvatar } from '@/lib/supabase/storage';
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -37,10 +38,21 @@ export function EditProfileModal({
   const [bio, setBio] = useState(currentBio);
   const [selectedAvatar, setSelectedAvatar] = useState(currentAvatarUrl);
   const [customAvatarUrl, setCustomAvatarUrl] = useState('');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
+
+  const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setAvatarFile(file);
+      const tempUrl = URL.createObjectURL(file);
+      setCustomAvatarUrl(tempUrl);
+      setSelectedAvatar(tempUrl);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,9 +64,19 @@ export function EditProfileModal({
     }
 
     setIsSaving(true);
-    const finalAvatar = customAvatarUrl.trim() || selectedAvatar;
 
     try {
+      let finalAvatar = customAvatarUrl.trim() || selectedAvatar;
+
+      // Si el usuario seleccionó un archivo local, subirlo a Supabase Storage (o Base64 permanente)
+      if (avatarFile) {
+        try {
+          finalAvatar = await uploadUserAvatar(username.trim(), avatarFile);
+        } catch (uploadErr) {
+          console.warn('Error subiendo avatar a storage:', uploadErr);
+        }
+      }
+
       const res = await updateProfileAction({
         username: username.trim(),
         fullName: fullName.trim(),
@@ -117,7 +139,7 @@ export function EditProfileModal({
           {/* Selector de Avatar */}
           <div>
             <label className="block text-xs font-bold text-[#949CB2] uppercase tracking-wider mb-2">
-              Elige tu Avatar
+              Elige tu Avatar o Sube uno Propio
             </label>
             <div className="grid grid-cols-6 gap-2 mb-3">
               {PRESET_AVATARS.map((avatar, idx) => (
@@ -127,6 +149,7 @@ export function EditProfileModal({
                   onClick={() => {
                     setSelectedAvatar(avatar);
                     setCustomAvatarUrl('');
+                    setAvatarFile(null);
                   }}
                   className={`relative aspect-square rounded-2xl overflow-hidden border-2 bg-[#1C1730] p-1 transition-all ${
                     selectedAvatar === avatar && !customAvatarUrl
@@ -142,6 +165,35 @@ export function EditProfileModal({
                   )}
                 </button>
               ))}
+            </div>
+
+            {/* Subir archivo desde PC o URL */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+              <input
+                type="file"
+                id="avatarFileUpload"
+                accept="image/*"
+                onChange={handleAvatarFileChange}
+                className="hidden"
+              />
+              <label
+                htmlFor="avatarFileUpload"
+                className="py-2 px-3 bg-[#1A1C2B] hover:bg-[#25283d] text-[#1FD1EB] border border-[#2D3349] hover:border-[#1FD1EB]/50 rounded-xl text-xs font-bold cursor-pointer transition-all flex items-center justify-center gap-2"
+              >
+                <Upload className="w-3.5 h-3.5" />
+                Subir Foto desde PC
+              </label>
+
+              <input
+                type="url"
+                value={customAvatarUrl.startsWith('blob:') || customAvatarUrl.startsWith('data:') ? '' : customAvatarUrl}
+                onChange={(e) => {
+                  setCustomAvatarUrl(e.target.value);
+                  setAvatarFile(null);
+                }}
+                placeholder="O pegar URL de imagen..."
+                className="bg-[#1A1C2B] border border-[#2D3349] rounded-xl px-3 py-2 text-xs text-white placeholder:text-[#64748B] focus:outline-none focus:border-[#783DF2]"
+              />
             </div>
           </div>
 
@@ -181,35 +233,36 @@ export function EditProfileModal({
 
           {/* Bio */}
           <div>
-            <div className="flex justify-between items-center mb-1.5">
-              <label className="text-xs font-bold text-[#949CB2] uppercase tracking-wider">
-                Biografía Gamer
-              </label>
-              <span className="text-[10px] text-[#949CB2]">{bio.length} / 160</span>
-            </div>
+            <label className="block text-xs font-bold text-[#949CB2] uppercase tracking-wider mb-1.5">
+              Biografía Gamer
+            </label>
             <textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              placeholder="Escribe algo sobre tu estilo de juego, tus sagas favoritas..."
-              maxLength={160}
+              placeholder="Cuéntale a la comunidad tus géneros favoritos o estilo de juego..."
               rows={3}
-              className="w-full bg-[#1A1C2B] border border-[#2D3349] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#783DF2] focus:ring-1 focus:ring-[#783DF2] resize-none"
+              maxLength={200}
+              className="w-full bg-[#1A1C2B] border border-[#2D3349] rounded-xl p-3 text-sm text-white placeholder:text-[#64748B] focus:outline-none focus:border-[#783DF2] focus:ring-1 focus:ring-[#783DF2] resize-none"
             />
+            <span className="text-[10px] text-[#64748B] text-right block mt-1">
+              {bio.length}/200 caracteres
+            </span>
           </div>
 
           {/* Botones de Acción */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#2D3349]">
+          <div className="flex gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 rounded-xl text-xs font-bold text-[#949CB2] hover:bg-[#1A1C2B] hover:text-white transition-colors"
+              disabled={isSaving}
+              className="flex-1 rounded-xl border border-[#2D3349] bg-transparent py-2.5 text-sm font-semibold text-[#949CB2] hover:bg-[#1A1C2B] hover:text-white transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isSaving}
-              className="flex items-center gap-2 rounded-xl bg-[#783DF2] hover:bg-[#8B4DFF] px-6 py-2.5 text-xs font-bold text-white shadow-lg shadow-[#783DF2]/30 transition-all disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-[#783DF2] py-2.5 text-sm font-semibold text-white hover:bg-[#682FD0] transition-colors shadow-lg shadow-[#783DF2]/25 disabled:opacity-50"
             >
               {isSaving ? (
                 <>
@@ -224,7 +277,6 @@ export function EditProfileModal({
               )}
             </button>
           </div>
-
         </form>
       </div>
     </div>

@@ -242,11 +242,33 @@ export default function EditGamePage() {
               />
               <label
                 htmlFor="coverEditUpload"
-                className="w-full py-2 bg-[#1A1C2B] hover:bg-[#25283d] text-[#1FD1EB] border border-[#2E334A] hover:border-[#1FD1EB]/50 rounded-xl text-xs font-bold cursor-pointer transition-all flex items-center justify-center gap-2"
+                className="w-full py-2 bg-[#1A1C2B] hover:bg-[#25283d] text-[#1FD1EB] border border-[#2E334A] hover:border-[#1FD1EB]/50 rounded-xl text-xs font-bold cursor-pointer transition-all flex items-center justify-center gap-2 mb-2"
               >
                 <Upload className="w-3.5 h-3.5" />
-                Actualizar Imagen
+                Subir desde PC (Supabase Storage)
               </label>
+
+              {/* O ingresar URL directa */}
+              <div className="text-left mt-2">
+                <label className="text-[10px] text-[#94A3B8] font-bold block mb-1">
+                  O pegar URL de imagen externa:
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://... (Steam, IGDB, Unsplash)"
+                  value={coverPreview.startsWith('blob:') || coverPreview.startsWith('data:') ? '' : coverPreview}
+                  onChange={(e) => {
+                    if (e.target.value.trim()) {
+                      setCoverFile(null);
+                      setCoverPreview(e.target.value.trim());
+                    }
+                  }}
+                  className="w-full px-3 py-1.5 bg-[#090B14] border border-[#2E334A] focus:border-[#783DF2] rounded-lg text-[11px] text-[#F8FAFC] outline-none transition-all"
+                />
+              </div>
+              <span className="text-[10px] text-[#94A3B8] mt-1.5 block">
+                Formatos: JPG, PNG, WEBP o enlaces HTTPS
+              </span>
             </div>
 
             {/* Resumen Financiero Dinámico */}
