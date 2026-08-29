@@ -23,6 +23,7 @@ import {
 import { getLevelProgress } from '@/lib/gamification/level-calculator';
 import { useCart } from '@/lib/context/cart-context';
 import { useWishlist } from '@/lib/context/wishlist-context';
+import { getAvatarUrl } from '@/lib/utils/avatar-helper';
 
 interface Profile {
   id: string;
@@ -196,18 +197,40 @@ export function Header({ profile }: HeaderProps) {
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 aria-label="Abrir menú de perfil de usuario"
                 aria-expanded={dropdownOpen}
-                className="flex items-center gap-2 bg-[#1A1C2B] hover:bg-[#131421] border border-[#2D3349] rounded-lg p-1.5 transition-colors cursor-pointer"
+                className="flex items-center gap-2 bg-[#1A1C2B] hover:bg-[#131421] border border-[#2D3349] hover:border-[#783DF2] rounded-xl p-1 transition-all cursor-pointer group"
               >
-                <div className="h-6 w-6 rounded bg-[#783DF2] flex items-center justify-center font-bold text-[#F5F7FF] text-xs">
-                  {displayProfile.username?.substring(0, 2).toUpperCase() || 'G'}
+                <div className="h-7 w-7 rounded-lg overflow-hidden border border-[#783DF2]/80 bg-[#1C1730] flex-shrink-0">
+                  <img
+                    src={getAvatarUrl(displayProfile.avatar_url, displayProfile.username)}
+                    alt={displayProfile.username || 'Gamer'}
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = getAvatarUrl(null, displayProfile.username);
+                    }}
+                  />
                 </div>
+                <span className="hidden xl:inline-block text-xs font-bold text-[#F5F7FF] max-w-[90px] truncate pr-1">
+                  @{displayProfile.username}
+                </span>
               </button>
               
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-[#1A1C2B] border border-[#2D3349] rounded-lg shadow-xl py-1">
-                  <div className="px-4 py-2 border-b border-[#2D3349]">
-                    <p className="text-xs text-[#949CB2]">Identidad Gamer</p>
-                    <p className="text-sm font-bold text-[#F5F7FF] truncate">@{displayProfile.username}</p>
+                <div className="absolute right-0 mt-2 w-52 bg-[#1A1C2B] border border-[#2D3349] rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-4 py-2.5 border-b border-[#2D3349] flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-xl overflow-hidden border border-[#783DF2] bg-[#1C1730] flex-shrink-0">
+                      <img
+                        src={getAvatarUrl(displayProfile.avatar_url, displayProfile.username)}
+                        alt={displayProfile.username || 'Gamer'}
+                        className="h-full w-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = getAvatarUrl(null, displayProfile.username);
+                        }}
+                      />
+                    </div>
+                    <div className="truncate">
+                      <p className="text-[10px] text-[#949CB2] font-semibold uppercase tracking-wider">Identidad Gamer</p>
+                      <p className="text-xs font-black text-[#F5F7FF] truncate">@{displayProfile.username}</p>
+                    </div>
                   </div>
                   {displayProfile.role === 'ADMIN' && (
                     <Link 
@@ -356,13 +379,20 @@ export function Header({ profile }: HeaderProps) {
             {/* Mobile Auth Button */}
             {profile ? (
               <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2 bg-[#1A1C2B] rounded-lg p-2">
-                  <div className="h-8 w-8 rounded bg-[#783DF2] flex items-center justify-center font-bold text-[#F5F7FF] text-sm">
-                    {displayProfile.username?.substring(0, 2).toUpperCase() || 'G'}
+                <div className="flex items-center gap-3 bg-[#1A1C2B] rounded-xl p-2.5 border border-[#2D3349]">
+                  <div className="h-9 w-9 rounded-xl overflow-hidden border border-[#783DF2] bg-[#1C1730] flex-shrink-0">
+                    <img
+                      src={getAvatarUrl(displayProfile.avatar_url, displayProfile.username)}
+                      alt={displayProfile.username || 'Gamer'}
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = getAvatarUrl(null, displayProfile.username);
+                      }}
+                    />
                   </div>
                   <div className="truncate">
-                    <p className="text-[10px] text-[#949CB2]">Conectado como</p>
-                    <p className="text-xs font-bold text-[#F5F7FF]">@{displayProfile.username}</p>
+                    <p className="text-[10px] text-[#949CB2] font-semibold uppercase tracking-wider">Conectado como</p>
+                    <p className="text-xs font-black text-[#F5F7FF]">@{displayProfile.username}</p>
                   </div>
                 </div>
                 {displayProfile.role === 'ADMIN' && (

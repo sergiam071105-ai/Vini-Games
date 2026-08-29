@@ -2,25 +2,24 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   Gamepad2,
   TrendingUp,
   MessageSquareText,
+  Users,
   ArrowLeft,
   Shield,
-  Layers,
-  Sparkles,
-  ChevronRight,
   Menu,
   X,
 } from 'lucide-react';
+import { getAvatarUrl } from '@/lib/utils/avatar-helper';
 
 interface AdminSidebarProps {
   userEmail?: string;
   adminName?: string;
+  adminAvatarUrl?: string | null;
 }
 
 const ADMIN_NAV_LINKS = [
@@ -48,9 +47,19 @@ const ADMIN_NAV_LINKS = [
     icon: MessageSquareText,
     badge: 'Social',
   },
+  {
+    href: '/admin/users',
+    label: 'Equipo & Admins',
+    icon: Users,
+    badge: 'Staff',
+  },
 ];
 
-export function AdminSidebar({ userEmail, adminName = 'Vinicius (Lead)' }: AdminSidebarProps) {
+export function AdminSidebar({
+  userEmail,
+  adminName = 'Vinicius (Lead)',
+  adminAvatarUrl,
+}: AdminSidebarProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -63,70 +72,48 @@ export function AdminSidebar({ userEmail, adminName = 'Vinicius (Lead)' }: Admin
             <Shield className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-sm font-extrabold text-[#F8FAFC]">ViniAdmin Panel</h2>
-            <span className="text-[10px] font-bold text-[#1FD1EB] uppercase tracking-wider block">
-              Control de Operaciones
-            </span>
+            <h2 className="text-sm font-extrabold text-[#F8FAFC]">ViniAdmin</h2>
+            <p className="text-[10px] text-[#1FD1EB] font-bold tracking-wider uppercase">
+              Control Maestro
+            </p>
           </div>
-        </div>
-
-        {/* Botón cerrar en mobile */}
-        <button
-          onClick={() => setMobileMenuOpen(false)}
-          className="md:hidden p-1.5 text-[#94A3B8] hover:text-white rounded-lg hover:bg-[#1A1C2B] transition-colors"
-          aria-label="Cerrar menú de administración"
-        >
-          <X className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* Badge de Rol */}
-      <div className="px-4 pt-3">
-        <div className="bg-[#1A1C2B] border border-[#783DF2]/40 rounded-xl p-2.5 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#783DF2]" />
-            <span className="text-xs font-black text-[#F8FAFC]">ADMINISTRADOR</span>
-          </div>
-          <span className="px-2 py-0.5 rounded bg-[#10B981]/20 text-[#10B981] text-[9px] font-bold">
-            Activo
-          </span>
         </div>
       </div>
 
       {/* Navegación Principal */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-1.5 scrollbar-none">
-        <span className="text-[10px] uppercase tracking-wider text-[#94A3B8] font-bold px-3 py-1 block">
-          Módulos de Gestión
-        </span>
+      <div className="flex-1 p-3 space-y-1.5 overflow-y-auto">
+        <p className="px-3 py-2 text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider">
+          Módulos del Sistema
+        </p>
 
         {ADMIN_NAV_LINKS.map((link) => {
           const Icon = link.icon;
-          const isActive =
-            link.href === '/admin'
-              ? pathname === '/admin'
-              : pathname.startsWith(link.href);
+          const isActive = pathname === link.href;
 
           return (
             <Link
               key={link.href}
               href={link.href}
               onClick={() => setMobileMenuOpen(false)}
-              className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all group ${
+              className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
                 isActive
-                  ? 'bg-[#783DF2] text-[#F8FAFC] shadow-lg shadow-[#783DF2]/25'
-                  : 'text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#1A1C2B]'
+                  ? 'bg-gradient-to-r from-[#783DF2]/25 to-[#1FD1EB]/10 text-[#F8FAFC] border border-[#783DF2]/40 shadow-lg shadow-[#783DF2]/10'
+                  : 'text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#1A1C2B] border border-transparent'
               }`}
             >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-[#F8FAFC]' : 'text-[#783DF2] group-hover:text-[#1FD1EB]'}`} />
-                <span className="truncate">{link.label}</span>
+              <div className="flex items-center gap-3">
+                <Icon
+                  className={`w-4 h-4 ${
+                    isActive ? 'text-[#1FD1EB]' : 'text-[#94A3B8]'
+                  }`}
+                />
+                <span>{link.label}</span>
               </div>
-
               <span
-                className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${
+                className={`text-[9px] px-2 py-0.5 rounded-md font-extrabold ${
                   isActive
-                    ? 'bg-black/30 text-[#1FD1EB]'
-                    : 'bg-[#1A1C2B] text-[#94A3B8] group-hover:text-[#F8FAFC]'
+                    ? 'bg-[#783DF2] text-white'
+                    : 'bg-[#1A1C2B] text-[#94A3B8]'
                 }`}
               >
                 {link.badge}
@@ -139,8 +126,15 @@ export function AdminSidebar({ userEmail, adminName = 'Vinicius (Lead)' }: Admin
       {/* Pie de Sidebar: Perfil y Salida a Tienda */}
       <div className="p-4 border-t border-[#2E334A] bg-[#131521]/60 space-y-3">
         <div className="flex items-center gap-2.5 px-2">
-          <div className="w-7 h-7 rounded-lg bg-[#783DF2] flex items-center justify-center font-bold text-xs text-white">
-            {adminName.substring(0, 2).toUpperCase()}
+          <div className="w-8 h-8 rounded-xl overflow-hidden border border-[#783DF2] bg-[#1C1730] flex-shrink-0 shadow-md">
+            <img
+              src={getAvatarUrl(adminAvatarUrl, adminName)}
+              alt={adminName}
+              className="h-full w-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = getAvatarUrl(null, adminName);
+              }}
+            />
           </div>
           <div className="truncate">
             <p className="text-xs font-bold text-[#F8FAFC] truncate">{adminName}</p>

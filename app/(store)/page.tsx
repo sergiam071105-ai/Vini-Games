@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { HeroBanner } from '@/components/store/hero-banner';
 import { GameCard, Game } from '@/components/store/game-card';
-import { Sparkles, Percent, Flame, Calendar, Gamepad2, Compass, BookOpen, Boxes, Swords } from 'lucide-react';
+import { OffersCarousel } from '@/components/store/offers-carousel';
+import { Sparkles, Flame, Calendar, Gamepad2, Compass, BookOpen, Boxes, Swords } from 'lucide-react';
 import { MOCK_GAMES } from '@/lib/mock-data/games';
 import Link from 'next/link';
 
@@ -110,13 +111,15 @@ export default async function StoreHomePage() {
     }
   }
 
-  // Find the featured game (Neon Odyssey by default)
-  const featuredGame = gamesList.find(g => g.slug === 'neon-odyssey-cyber-genesis' || g.slug === 'neon-odyssey') || gamesList[0];
+  // Seleccionar juego destacado para el Hero Showcase (Cyberpunk 2077 o primer título)
+  const featuredGame = gamesList.find(g => g.slug === 'cyberpunk-2077' || g.slug === 'elden-ring') || gamesList[0];
 
-  // Filter games with active discounts for the Offers section
-  const discountedGames = gamesList.filter(g => g.discount_percent > 0).slice(0, 4);
+  // Todos los juegos con descuento activo ordenados por mayor descuento para el Carrusel de Ofertas
+  const discountedGames = gamesList
+    .filter(g => g.discount_percent > 0)
+    .sort((a, b) => b.discount_percent - a.discount_percent);
 
-  // Remaining games represent catalog recommendations
+  // Juegos recomendados para la sección de catálogo
   const recommendedGames = gamesList.slice(0, 8);
 
   // Días completados en el ciclo semanal de 7 días
@@ -138,21 +141,8 @@ export default async function StoreHomePage() {
         {/* Left Side: Games Sections (3 cols wide) */}
         <div className="lg:col-span-3 flex flex-col gap-10">
           
-          {/* 2. Offers Section */}
-          <section aria-label="Ofertas Especiales">
-            <div className="flex items-center gap-2 border-b border-[#2D3349] pb-3 mb-6">
-              <Percent className="h-5 w-5 text-[#10B981]" />
-              <h2 className="text-xl font-extrabold text-[#F5F7FF] tracking-wide">
-                Ofertas Especiales
-              </h2>
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-              {discountedGames.map((game) => (
-                <GameCard key={`offer-${game.id}-${game.slug}`} game={game} />
-              ))}
-            </div>
-          </section>
+          {/* 2. Carrusel de Ofertas Especiales Desplazable de Izquierda a Derecha */}
+          <OffersCarousel games={discountedGames} />
 
           {/* 3. DNA Recommendations Section */}
           <section aria-label="Recomendados Gamer DNA">

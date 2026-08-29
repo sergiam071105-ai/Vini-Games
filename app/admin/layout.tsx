@@ -17,6 +17,7 @@ export default async function AdminLayout({
   const supabase = await createClient();
   let userEmail = 'admin@vinigames.bo';
   let adminName = 'Vinicius (Lead)';
+  let adminAvatarUrl: string | null = null;
 
   try {
     const { data: { user } } = await supabase.auth.getUser();
@@ -24,12 +25,15 @@ export default async function AdminLayout({
       userEmail = user.email || userEmail;
       const { data: profile } = await supabase
         .from('profiles')
-        .select('username, role')
+        .select('username, role, avatar_url')
         .eq('id', user.id)
         .maybeSingle();
 
       if (profile?.username) {
         adminName = profile.username;
+      }
+      if (profile?.avatar_url) {
+        adminAvatarUrl = profile.avatar_url;
       }
     }
   } catch (err) {
@@ -39,7 +43,7 @@ export default async function AdminLayout({
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-[#080A13] text-[#F8FAFC]">
       {/* Sidebar Persistente de ViniAdmin (Mobile Drawer + Desktop Sidebar) */}
-      <AdminSidebar userEmail={userEmail} adminName={adminName} />
+      <AdminSidebar userEmail={userEmail} adminName={adminName} adminAvatarUrl={adminAvatarUrl} />
       
       {/* Contenedor Principal */}
       <main className="flex-1 flex flex-col min-h-screen md:h-screen md:overflow-y-auto bg-[#090B14]">

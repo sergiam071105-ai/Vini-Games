@@ -47,6 +47,26 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'www.rockstargames.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'assets.nintendo.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'media.nintendo.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.nintendo.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.dicebear.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'raw.githubusercontent.com',
+      },
     ],
   },
 };

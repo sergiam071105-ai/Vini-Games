@@ -15,6 +15,7 @@ import {
   approveReviewAction,
   rejectReviewAction,
 } from "@/app/actions/moderation.actions";
+import { getAvatarUrl } from "@/lib/utils/avatar-helper";
 
 import type { ModerationReview } from "@/types/moderation.types";
 
@@ -117,10 +118,15 @@ export default function ReviewModerationCard({
         <div className="flex flex-col gap-5">
           <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#783DF2]/40 bg-[#783DF2]/10 text-sm font-bold text-[#A879FF]">
-                {review.author.username
-                  .substring(0, 2)
-                  .toUpperCase()}
+              <div className="h-11 w-11 rounded-2xl overflow-hidden border border-[#783DF2] bg-[#1C1730] shrink-0 shadow-md">
+                <img
+                  src={getAvatarUrl(review.author.avatarUrl, review.author.username)}
+                  alt={review.author.username}
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = getAvatarUrl(null, review.author.username);
+                  }}
+                />
               </div>
 
               <div>
