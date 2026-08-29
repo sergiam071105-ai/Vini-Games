@@ -43,7 +43,7 @@
             },
             {
               "name": "Authorization",
-              "value": "Bearer sk-bb38e1b5625d455ba152128f24483fb0"
+              "value": "Bearer YOUR_DEEPSEEK_API_KEY_HERE"
             }
           ]
         },
