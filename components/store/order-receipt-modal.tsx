@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import confetti from 'canvas-confetti';
 import { CheckCircle2, Copy, Sparkles, ArrowRight, Library, ShieldCheck, X, Check } from 'lucide-react';
 import { OrderSummary } from '@/types/order.types';
 
@@ -18,37 +19,30 @@ export function OrderReceiptModal({ isOpen, onClose, order }: OrderReceiptModalP
   useEffect(() => {
     if (isOpen && order) {
       // Disparo de ráfaga de confeti gamer con tokens de Figma
-      const triggerConfetti = async () => {
-        try {
-          // @ts-ignore
-          const confettiModule = await import('canvas-confetti');
-          const confetti = confettiModule.default || confettiModule;
-          const count = 200;
-          const defaults = {
-            origin: { y: 0.6 },
-            colors: ['#783DF2', '#1FD1EB', '#10B981', '#F59E0B', '#FFFFFF'],
-            zIndex: 9999,
-          };
+      try {
+        const count = 200;
+        const defaults = {
+          origin: { y: 0.6 },
+          colors: ['#783DF2', '#1FD1EB', '#10B981', '#F59E0B', '#FFFFFF'],
+          zIndex: 9999,
+        };
 
-          const fire = (particleRatio: number, opts: any) => {
-            confetti({
-              ...defaults,
-              ...opts,
-              particleCount: Math.floor(count * particleRatio),
-            });
-          };
+        const fire = (particleRatio: number, opts: confetti.Options) => {
+          confetti({
+            ...defaults,
+            ...opts,
+            particleCount: Math.floor(count * particleRatio),
+          });
+        };
 
-          fire(0.25, { spread: 26, startVelocity: 55 });
-          fire(0.2, { spread: 60 });
-          fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
-          fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
-          fire(0.1, { spread: 120, startVelocity: 45 });
-        } catch (err) {
-          // Si canvas-confetti no está instalado, continúa sin error
-        }
-      };
-
-      triggerConfetti();
+        fire(0.25, { spread: 26, startVelocity: 55 });
+        fire(0.2, { spread: 60 });
+        fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+        fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+        fire(0.1, { spread: 120, startVelocity: 45 });
+      } catch (err) {
+        console.warn('Confetti effect failed gracefully:', err);
+      }
     }
   }, [isOpen, order]);
 

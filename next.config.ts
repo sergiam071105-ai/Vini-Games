@@ -15,6 +15,38 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: '**.supabase.co',
       },
+      {
+        protocol: 'https',
+        hostname: 'shared.cloudflare.steamstatic.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'shared.fastly.steamstatic.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.akamai.steamstatic.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'steamcdn-a.akamaihd.net',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.steamstatic.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.igdb.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'media.rawg.io',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.rockstargames.com',
+      },
     ],
   },
 };
