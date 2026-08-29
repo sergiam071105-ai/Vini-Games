@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Eye, ChevronLeft, ChevronRight, Receipt, CreditCard } from 'lucide-react';
 import { AdminOrder } from '@/types/admin-sales.types';
+import { getAvatarUrl } from '@/lib/utils/avatar-helper';
 
 interface SalesTableProps {
   orders: AdminOrder[];
@@ -92,8 +93,15 @@ export function SalesTable({ orders, onSelectOrder }: SalesTableProps) {
                   {/* Comprador */}
                   <td className="py-4 px-5">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#783DF2] to-[#5826B0] text-white text-xs font-black flex items-center justify-center shrink-0 shadow-md">
-                        {order.username.charAt(0).toUpperCase()}
+                      <div className="w-8 h-8 rounded-xl overflow-hidden border border-[#783DF2] bg-[#1C1730] shrink-0 shadow-md">
+                        <img
+                          src={getAvatarUrl(order.avatarUrl, order.username)}
+                          alt={order.username}
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = getAvatarUrl(null, order.username);
+                          }}
+                        />
                       </div>
                       <div className="min-w-0">
                         <div className="text-[#F5F7FF] font-bold text-xs truncate">

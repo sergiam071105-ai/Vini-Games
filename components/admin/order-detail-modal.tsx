@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { X, Check, Copy, Receipt, Calendar, User, Mail, CreditCard, ShieldCheck, Tag } from 'lucide-react';
 import { AdminOrder } from '@/types/admin-sales.types';
+import { getAvatarUrl } from '@/lib/utils/avatar-helper';
 
 interface OrderDetailModalProps {
   order: AdminOrder | null;
@@ -98,13 +99,25 @@ export function OrderDetailModal({ order, isOpen, onClose }: OrderDetailModalPro
         <div className="p-6 overflow-y-auto space-y-6">
           {/* Metadatos del Comprador y Fecha */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-[#0D101D] rounded-xl border border-[#2D3349]">
-            <div className="space-y-1">
-              <span className="text-[10px] text-[#949CB2] uppercase font-bold tracking-wider flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 text-[#1FD1EB]" /> Usuario Comprador
-              </span>
-              <div className="text-sm font-bold text-white">@{order.username}</div>
-              <div className="text-xs text-[#949CB2] flex items-center gap-1">
-                <Mail className="w-3 h-3 text-zinc-500" /> {order.email}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl overflow-hidden border border-[#783DF2] bg-[#1C1730] shrink-0 shadow-md">
+                <img
+                  src={getAvatarUrl(order.avatarUrl, order.username)}
+                  alt={order.username}
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = getAvatarUrl(null, order.username);
+                  }}
+                />
+              </div>
+              <div className="space-y-0.5 min-w-0">
+                <span className="text-[10px] text-[#949CB2] uppercase font-bold tracking-wider flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-[#1FD1EB]" /> Usuario Comprador
+                </span>
+                <div className="text-sm font-bold text-white truncate">@{order.username}</div>
+                <div className="text-xs text-[#949CB2] flex items-center gap-1 truncate">
+                  <Mail className="w-3 h-3 text-zinc-500" /> {order.email}
+                </div>
               </div>
             </div>
 
