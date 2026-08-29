@@ -3,12 +3,14 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { ShoppingCart, Trash2, ArrowLeft, ShieldCheck, Sparkles, Lock, ShoppingBag, ArrowRight, AlertTriangle, Plus, Minus } from 'lucide-react';
 import { useCart } from '@/lib/context/cart-context';
 import { useLibrary } from '@/lib/context/library-context';
 import { CheckoutModal } from '@/components/store/checkout-modal';
 
 export default function CartPage() {
+  const router = useRouter();
   const { items, itemCount, subtotal, discountTotal, total, updateQuantity, removeItem, clearCart } = useCart();
   const { isOwned } = useLibrary();
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -234,7 +236,7 @@ export default function CartPage() {
 
               {/* Botón Checkout */}
               <button
-                onClick={() => setIsCheckoutOpen(true)}
+                onClick={() => router.push('/checkout')}
                 className="w-full bg-[#783DF2] hover:bg-[#6929e4] text-[#F5F7FF] font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-[#783DF2]/30 flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer"
               >
                 <Lock className="w-4 h-4" />

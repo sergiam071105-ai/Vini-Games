@@ -3,12 +3,14 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { ShoppingCart, X, Trash2, ArrowRight, ShieldCheck, ShoppingBag, AlertTriangle, Plus, Minus } from 'lucide-react';
 import { useCart } from '@/lib/context/cart-context';
 import { useLibrary } from '@/lib/context/library-context';
 import { CheckoutModal } from '@/components/store/checkout-modal';
 
 export function CartDrawer() {
+  const router = useRouter();
   const {
     items,
     itemCount,
@@ -29,7 +31,7 @@ export function CartDrawer() {
 
   const handleOpenCheckout = () => {
     closeDrawer();
-    setIsCheckoutOpen(true);
+    router.push('/checkout');
   };
 
   return (
