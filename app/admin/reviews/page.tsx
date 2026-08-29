@@ -11,6 +11,7 @@ import ReviewModerationFilters from "@/components/admin/review-moderation-filter
 import KpiCommunityCards from "@/components/admin/kpi-community-cards";
 import GamerDnaDistributionChart from "@/components/admin/gamer-dna-distribution-chart";
 import { MOCK_GAMES } from "@/lib/mock-data/games";
+import { getAvatarUrl } from "@/lib/utils/avatar-helper";
 
 import type {
   CommunityKpis,
@@ -195,7 +196,7 @@ export default async function AdminReviewsPage({
         author: {
           id: review.profiles.id,
           username: review.profiles.username,
-          avatarUrl: review.profiles.avatar_url,
+          avatarUrl: getAvatarUrl(review.profiles.avatar_url, review.profiles.username),
           currentLevel: review.profiles.current_level,
         },
         game: {

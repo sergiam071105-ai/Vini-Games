@@ -27,6 +27,7 @@ import {
 import { getLevelProgress } from '@/lib/gamification/level-calculator';
 import { FullProfilePayload, UserProfileData } from '@/app/actions/profile.actions';
 import { EditProfileModal } from '@/components/profile/edit-profile-modal';
+import { getAvatarUrl } from '@/lib/utils/avatar-helper';
 
 interface ProfileClientViewProps {
   initialData: FullProfilePayload;
@@ -72,17 +73,14 @@ export function ProfileClientView({ initialData }: ProfileClientViewProps) {
           {/* Avatar del Jugador */}
           <div className="relative flex-shrink-0">
             <div className="h-32 w-32 md:h-36 md:w-36 overflow-hidden rounded-3xl border-2 border-[#783DF2]/60 bg-[#1C1730] shadow-lg shadow-[#783DF2]/20">
-              {profile.avatarUrl ? (
-                <img
-                  src={profile.avatarUrl}
-                  alt={profile.username}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center">
-                  <UserRound className="h-16 w-16 text-[#783DF2]" />
-                </div>
-              )}
+              <img
+                src={getAvatarUrl(profile.avatarUrl, profile.username)}
+                alt={profile.username}
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = getAvatarUrl(null, profile.username);
+                }}
+              />
             </div>
             <div className="absolute -bottom-2 -right-2 rounded-xl border border-[#2D3349] bg-[#0B0D18] px-2.5 py-1 text-[11px] font-black text-[#1FD1EB] shadow-md">
               LVL {level}

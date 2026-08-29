@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { MOCK_ADMIN_ORDERS, calculateFinancialKPIs } from '@/lib/mock-data/sales';
 import { AdminOrder, OrderItemDetail } from '@/types/admin-sales.types';
 import { AdminSalesClientView } from '@/components/admin/admin-sales-client-view';
+import { getAvatarUrl } from '@/lib/utils/avatar-helper';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,7 +72,7 @@ export default async function AdminSalesPage() {
           userId: o.user_id,
           username: uname,
           email: `${uname.toLowerCase().replace(/\s+/g, '')}@vinigames.com`,
-          avatarUrl: o.profiles?.avatar_url || null,
+          avatarUrl: getAvatarUrl(o.profiles?.avatar_url, uname),
           subtotal: Number(o.subtotal),
           discountTotal: Number(o.discount_total || 0),
           total: Number(o.total),

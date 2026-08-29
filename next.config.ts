@@ -59,6 +59,14 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: '**.nintendo.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'api.dicebear.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'raw.githubusercontent.com',
+      },
     ],
   },
 };
