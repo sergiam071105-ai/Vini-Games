@@ -254,29 +254,29 @@ function generateLocalAssistantReply(userQuery: string): {
 
   if (query.includes('adn') || query.includes('recomiend') || query.includes('perfil') || query.includes('favorito')) {
     return {
-      content: `Analizando tu **ADN Gamer** y preferencias de juego... 🧬⚡\n\nDetecto una afinidad por experiencias inmersivas de alta intensidad y mundos futuristas. Aquí tienes mis títulos recomendados del catálogo:`,
-      recommendedGameIds: [1, 2], // Neon Odyssey, Cyber Rush 2077
+      content: `Analizando tu **ADN Gamer** y preferencias de juego... 🧬⚡\n\nDetecto una afinidad por experiencias inmersivas y mundos épicos. Aquí tienes mis títulos recomendados del catálogo:`,
+      recommendedGameIds: [1, 2], // Cyberpunk 2077, Elden Ring
     };
   }
 
   if (query.includes('oferta') || query.includes('descuento') || query.includes('barato') || query.includes('promocion')) {
     return {
       content: `¡Modo cazador de ofertas activado! 🏷️🔥\n\nEstos son los títulos con los **mayores descuentos activos** en la tienda en este momento. ¡Aprovecha antes de que finalice la promoción!`,
-      recommendedGameIds: [1, 3], // Neon Odyssey (30%), Shadow Blade (25%)
+      recommendedGameIds: [21, 3], // The Witcher 3 (60%), Hollow Knight (50%)
     };
   }
 
   if (query.includes('coop') || query.includes('amigo') || query.includes('multijugador') || query.includes('equipo')) {
     return {
       content: `¡Nada mejor que jugar en escuadrón! 👥⚔️\n\nTe recomiendo estos videojuegos cooperativos y multijugador para dominar las partidas en equipo:`,
-      recommendedGameIds: [4, 5], // Galactic Tactics, Dragon's Legacy
+      recommendedGameIds: [5, 11], // Baldur's Gate 3, GTA V
     };
   }
 
   if (query.includes('estrategia') || query.includes('sci-fi') || query.includes('espaci') || query.includes('tactica')) {
     return {
-      content: `Para comandantes y mentes tácticas del cosmos 🌌♟️\n\nAquí tienes las mejores opciones de estrategia y ciencia ficción disponibles en ViniGames:`,
-      recommendedGameIds: [4, 1], // Galactic Tactics, Neon Odyssey
+      content: `Para comandantes y mentes tácticas 🌌♟️\n\nAquí tienes las mejores opciones de estrategia y simulación disponibles en ViniGames:`,
+      recommendedGameIds: [22, 23], // Civilization VI, Age of Empires IV
     };
   }
 

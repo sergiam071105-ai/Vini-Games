@@ -10,6 +10,7 @@ import ReviewModerationCard from "@/components/admin/review-moderation-card";
 import ReviewModerationFilters from "@/components/admin/review-moderation-filters";
 import KpiCommunityCards from "@/components/admin/kpi-community-cards";
 import GamerDnaDistributionChart from "@/components/admin/gamer-dna-distribution-chart";
+import { MOCK_GAMES } from "@/lib/mock-data/games";
 
 import type {
   CommunityKpis,
@@ -165,8 +166,8 @@ export default async function AdminReviewsPage({
         },
         game: {
           id: r.gameId,
-          title: "Shadows of Eldoria",
-          coverImageUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80",
+          title: MOCK_GAMES.find((g) => g.id === r.gameId)?.title || "Elden Ring: Shadow of the Erdtree",
+          coverImageUrl: MOCK_GAMES.find((g) => g.id === r.gameId)?.cover_image_url || "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1245620/header.jpg",
         },
       };
     });

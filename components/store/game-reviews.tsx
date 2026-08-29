@@ -13,7 +13,7 @@ interface GameReviewsProps {
   gameTitle?: string;
 }
 
-export function GameReviews({ gameId = 1, gameTitle = 'Neon Odyssey' }: GameReviewsProps) {
+export function GameReviews({ gameId = 1, gameTitle = 'Cyberpunk 2077: Phantom Liberty' }: GameReviewsProps) {
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [stats, setStats] = useState({
     ratingAvg: 4.8,

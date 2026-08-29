@@ -110,8 +110,8 @@ export default async function StoreHomePage() {
     }
   }
 
-  // Find the featured game (Neon Odyssey by default)
-  const featuredGame = gamesList.find(g => g.slug === 'neon-odyssey-cyber-genesis' || g.slug === 'neon-odyssey') || gamesList[0];
+  // Seleccionar juego destacado para el Hero Showcase (Cyberpunk 2077 o primer título)
+  const featuredGame = gamesList.find(g => g.slug === 'cyberpunk-2077' || g.slug === 'elden-ring') || gamesList[0];
 
   // Filter games with active discounts for the Offers section
   const discountedGames = gamesList.filter(g => g.discount_percent > 0).slice(0, 4);
