@@ -1,0 +1,124 @@
+{
+  "name": "ViniChat - Asistente IA DeepSeek & Supabase Context",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "vinichat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "id": "node-webhook-vinichat",
+      "name": "Webhook ViniChat"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extraer y enriquecer contexto del usuario, catálogo y su Gamer DNA\nconst inputData = $input.first().json.body || $input.first().json;\n\nconst userId = inputData.user_id || inputData.userId || 'anonymous';\nconst message = inputData.message || '';\nconst sessionId = inputData.session_id || inputData.sessionId || '';\nconst topic = inputData.topic || 'Recomendaciones';\n\nconst userProfile = inputData.user_profile || {};\nconst rawDna = userProfile.gamer_dna || inputData.gamerDna || {\n  exploration: 25,\n  competitive: 25,\n  collection: 25,\n  narrative: 25\n};\n\nconst dnaArray = [\n  { name: 'Explorador', val: rawDna.exploration || 0 },\n  { name: 'Competitivo', val: rawDna.competitive || 0 },\n  { name: 'Coleccionista', val: rawDna.collection || 0 },\n  { name: 'Narrativo', val: rawDna.narrative || 0 }\n];\nconst dominantArchetype = rawDna.dominantArchetype || dnaArray.reduce((prev, curr) => (curr.val > prev.val ? curr : prev)).name;\n\nconst ownedGames = inputData.owned_games || [];\nconst userOwnedGameIds = Array.isArray(inputData.userOwnedGameIds)\n  ? inputData.userOwnedGameIds\n  : ownedGames.map(g => g.id);\n\nconst catalog = inputData.available_games_catalog || [];\nconst catalogSummary = catalog.length > 0\n  ? catalog.map(g => `[ID: ${g.id}] \"${g.title}\" - Géneros: ${Array.isArray(g.categories) ? g.categories.join(', ') : (g.categories || 'Acción')} - Precio: Bs. ${g.final_price || g.base_price}`).join('\\n')\n  : '[ID: 1] \"Neon Odyssey: Cyber Genesis\" - Géneros: Acción, RPG, Sci-Fi - Precio: Bs. 90\\n[ID: 2] \"Shadows of Eldoria\" - Géneros: RPG, Aventura - Precio: Bs. 127.5';\n\nconst systemPrompt = `Eres ViniChat, el copiloto gamer y asistente de inteligencia artificial oficial de la plataforma de videojuegos ViniGames (UTEPSA 2026).\n\nINFORMACIÓN DEL USUARIO:\n- Arquetipo dominante Gamer DNA: ${dominantArchetype}\n- Distribución ADN: Exploración (${rawDna.exploration || 25}%), Competitivo (${rawDna.competitive || 25}%), Colección (${rawDna.collection || 25}%), Narrativo (${rawDna.narrative || 25}%)\n- Videojuegos que el usuario YA POSEE en su biblioteca (NO recomendárselos): [${userOwnedGameIds.join(', ')}]\n\nCATÁLOGO DISPONIBLE EN LA TIENDA:\n${catalogSummary}\n\nREGLAS DE RESPUESTA:\n1. Responde siempre con tono amigable, entusiasta, gamer y estructurado usando Markdown (negritas, emojis, listas).\n2. Si el usuario solicita recomendaciones o consejos de compra, sugiere hasta 3 títulos del catálogo disponible afines a su consulta y a su Gamer DNA.\n3. OBLIGATORIO: Debes responder ÚNICAMENTE en formato JSON válido con las claves:\n{\n  \"reply\": \"Tu respuesta conversacional en formato Markdown...\",\n  \"recommended_game_ids\": [array de enteros con los IDs de los juegos recomendados],\n  \"topic_detected\": \"Categoría del mensaje\"\n}`;\n\nreturn {\n  userId,\n  message,\n  sessionId,\n  topic,\n  gamerDna: { ...rawDna, dominantArchetype },\n  userOwnedGameIds,\n  systemPrompt\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        300
+      ],
+      "id": "node-format-context",
+      "name": "Preparar Prompt & Contexto"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.deepseek.com/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_DEEPSEEK_API_KEY_HERE"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"deepseek-chat\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": {{ JSON.stringify($json.systemPrompt) }}\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($json.message) }}\n    }\n  ],\n  \"temperature\": 0.7,\n  \"response_format\": {\n    \"type\": \"json_object\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        700,
+        300
+      ],
+      "id": "node-deepseek-api",
+      "name": "DeepSeek API (deepseek-chat)"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"reply\": {{ JSON.stringify(JSON.parse($json.choices[0].message.content).reply || JSON.parse($json.choices[0].message.content).response_text || '¡Hola Gamer! ¿En qué puedo ayudarte hoy?') }},\n  \"recommended_game_ids\": {{ JSON.stringify(JSON.parse($json.choices[0].message.content).recommended_game_ids || []) }},\n  \"topic_detected\": {{ JSON.stringify(JSON.parse($json.choices[0].message.content).topic_detected || 'Recomendaciones') }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        940,
+        300
+      ],
+      "id": "node-respond-webhook",
+      "name": "Retornar Respuesta Estructurada"
+    }
+  ],
+  "connections": {
+    "Webhook ViniChat": {
+      "main": [
+        [
+          {
+            "node": "Preparar Prompt & Contexto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Prompt & Contexto": {
+      "main": [
+        [
+          {
+            "node": "DeepSeek API (deepseek-chat)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek API (deepseek-chat)": {
+      "main": [
+        [
+          {
+            "node": "Retornar Respuesta Estructurada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "vinigames-n8n-vinichat-workflow"
+  }
+}
