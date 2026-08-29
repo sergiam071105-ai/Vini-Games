@@ -8,6 +8,7 @@ import {
   Gamepad2,
   TrendingUp,
   MessageSquareText,
+  Users,
   ArrowLeft,
   Shield,
   Menu,
@@ -45,6 +46,12 @@ const ADMIN_NAV_LINKS = [
     label: 'Moderación de Reseñas',
     icon: MessageSquareText,
     badge: 'Social',
+  },
+  {
+    href: '/admin/users',
+    label: 'Equipo & Admins',
+    icon: Users,
+    badge: 'Staff',
   },
 ];
 
