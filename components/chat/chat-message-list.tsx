@@ -4,11 +4,12 @@ import React, { useEffect, useRef } from 'react';
 import { Bot, User, Sparkles } from 'lucide-react';
 import { ChatMessage } from '@/types/chat.types';
 import { ChatProductCard } from '@/components/chat/chat-product-card';
+import { getAvatarUrl } from '@/lib/utils/avatar-helper';
 
 interface ChatMessageListProps {
   messages: ChatMessage[];
   isLoading: boolean;
-  userAvatar?: string;
+  userAvatar?: string | null;
   userName?: string;
 }
 
@@ -16,7 +17,25 @@ interface ChatMessageListProps {
  * Renderizador simple de texto con soporte para negritas (**texto**), saltos de línea y listas.
  */
 function FormattedContent({ text }: { text: string }) {
-  const paragraphs = text.split('\n\n');
+  // Limpieza preventiva en cliente para mensajes existentes con JSON o markdown residual
+  let cleanText = text || '';
+  if (cleanText.includes('```json') || cleanText.includes('"reply":')) {
+    const jsonMatch =
+      cleanText.match(/```(?:json)?\s*\{[\s\S]*?"reply"\s*:\s*"([^"]+)"[\s\S]*?\}\s*```/i) ||
+      cleanText.match(/\{[\s\S]*?"reply"\s*:\s*"([^"]+)"[\s\S]*?\}/i);
+    if (jsonMatch && jsonMatch[1]) {
+      cleanText = jsonMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+    } else {
+      cleanText = cleanText
+        .replace(/```(?:json)?\s*\{[\s\S]*?\}\s*```/gi, '')
+        .replace(/```(?:json)?/gi, '')
+        .replace(/```/g, '')
+        .trim();
+    }
+  }
+  cleanText = cleanText.replace(/\[RECOMMENDED_IDS:\s*[\d,\s]+\]/gi, '').trim();
+
+  const paragraphs = cleanText.split('\n\n');
 
   return (
     <div className="space-y-2.5 text-xs sm:text-sm leading-relaxed text-[#F8FAFC]">
@@ -52,6 +71,7 @@ function FormattedContent({ text }: { text: string }) {
 export function ChatMessageList({
   messages,
   isLoading,
+  userAvatar,
   userName = 'Gamer',
 }: ChatMessageListProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -82,19 +102,22 @@ export function ChatMessageList({
             } animate-in fade-in duration-300`}
           >
             {/* Avatar del Emisor */}
-            <div
-              className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg ${
-                isAssistant
-                  ? 'bg-gradient-to-br from-[#783DF2] to-[#1FD1EB] text-white border border-[#1FD1EB]/40'
-                  : 'bg-[#1A1C2B] text-[#783DF2] border border-[#2E334A]'
-              }`}
-            >
-              {isAssistant ? (
+            {isAssistant ? (
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg bg-gradient-to-br from-[#783DF2] to-[#1FD1EB] text-white border border-[#1FD1EB]/40">
                 <Bot className="w-5 h-5" />
-              ) : (
-                <User className="w-5 h-5 text-[#1FD1EB]" />
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 shadow-lg bg-[#1A1C2B] text-[#783DF2] border border-[#783DF2]/50">
+                <img
+                  src={getAvatarUrl(userAvatar, userName)}
+                  alt={userName || 'Gamer'}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = getAvatarUrl(null, userName);
+                  }}
+                />
+              </div>
+            )}
 
             {/* Burbuja del Mensaje */}
             <div className={`max-w-2xl space-y-3 ${isAssistant ? 'text-left' : 'text-right'}`}>
@@ -102,7 +125,11 @@ export function ChatMessageList({
               {/* Encabezado con Nombre y Hora */}
               <div className={`flex items-center gap-2 text-[11px] text-[#94A3B8] ${isAssistant ? 'justify-start' : 'justify-end'}`}>
                 <span className="font-bold text-[#F8FAFC]">
-                  {isAssistant ? 'ViniChat Assistant' : userName}
+                  {isAssistant
+                    ? 'ViniChat Assistant'
+                    : userName.startsWith('@')
+                    ? userName
+                    : `@${userName}`}
                 </span>
                 <span>•</span>
                 <span>
