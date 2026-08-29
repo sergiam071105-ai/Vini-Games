@@ -7,6 +7,7 @@ export interface CartGameItem {
   basePrice: number;
   discountPercent: number;
   finalPrice: number;
+  quantity?: number;
   addedAt: string;
 }
 
@@ -27,6 +28,7 @@ export interface OrderSummary {
     unitPrice: number;
     discountApplied: number;
     finalPrice: number;
+    quantity?: number;
   }[];
   xpAwarded: number;
 }

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingCart, X, Trash2, ArrowRight, ShieldCheck, ShoppingBag, AlertTriangle } from 'lucide-react';
+import { ShoppingCart, X, Trash2, ArrowRight, ShieldCheck, ShoppingBag, AlertTriangle, Plus, Minus } from 'lucide-react';
 import { useCart } from '@/lib/context/cart-context';
 import { useLibrary } from '@/lib/context/library-context';
 import { CheckoutModal } from '@/components/store/checkout-modal';
@@ -17,6 +17,7 @@ export function CartDrawer() {
     total,
     isDrawerOpen,
     closeDrawer,
+    updateQuantity,
     removeItem,
     clearCart,
   } = useCart();
@@ -135,10 +136,17 @@ export function CartDrawer() {
                         </span>
                       ) : (
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="text-xs font-bold text-[#1FD1EB]">Bs. {item.finalPrice}</span>
+                          <span className="text-xs font-bold text-[#1FD1EB]">
+                            Bs. {item.finalPrice * (item.quantity || 1)}
+                          </span>
+                          {(item.quantity || 1) > 1 && (
+                            <span className="text-[10px] text-[#949CB2]">
+                              (Bs. {item.finalPrice} c/u)
+                            </span>
+                          )}
                           {item.discountPercent > 0 && (
                             <span className="text-[10px] text-[#949CB2] line-through">
-                              Bs. {item.basePrice}
+                              Bs. {item.basePrice * (item.quantity || 1)}
                             </span>
                           )}
                         </div>
@@ -146,14 +154,42 @@ export function CartDrawer() {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => removeItem(item.id)}
-                    aria-label={`Eliminar ${item.title} del carrito de compras`}
-                    className="p-2 text-[#949CB2] hover:text-[#EF4444] hover:bg-[#2E334A]/50 rounded-lg transition-colors cursor-pointer"
-                    title="Eliminar del carrito"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex flex-col items-end gap-1.5">
+                    <button
+                      onClick={() => removeItem(item.id)}
+                      aria-label={`Eliminar ${item.title} del carrito de compras`}
+                      className="p-1.5 text-[#949CB2] hover:text-[#EF4444] hover:bg-[#2E334A]/50 rounded-lg transition-colors cursor-pointer"
+                      title="Eliminar del carrito"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+
+                    {/* Controles de Cantidad (+ / -) */}
+                    <div className="flex items-center gap-1 bg-[#090B14] border border-[#2E334A] rounded-lg p-0.5" aria-label="Controles de cantidad">
+                      <button
+                        type="button"
+                        onClick={() => updateQuantity(item.id, (item.quantity || 1) - 1)}
+                        aria-label="Disminuir cantidad"
+                        className="w-5 h-5 flex items-center justify-center rounded bg-[#1A1C2B] text-[#949CB2] hover:text-white hover:bg-[#2E334A] text-xs font-bold transition-all cursor-pointer"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      
+                      <span className="text-[11px] font-bold text-[#F5F7FF] px-1.5 min-w-[20px] text-center" aria-label="cantidad">
+                        {item.quantity || 1}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => updateQuantity(item.id, (item.quantity || 1) + 1)}
+                        aria-label="Aumentar cantidad"
+                        className="w-5 h-5 flex items-center justify-center rounded bg-[#1A1C2B] text-[#949CB2] hover:text-white hover:bg-[#2E334A] text-xs font-bold transition-all cursor-pointer"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
+                    <span className="text-[9px] text-[#64748B]">cantidad: {item.quantity || 1}</span>
+                  </div>
                 </div>
               );
             })

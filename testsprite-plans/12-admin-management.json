@@ -1,0 +1,15 @@
+{
+  "projectId": "ac197677-009b-4f8f-8f07-df8e8f065b76",
+  "type": "frontend",
+  "name": "12 - ViniAdmin: Panel Administrativo y catálogo de juegos",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /admin/games"
+    },
+    {
+      "type": "assertion",
+      "description": "The administrator game catalog table or access control prompt is rendered"
+    }
+  ]
+}

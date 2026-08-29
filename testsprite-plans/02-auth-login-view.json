@@ -1,0 +1,23 @@
+{
+  "projectId": "ac197677-009b-4f8f-8f07-df8e8f065b76",
+  "type": "frontend",
+  "name": "02 - Autenticación: Visualización del Login Split-Screen y validación",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /login"
+    },
+    {
+      "type": "assertion",
+      "description": "The split-screen login page is visible showing the email input, password input, and promotional carousel"
+    },
+    {
+      "type": "action",
+      "description": "Click the submit button without entering credentials"
+    },
+    {
+      "type": "assertion",
+      "description": "Validation messages appear requesting a valid email and password"
+    }
+  ]
+}

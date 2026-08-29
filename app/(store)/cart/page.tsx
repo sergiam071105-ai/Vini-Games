@@ -3,13 +3,13 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingCart, Trash2, ArrowLeft, ShieldCheck, Sparkles, Lock, ShoppingBag, ArrowRight, AlertTriangle } from 'lucide-react';
+import { ShoppingCart, Trash2, ArrowLeft, ShieldCheck, Sparkles, Lock, ShoppingBag, ArrowRight, AlertTriangle, Plus, Minus } from 'lucide-react';
 import { useCart } from '@/lib/context/cart-context';
 import { useLibrary } from '@/lib/context/library-context';
 import { CheckoutModal } from '@/components/store/checkout-modal';
 
 export default function CartPage() {
-  const { items, itemCount, subtotal, discountTotal, total, removeItem, clearCart } = useCart();
+  const { items, itemCount, subtotal, discountTotal, total, updateQuantity, removeItem, clearCart } = useCart();
   const { isOwned } = useLibrary();
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
@@ -136,20 +136,58 @@ export default function CartPage() {
                       </div>
                     </div>
 
-                    <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-[#2E334A]/40">
+                    <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-[#2E334A]/40 gap-3">
                       <div className="text-left sm:text-right">
-                        <div className="text-base font-bold text-[#1FD1EB]">Bs. {item.finalPrice}</div>
+                        <div className="text-base font-bold text-[#1FD1EB]">
+                          Bs. {item.finalPrice * (item.quantity || 1)}
+                        </div>
+                        {(item.quantity || 1) > 1 && (
+                          <div className="text-[10px] text-[#949CB2]">
+                            (Bs. {item.finalPrice} c/u)
+                          </div>
+                        )}
                         {item.discountPercent > 0 && (
-                          <div className="text-xs text-[#949CB2] line-through">Bs. {item.basePrice}</div>
+                          <div className="text-xs text-[#949CB2] line-through">
+                            Bs. {item.basePrice * (item.quantity || 1)}
+                          </div>
                         )}
                       </div>
-                      <button
-                        onClick={() => removeItem(item.id)}
-                        className="mt-2 text-xs text-[#949CB2] hover:text-[#EF4444] transition-colors flex items-center gap-1 cursor-pointer"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>Eliminar</span>
-                      </button>
+
+                      {/* Controles de Cantidad (+ / -) */}
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 bg-[#090B14] border border-[#2E334A] rounded-xl p-1" aria-label="Controles de cantidad">
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(item.id, (item.quantity || 1) - 1)}
+                            aria-label="Disminuir cantidad"
+                            className="w-6 h-6 flex items-center justify-center rounded-lg bg-[#1A1C2B] text-[#949CB2] hover:text-white hover:bg-[#2E334A] text-xs font-bold transition-all cursor-pointer"
+                          >
+                            <Minus className="w-3.5 h-3.5" />
+                          </button>
+                          
+                          <span className="text-xs font-bold text-[#F5F7FF] px-2 min-w-[24px] text-center" aria-label="cantidad">
+                            {item.quantity || 1}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(item.id, (item.quantity || 1) + 1)}
+                            aria-label="Aumentar cantidad"
+                            className="w-6 h-6 flex items-center justify-center rounded-lg bg-[#1A1C2B] text-[#949CB2] hover:text-white hover:bg-[#2E334A] text-xs font-bold transition-all cursor-pointer"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        <button
+                          onClick={() => removeItem(item.id)}
+                          aria-label={`Eliminar ${item.title} del carrito`}
+                          className="p-1.5 text-xs text-[#949CB2] hover:text-[#EF4444] hover:bg-[#EF4444]/10 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                          title="Eliminar del carrito"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );

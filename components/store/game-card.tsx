@@ -164,7 +164,7 @@ export function GameCard({ game, priority = false }: GameCardProps) {
           {/* Categorías */}
           {categories.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-1.5">
-              {categories.slice(0, 2).map((cat) => (
+              {categories.map((cat) => (
                 <span
                   key={cat.id}
                   className="text-[10px] font-semibold text-[#1FD1EB] bg-[#1FD1EB]/10 px-1.5 py-0.5 rounded border border-[#1FD1EB]/20"

@@ -1,0 +1,23 @@
+{
+  "projectId": "ac197677-009b-4f8f-8f07-df8e8f065b76",
+  "type": "frontend",
+  "name": "01 - Storefront: Exploración de Home y navegación al Catálogo",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /"
+    },
+    {
+      "type": "assertion",
+      "description": "The hero banner is visible with title or logo and featured video game highlights with prices in Bs."
+    },
+    {
+      "type": "action",
+      "description": "Click on the navigation link or button 'Catálogo' in the header"
+    },
+    {
+      "type": "assertion",
+      "description": "The current URL is /catalog and the games catalog header with search and filter controls is visible"
+    }
+  ]
+}

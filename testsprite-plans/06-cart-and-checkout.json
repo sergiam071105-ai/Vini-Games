@@ -1,0 +1,19 @@
+{
+  "projectId": "ac197677-009b-4f8f-8f07-df8e8f065b76",
+  "type": "frontend",
+  "name": "06 - Transaccional: Gestión de Carrito de Compras y Modal de Checkout",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /cart"
+    },
+    {
+      "type": "assertion",
+      "description": "The cart page or drawer is rendered displaying the order summary and total in Bs."
+    },
+    {
+      "type": "assertion",
+      "description": "The checkout action button is visible and active when items are present or shows empty cart state"
+    }
+  ]
+}
