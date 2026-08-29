@@ -47,6 +47,18 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'www.rockstargames.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'assets.nintendo.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'media.nintendo.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.nintendo.com',
+      },
     ],
   },
 };
