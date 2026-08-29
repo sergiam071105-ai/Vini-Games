@@ -11,7 +11,10 @@
 
 ```mermaid
 flowchart LR
-    S0["✅ SPRINT 0\nCimientos & UI Base"] --> S1["✅ SPRINT 1\nNúcleo de la Plataforma"] --> S2["✅ SPRINT 2\nTransaccionalidad & Gamificación"] --> S3["✅ SPRINT 3\nIA ViniChat & ViniAdmin"] --> S4["✅ SPRINT 4\nCalidad, RLS, Perfil & Despliegue"]
+    S0["SPRINT 0<br/>Cimientos & UI Base"] --> S1["SPRINT 1<br/>Núcleo de la Plataforma"]
+    S1 --> S2["SPRINT 2<br/>Transacciones & Gamificación"]
+    S2 --> S3["SPRINT 3<br/>IA ViniChat & ViniAdmin"]
+    S3 --> S4["SPRINT 4<br/>Calidad, RLS & Despliegue"]
 ```
 
 * **✅ Sprint 0 (Setup & Fundaciones)**: Arquitectura Next.js 16 (App Router) con Turbopack, Supabase SSR, DDL de 20 tablas relacionales con RLS, tokens de diseño Dark Gamer Figma y librería de primitivas UI modulares (`Button`, `Input`, `Badge`, `Card`, `Modal`).
@@ -20,10 +23,10 @@ flowchart LR
   * 🛒 **Carrito & Checkout Transaccional**: Carrito reactivo, Drawer lateral, modal de checkout con validación Zod, emisión de recibo digital con código `TX-XXXX`, vaciado automático y transferencia instantánea a la biblioteca.
   * 📚 **Biblioteca Digital (`/library`)**: Catálogo personal de juegos adquiridos con filtros por estado y acumulador en tiempo real de horas jugadas mediante simulador de ejecución ("▶ Jugar" / "⏸ Detener").
   * ❤️ **Lista de Deseos Global (Wishlist)**: `WishlistProvider` con sincronización en tiempo real en catálogo, ficha técnica y `/wishlist`, con alertas de ofertas y cálculo de descuentos.
-  * 🏆 **Hub de Gamificación (`/gamification`)**: Calendario interactivo de racha diaria de 7 días, progresión de niveles ($\text{XP} \rightarrow \text{Nivel}$), vitrina de medallas/insignias por rareza y centro de recompensas canjeables con GameCoins.
+  * 🏆 **Hub de Gamificación (`/gamification`)**: Calendario interactivo de racha diaria de 7 días, progresión de niveles (XP a Nivel), vitrina de medallas/insignias por rareza y centro de recompensas canjeables con GameCoins.
   * ⭐ **Sistema de Reseñas Verificadas**: Server Actions (`reviews.actions.ts`) con validación de compra obligatoria, puntuación de 1 a 5 estrellas (+50 XP y +25 GameCoins) y sistema de votación comunitaria de utilidad (`👍` / `👎`).
 * **✅ Sprint 3 (Inteligencia Artificial ViniChat & Panel Administrativo ViniAdmin)**:
-  * 🤖 **Asistente IA ViniChat (`/chat`)**: Despliegue de workflow en **n8n Cloud (Railway)** conectado al modelo **`deepseek-chat`** de DeepSeek, enriquecimiento con Gamer DNA y biblioteca, renderizado de tarjetas interactivas de producto y sidebar colapsable.
+  * 🤖 **Asistente IA ViniChat (`/chat`)**: Despliegue de workflow en n8n + API de NVIDIA NIM / DeepSeek, enriquecimiento con Gamer DNA y catálogo, renderizado de tarjetas interactivas de producto y sidebar colapsable.
   * 🛡️ **Panel Administrativo de Catálogo (`/admin/games`)**: CRUD completo de títulos, cálculo automático de precios/ofertas y sistema de **baja lógica** (`is_active = false`) con persistencia inmediata.
   * ⚖️ **Moderación Comunitaria (`/admin/reviews`)**: Cola de moderación con filtros por estado (*Todas, Pendientes, Aprobadas, Rechazadas*), contadores reactivos y registro de auditoría en `admin_audit_logs`.
   * 📊 **Auditoría Financiera (`/admin/sales`)**: Reporte de órdenes de compra con métricas de ventas y utilidad de **exportación a archivo CSV**.
@@ -39,7 +42,7 @@ flowchart LR
 
 | Integrante | Rol Principal | Módulos y Responsabilidades | Rama de Integración |
 | :--- | :--- | :--- | :--- |
-| **Eduardo Ribera** | Líder Técnico & Backend / Seguridad | Arquitectura ViniChat con n8n Cloud & DeepSeek API, Auditoría de Seguridad RLS en Supabase, Perfil Gamer Dinámico, Consolidación General y Despliegue | `feature/eduardo-sprint-4-profile-polish` |
+| **Eduardo Ribera** | Líder Técnico & Backend / Seguridad | Arquitectura ViniChat con n8n Cloud & NVIDIA NIM API, Auditoría de Seguridad RLS en Supabase, Perfil Gamer Dinámico, Consolidación General y Despliegue | `feature/eduardo-sprint-4-profile-polish` |
 | **Vinicius Montibeller** | Frontend Lead & E-Commerce | Storefront Home, Carrito & Checkout, Layout ViniAdmin, Modales y CRUD de Catálogo con Baja Lógica | `feature/vinicius-sprint-4-quality-polish` |
 | **Sergio Alvarez** | Multimedia & Transacciones | Ficha Técnica `/games/[slug]`, Wishlist, Auditoría Comercial `/admin/sales`, Exportación CSV y Accesibilidad | `feature/sergio-sprint-4-audit-responsive-a11y` |
 | **Jose Alberto Rios** | Gamificación & Moderación | Hub de Gamificación, Radar Gamer DNA, Moderación de Reseñas `/admin/reviews` y Seed Data Demo | `feature/jose-sprint-4-demo-validation` |
@@ -50,47 +53,47 @@ flowchart LR
 
 ```mermaid
 graph TD
-    subgraph Client ["Capa de Presentación (Next.js 16 App Router + React 19)"]
-        UI_Home["Storefront Home /"]
-        UI_Cat["Catálogo /catalog"]
-        UI_Game["Ficha /games/[slug]"]
-        UI_Cart["Carrito /cart & Drawer"]
-        UI_Lib["Biblioteca /library"]
-        UI_Gam["Gamificación /gamification"]
-        UI_Chat["Asistente IA /chat"]
-        UI_Profile["Perfil Gamer /profile"]
-        UI_Admin["Panel ViniAdmin /admin/*"]
+    subgraph Client [Capa de Presentacion - Next.js 16 App Router]
+        UI_Home[Storefront Home /]
+        UI_Cat[Catalogo /catalog]
+        UI_Game[Ficha /games/slug]
+        UI_Cart[Carrito /cart & Drawer]
+        UI_Lib[Biblioteca /library]
+        UI_Gam[Gamificacion /gamification]
+        UI_Chat[Asistente IA /chat]
+        UI_Profile[Perfil Gamer /profile]
+        UI_Admin[Panel ViniAdmin /admin]
     end
 
-    subgraph State ["Capa de Estado & Contextos Globales"]
-        CTX_Cart["CartContext"]
-        CTX_Wish["WishlistContext"]
-        CTX_Lib["LibraryContext"]
-        CTX_Auth["Supabase Auth SSR"]
+    subgraph State [Capa de Estado & Contextos Globales]
+        CTX_Cart[CartContext]
+        CTX_Wish[WishlistContext]
+        CTX_Lib[LibraryContext]
+        CTX_Auth[Supabase Auth SSR]
     end
 
-    subgraph ServerActions ["Capa de Lógica & Server Actions"]
-        SA_Auth["auth.actions.ts"]
-        SA_Profile["profile.actions.ts"]
-        SA_Cart["cart.actions.ts"]
-        SA_Games["games.admin.actions.ts"]
-        SA_Reviews["reviews.actions.ts"]
-        SA_Mod["moderation.actions.ts"]
-        SA_Chat["chat.actions.ts"]
-        SA_Admin["admin.actions.ts"]
+    subgraph ServerActions [Capa de Logica & Server Actions]
+        SA_Auth[auth.actions.ts]
+        SA_Profile[profile.actions.ts]
+        SA_Cart[cart.actions.ts]
+        SA_Games[games.admin.actions.ts]
+        SA_Reviews[reviews.actions.ts]
+        SA_Mod[moderation.actions.ts]
+        SA_Chat[chat.actions.ts]
+        SA_Admin[admin.actions.ts]
     end
 
-    subgraph External ["Servicios Cloud & Persistencia"]
-        DB[("Supabase Cloud PostgreSQL\n(20 Tablas + RLS Activo)")]
-        N8N["n8n Automation Engine\n(Railway Cloud 24/7)"]
-        DeepSeek["DeepSeek API\n(deepseek-chat LLM)"]
+    subgraph External [Servicios Cloud & Persistencia]
+        DB[(Supabase Cloud PostgreSQL - 20 Tablas RLS)]
+        N8N[n8n Automation Engine Local & Cloud]
+        AI[NVIDIA NIM & DeepSeek API]
     end
 
     Client --> State
     State --> ServerActions
     ServerActions --> DB
     SA_Chat -->|HTTP POST Webhook| N8N
-    N8N -->|Inferencia IA| DeepSeek
+    N8N -->|Inferencia IA| AI
 ```
 
 ---
@@ -103,12 +106,12 @@ graph TD
 | **Librería de UI** | [React](https://react.dev/) | `19.2.8` | Componentes declarativos basados en el modelo de concurrencia y Server Actions. |
 | **Motor de Estilos** | [Tailwind CSS](https://tailwindcss.com/) | `v4.0` | Tokens de Figma, paleta Dark Gamer (`#090B14`, `#131521`) con acentos neón violeta (`#783DF2`) y cian (`#1FD1EB`). |
 | **Base de Datos & Auth** | [Supabase](https://supabase.com/) | PostgreSQL 15+ | Autenticación JWT (`@supabase/ssr`), 20 tablas relacionales, RLS perimetral y Storage. |
-| **Motor de IA & Webhook** | [n8n](https://n8n.io/) + [DeepSeek API](https://www.deepseek.com/) | Cloud / `v1` | Motor de automatización en Railway Cloud con inferencia LLM (`deepseek-chat`) para el asistente ViniChat. |
+| **Motor de IA & Webhook** | [n8n](https://n8n.io/) + [NVIDIA NIM](https://build.nvidia.com/) | Local / Cloud | Motor de automatización con inferencia LLM para el asistente ViniChat. |
 | **Validación de Datos** | [Zod](https://zod.dev/) | `^4.0` | Validación isomórfica de esquemas en cliente y servidor (formularios de checkout, login, chat y catálogo). |
 | **Efectos Visuales** | [Canvas Confetti](https://www.npmjs.com/package/canvas-confetti) | `^1.9.4` | Animaciones de celebración en bienvenida, logros desbloqueados y confirmación de compra. |
 | **Iconografía** | [Lucide React](https://lucide.dev/) | `^1.33.0` | Iconos vectoriales consistentes para temáticas gamer, widgets y paneles. |
 | **Lenguaje** | [TypeScript](https://www.typescriptlang.org/) | `^5.0` | Tipado estático estricto end-to-end con autogeneración de tipos de base de datos. |
-| **Plataforma de Despliegue** | [Vercel](https://vercel.com/) + [Railway](https://railway.app/) | Cloud | Despliegue continuo de frontend en Vercel y microservicio de IA n8n en Railway. |
+| **Plataforma de Despliegue** | [Vercel](https://vercel.com/) | Cloud | Despliegue continuo de frontend en Vercel. |
 
 ---
 
@@ -134,7 +137,7 @@ vinigames/
 │   ├── /library                   # Biblioteca digital, contador de horas y simulador "▶ Jugar"
 │   ├── /wishlist                  # Lista de deseos reactiva con alertas de descuento
 │   ├── /gamification              # Hub de rachas diarias, vitrina de medallas y recompensas
-│   ├── /chat                      # Asistente IA ViniChat (DeepSeek + n8n Cloud)
+│   ├── /chat                      # Asistente IA ViniChat (NVIDIA NIM / DeepSeek + n8n)
 │   └── /profile                   # Perfil gamer dinámico, radar Gamer DNA, logros y edición
 ├── /admin                         # Dashboard General de Administración (RBAC: ADMIN)
 │   ├── /admin/games               # Catálogo Administrativo (CRUD & Baja Lógica)
