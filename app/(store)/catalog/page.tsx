@@ -42,7 +42,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     maxPrice,
     sortBy,
     page,
-    pageSize: 24,
+    pageSize: 48,
   });
 
   return (
