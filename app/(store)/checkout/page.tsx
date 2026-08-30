@@ -7,8 +7,6 @@ import { useRouter } from 'next/navigation';
 import {
   ShoppingBag,
   Trash2,
-  Plus,
-  Minus,
   ArrowRight,
   ShieldCheck,
   CreditCard,
@@ -30,7 +28,7 @@ type PaymentMethod = 'qr' | 'card' | 'gamecoins' | 'tigo';
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, subtotal, discountTotal, total, removeItem, updateQuantity, clearCart } = useCart();
+  const { items, subtotal, discountTotal, total, removeItem, clearCart } = useCart();
   const { refreshLibrary } = useLibrary();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('qr');
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -263,32 +261,12 @@ export default function CheckoutPage() {
                         Precio unitario: <span className="text-slate-300 font-semibold">Bs. {itemUnitPrice.toFixed(2)}</span>
                       </p>
 
-                      {/* Stepper de cantidad */}
+                      {/* Licencia Digital y Botón Eliminar */}
                       <div className="flex items-center gap-3 pt-2">
-                        <div className="flex items-center rounded-lg bg-slate-800 border border-slate-700/80 p-1">
-                          <button
-                            type="button"
-                            onClick={() => updateQuantity(item.id, itemQty - 1)}
-                            disabled={itemQty <= 1}
-                            className="p-1 rounded text-slate-400 hover:text-white disabled:opacity-30 disabled:hover:text-slate-400 transition cursor-pointer"
-                            title="Disminuir cantidad"
-                          >
-                            <Minus className="w-3.5 h-3.5" />
-                          </button>
-                          <span className="px-3 text-xs font-bold text-white min-w-[2rem] text-center">
-                            {itemQty}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => updateQuantity(item.id, itemQty + 1)}
-                            className="p-1 rounded text-slate-400 hover:text-white transition cursor-pointer"
-                            title="Aumentar cantidad"
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                        <span className="text-[11px] font-semibold text-slate-400 bg-slate-800/80 px-2.5 py-0.5 rounded-md border border-slate-700/60">
+                          1 Licencia Digital
+                        </span>
 
-                        {/* Botón Eliminar */}
                         <button
                           type="button"
                           onClick={() => removeItem(item.id)}
@@ -302,7 +280,7 @@ export default function CheckoutPage() {
                     {/* Total por juego */}
                     <div className="text-right flex-shrink-0">
                       <p className="text-base sm:text-lg font-black text-emerald-400 font-mono">
-                        Bs. {itemTotal.toFixed(2)}
+                        Bs. {itemUnitPrice.toFixed(2)}
                       </p>
                     </div>
                   </div>

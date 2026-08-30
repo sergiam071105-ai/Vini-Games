@@ -97,7 +97,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     finalPrice?: number;
   }) => {
     if (isInCart(game.id)) {
-      updateQuantity(game.id, (items.find((i) => i.id === game.id)?.quantity || 1) + 1);
       setIsDrawerOpen(true);
       return { success: true };
     }
