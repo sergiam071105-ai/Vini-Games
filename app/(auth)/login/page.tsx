@@ -15,42 +15,39 @@ import {
   Sparkles,
 } from 'lucide-react';
 
-// Banners rotativos de videojuegos para el lateral derecho
+// Banners rotativos de videojuegos reales del catálogo de ViniGames
 const HERO_SLIDES = [
   {
     id: 1,
-    image: '/auth-banner.png',
-    title: 'Voxel Adventure',
-    category: 'Mundo Abierto / Sandbox',
-    tagline: 'Descubre. Compra. Juega.',
-    description: 'Explora mundos infinitos y construye tu propio imperio gamer.',
+    image: 'https://rjtjzuvpdqnaxfenwsot.supabase.co/storage/v1/object/public/game-covers/grand-theft-auto-vi-cover-1787973411839.jpg',
+    title: 'Grand Theft Auto VI',
+    category: 'Mundo Abierto / Acción Criminal',
+    tagline: 'El regreso más esperado a Vice City.',
+    description: 'Vive una revolucionaria experiencia de mundo abierto con gráficos hiperrealistas y una historia inmersiva.',
   },
   {
     id: 2,
-    image:
-      'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1200&auto=format&fit=crop',
-    title: 'Neon Cyberpunk 2099',
-    category: 'Acción & Aventura Futurista',
-    tagline: 'Sobrevive en la megaciudad.',
-    description: 'Mejora tus implantes, domina la red y reclama recompensas legendarias.',
+    image: 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1091500/header.jpg',
+    title: 'Cyberpunk 2077: Phantom Liberty',
+    category: 'RPG de Acción & Ciencia Ficción',
+    tagline: 'Sobrevive en la megaciudad de Night City.',
+    description: 'Mejora tus implantes cibernéticos, forja tu propia leyenda y reclama recompensas exclusivas.',
   },
   {
     id: 3,
-    image:
-      'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?q=80&w=1200&auto=format&fit=crop',
-    title: 'Eldritch Kingdom',
+    image: 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1245620/header.jpg',
+    title: 'Elden Ring: Shadow of the Erdtree',
     category: 'RPG Souls-like / Fantasía Oscura',
-    tagline: 'Desafía a los dioses olvidados.',
-    description: 'Combates épicos, secretos ancestrales y armas míticas.',
+    tagline: 'Desafía al Reino de las Sombras.',
+    description: 'Conquista desafiantes jefes, descubre secretos ancestrales y domina poderosas magias.',
   },
   {
     id: 4,
-    image:
-      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop',
-    title: 'Cosmic Horizon',
-    category: 'Simulación Espacial & Exploración',
-    tagline: 'Tu próximo destino está en las estrellas.',
-    description: 'Pilota tu nave, comercia recursos y funda colonias intergalácticas.',
+    image: 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2322010/header.jpg',
+    title: 'God of War Ragnarök',
+    category: 'Acción & Aventura Mítica Nórdica',
+    tagline: 'Embárcate en un viaje mítico.',
+    description: 'Acompaña a Kratos y Atreus a través de los nueve reinos en combates viscerales inolvidables.',
   },
 ];
 
@@ -260,16 +257,6 @@ function LoginForm() {
                   {fieldErrors.password}
                 </span>
               )}
-            </div>
-
-            {/* Enlace Olvidaste tu contraseña */}
-            <div className="pt-1">
-              <Link
-                href="/onboarding/step-1"
-                className="text-xs text-[#783DF2] hover:text-[#9F6EFE] transition-colors"
-              >
-                ¿Olvidaste tu contraseña?
-              </Link>
             </div>
 
             {/* Botón Iniciar Sesión */}
