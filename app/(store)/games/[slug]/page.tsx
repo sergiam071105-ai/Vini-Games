@@ -5,6 +5,7 @@ import { GameInfoBox } from "@/components/store/game-info-box";
 import { GameMetadata } from "@/components/store/game-metadata";
 import { GameReviews } from "@/components/store/game-reviews";
 import { GameRequirements } from "@/components/store/game-requirements";
+import { GameCard } from "@/components/store/game-card";
 import { MOCK_GAMES } from "@/lib/mock-data/games";
 
 interface GameDetailPageProps {
@@ -18,16 +19,11 @@ const MOCK_GALLERY = [
   { id: 2, media_type: "image", media_url: "https://images.unsplash.com/photo-1535223289827-42f1e9919769?w=800&q=80" },
 ];
 
-const MOCK_RELATED = [
-  { id: 2, title: "VOID RUNNER", price: 59 },
-  { id: 3, title: "DARK REALM", price: 119 },
-  { id: 4, title: "PIXEL WARS", price: 39 },
-];
-
 export default async function GameDetailPage({ params }: GameDetailPageProps) {
   const { slug } = await params;
 
   let gameData: any = null;
+  let relatedGames: any[] = [];
 
   try {
     const supabase = await createClient();
@@ -73,6 +69,41 @@ export default async function GameDetailPage({ params }: GameDetailPageProps) {
         ratingAvg: Number(dbGame.rating_avg) || 4.8,
         ratingCount: dbGame.rating_count || 1284,
       };
+
+      // Consultar juegos relacionados reales desde la base de datos
+      const { data: dbRelated } = await supabase
+        .from("games")
+        .select(`
+          id,
+          title,
+          slug,
+          base_price,
+          discount_percent,
+          final_price,
+          cover_image_url,
+          rating_avg,
+          rating_count,
+          developer,
+          short_description
+        `)
+        .neq("slug", slug)
+        .limit(3);
+
+      if (dbRelated && dbRelated.length > 0) {
+        relatedGames = dbRelated.map((g: any) => ({
+          id: g.id,
+          title: g.title,
+          slug: g.slug,
+          base_price: Number(g.base_price),
+          discount_percent: g.discount_percent || 0,
+          final_price: Number(g.final_price || g.base_price),
+          cover_image_url: g.cover_image_url,
+          rating_avg: Number(g.rating_avg) || 4.8,
+          rating_count: g.rating_count || 100,
+          developer: g.developer || "Estudio Gamer",
+          short_description: g.short_description,
+        }));
+      }
     }
   } catch {
     // Continuar con fallback local
@@ -101,6 +132,10 @@ export default async function GameDetailPage({ params }: GameDetailPageProps) {
       ratingAvg: Number(fallback.rating_avg) || 4.8,
       ratingCount: fallback.rating_count || 1284,
     };
+  }
+
+  if (relatedGames.length === 0) {
+    relatedGames = MOCK_GAMES.filter((g) => g.slug !== slug).slice(0, 3);
   }
 
   const categories = [
@@ -168,18 +203,15 @@ export default async function GameDetailPage({ params }: GameDetailPageProps) {
           <GameReviews gameId={gameData.id} gameTitle={gameData.title} />
         </div>
 
-        {/* BOTTOM SECTION: También te puede gustar */}
+        {/* BOTTOM SECTION: También te puede gustar con Juegos Reales */}
         <div>
-          <h2 className="text-xl font-bold text-white mb-6">También te puede gustar</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {MOCK_RELATED.map((game) => (
-              <div key={game.id} className="bg-[#151722] rounded-xl overflow-hidden border border-transparent hover:border-[#783DF2]/50 transition-colors cursor-pointer group">
-                <div className="aspect-[4/3] bg-[#1A1C2B] w-full" />
-                <div className="p-5">
-                  <h3 className="text-white font-bold text-sm mb-2 group-hover:text-[#1FD1EB] transition-colors">{game.title}</h3>
-                  <div className="text-[#1FD1EB] font-bold text-sm">Bs. {game.price}</div>
-                </div>
-              </div>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-white">También te puede gustar</h2>
+            <span className="text-xs font-semibold text-violet-400">Recomendados para ti</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {relatedGames.map((game) => (
+              <GameCard key={game.id} game={game} />
             ))}
           </div>
         </div>

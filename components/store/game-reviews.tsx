@@ -26,9 +26,9 @@ export function GameReviews({ gameId = 1, gameTitle = 'Cyberpunk 2077: Phantom L
     canReview: boolean;
     hasExistingReview: boolean;
   }>({
-    isAuthenticated: true,
-    isPurchased: true,
-    canReview: true,
+    isAuthenticated: false,
+    isPurchased: false,
+    canReview: false,
     hasExistingReview: false,
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
