@@ -41,19 +41,26 @@ export function HeroBanner({ game }: HeroBannerProps) {
 
         {/* Description */}
         <p className="text-sm text-[#949CB2] leading-relaxed line-clamp-3">
-          Sumérgete en una odisea cyberpunk donde tus decisiones moldean el destino del último bastión humano. Un juego de rol de acción táctico inmersivo con una estética visual impresionante y mecánicas de combate reactivas.
+          {game.short_description ||
+            (game.slug === 'grand-theft-auto-vi'
+              ? 'El regreso más esperado a Vice City. Vive una revolucionaria narrativa criminal en un mundo abierto hiperrealista de nueva generación.'
+              : game.slug === 'cyberpunk-2077'
+              ? 'Sumérgete en una odisea cyberpunk en Night City donde tus decisiones moldean el destino del último bastión humano.'
+              : 'Explora este emocionante videojuego disponible ahora en la tienda oficial de ViniGames con entrega digital instantánea.')}
         </p>
 
         {/* Categories / Tags */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          {game.developer && (
+            <span className="bg-[#783DF2]/20 border border-[#783DF2]/40 text-xs font-semibold text-[#aa87ff] px-2.5 py-0.5 rounded-md">
+              {game.developer}
+            </span>
+          )}
           <span className="bg-[#1A1C2B]/80 border border-[#2D3349] text-xs text-[#949CB2] px-2.5 py-0.5 rounded-md">
-            RPG
+            Mundo Abierto
           </span>
           <span className="bg-[#1A1C2B]/80 border border-[#2D3349] text-xs text-[#949CB2] px-2.5 py-0.5 rounded-md">
-            Acción
-          </span>
-          <span className="bg-[#1A1C2B]/80 border border-[#2D3349] text-xs text-[#949CB2] px-2.5 py-0.5 rounded-md">
-            Cyberpunk
+            Acción & RPG
           </span>
         </div>
 

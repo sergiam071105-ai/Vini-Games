@@ -49,14 +49,14 @@ export async function loginAction(input: LoginInput): Promise<AuthActionResult> 
     password,
   });
 
-  if (error) {
-    let friendlyMessage = 'Error al iniciar sesión. Inténtalo de nuevo.';
-    if (error.message.includes('Invalid login credentials')) {
-      friendlyMessage = 'Credenciales inválidas. Verifica tu correo y contraseña.';
-    } else if (error.message.includes('Email not confirmed')) {
-      friendlyMessage = 'Debes confirmar tu correo electrónico antes de ingresar.';
-    } else if (error.message.includes('rate limit')) {
-      friendlyMessage = 'Demasiados intentos fallidos. Por favor, espera unos minutos.';
+  if (error || !data?.user) {
+    let friendlyMessage = 'Credenciales inválidas. Verifica tu correo y contraseña.';
+    if (error?.message) {
+      if (error.message.includes('Email not confirmed')) {
+        friendlyMessage = 'Debes confirmar tu correo electrónico antes de ingresar.';
+      } else if (error.message.includes('rate limit')) {
+        friendlyMessage = 'Demasiados intentos fallidos. Por favor, espera unos minutos.';
+      }
     }
 
     return {

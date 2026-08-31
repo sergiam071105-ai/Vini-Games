@@ -1,0 +1,15 @@
+{
+  "projectId": "ac197677-009b-4f8f-8f07-df8e8f065b76",
+  "type": "frontend",
+  "name": "08 - Biblioteca Digital: Lista de juegos adquiridos y contador de horas",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /library"
+    },
+    {
+      "type": "assertion",
+      "description": "The digital library interface is visible with filter tabs and game collection grid"
+    }
+  ]
+}

@@ -244,7 +244,102 @@ export async function getChatMessagesAction(sessionId: string): Promise<ChatMess
 }
 
 /**
- * Genera una respuesta gamer de contingencia basada en el texto del usuario.
+ * Limpia y extrae el texto conversacional y los IDs recomendados,
+ * eliminando bloques de formato ```json o estructuras JSON no deseadas del mensaje visible.
+ */
+function cleanAndExtractChatReply(rawInput: any): {
+  reply: string;
+  recommendedGameIds: number[];
+} {
+  if (!rawInput) {
+    return {
+      reply: '¡Hola! Soy ViniChat. ¿En qué videojuegos o aventuras puedo ayudarte hoy?',
+      recommendedGameIds: [],
+    };
+  }
+
+  let text = typeof rawInput === 'string' ? rawInput : (rawInput.reply || rawInput.output || rawInput.message || rawInput.content || JSON.stringify(rawInput));
+  let recommendedIds: number[] = Array.isArray(rawInput.recommended_game_ids) ? rawInput.recommended_game_ids : [];
+
+  // 1. Si contiene un bloque markdown con json: ```json { "reply": "...", ... } ```
+  const jsonBlockMatch = text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/i);
+  if (jsonBlockMatch && jsonBlockMatch[1]) {
+    try {
+      const parsed = JSON.parse(jsonBlockMatch[1]);
+      if (parsed.reply && typeof parsed.reply === 'string') {
+        text = parsed.reply;
+      } else if (parsed.content && typeof parsed.content === 'string') {
+        text = parsed.content;
+      }
+      if (Array.isArray(parsed.recommended_game_ids) && parsed.recommended_game_ids.length > 0) {
+        recommendedIds = [...recommendedIds, ...parsed.recommended_game_ids];
+      }
+    } catch {
+      // Ignorar fallo y continuar con regex
+    }
+  }
+
+  // 2. Si es o contiene un objeto JSON plano {... "reply": "..." ...}
+  const plainJsonMatch = text.match(/\{[\s\r\n]*"reply"[\s\S]*?\}/);
+  if (plainJsonMatch) {
+    try {
+      const parsed = JSON.parse(plainJsonMatch[0]);
+      if (parsed.reply && typeof parsed.reply === 'string') {
+        text = parsed.reply;
+      }
+      if (Array.isArray(parsed.recommended_game_ids) && parsed.recommended_game_ids.length > 0) {
+        recommendedIds = [...recommendedIds, ...parsed.recommended_game_ids];
+      }
+    } catch {
+      // Continuar con regex de respaldo
+    }
+  }
+
+  // 3. Extraer etiquetas [RECOMMENDED_IDS: 1, 2] si el LLM las generó
+  const idMatch = text.match(/\[RECOMMENDED_IDS:\s*([\d,\s]+)\]/i);
+  if (idMatch && idMatch[1]) {
+    const extracted = idMatch[1]
+      .split(',')
+      .map((s: string) => parseInt(s.trim(), 10))
+      .filter((n: number) => !isNaN(n) && n > 0);
+    if (extracted.length > 0) {
+      recommendedIds = [...recommendedIds, ...extracted];
+    }
+  }
+
+  // 4. Limpieza estricta de cualquier residuo de formato ```json o JSON
+  let cleanText = text
+    .replace(/\[RECOMMENDED_IDS:\s*[\d,\s]+\]/gi, '')
+    .replace(/```(?:json)?\s*\{[\s\S]*?\}\s*```/gi, '')
+    .replace(/```(?:json)?/gi, '')
+    .replace(/```/g, '')
+    .trim();
+
+  // Si tras la limpieza quedó alguna llave JSON huérfana o campo "reply":
+  if (cleanText.includes('"reply":')) {
+    const replyRegexMatch = cleanText.match(/"reply"\s*:\s*"([^"]+)"/);
+    if (replyRegexMatch && replyRegexMatch[1]) {
+      cleanText = replyRegexMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+    }
+  }
+
+  // Desduplicar IDs válidos
+  const uniqueIds = Array.from(
+    new Set(
+      recommendedIds
+        .map((id) => Number(id))
+        .filter((id) => !isNaN(id) && id > 0)
+    )
+  );
+
+  return {
+    reply: cleanText || '¡Hola! ¿En qué juego o género del catálogo puedo asesorarte?',
+    recommendedGameIds: uniqueIds,
+  };
+}
+
+/**
+ * Genera una respuesta gamer inteligente de contingencia basada en el texto del usuario.
  */
 function generateLocalAssistantReply(userQuery: string): {
   content: string;
@@ -252,6 +347,154 @@ function generateLocalAssistantReply(userQuery: string): {
 } {
   const query = userQuery.toLowerCase();
 
+  // Exploración & Mundos Abiertos
+  if (
+    query.includes('explora') ||
+    query.includes('mundo abierto') ||
+    query.includes('open world') ||
+    query.includes('descubr') ||
+    query.includes('viaje')
+  ) {
+    return {
+      content: `¡La pasión por descubrir nuevos horizontes es incomparable! 🗺️✨\n\nSi buscas exploración libre, secretos ocultos y paisajes impresionantes, te recomiendo totalmente estos títulos destacados de nuestro catálogo:`,
+      recommendedGameIds: [27, 28, 2], // Zelda Tears of the Kingdom, Super Mario Odyssey, Elden Ring
+    };
+  }
+
+  // Juegos de Nintendo
+  if (
+    query.includes('nintendo') ||
+    query.includes('zelda') ||
+    query.includes('mario') ||
+    query.includes('switch') ||
+    query.includes('pokemon') ||
+    query.includes('smash')
+  ) {
+    return {
+      content: `¡El universo mágico de **Nintendo** está disponible en ViniGames! 🍄⭐\n\nAquí tienes las obras maestras más aclamadas por la crítica con diversión garantizada para un jugador o en multijugador local:`,
+      recommendedGameIds: [27, 29, 30], // Zelda, Super Smash Bros Ultimate, Mario Kart 8
+    };
+  }
+
+  // RPG & Rol
+  if (
+    query.includes('rpg') ||
+    query.includes('rol') ||
+    query.includes('fantasia') ||
+    query.includes('magia') ||
+    query.includes('witcher') ||
+    query.includes('baldur')
+  ) {
+    return {
+      content: `¡Los juegos de rol ofrecen las historias y mecánicas más profundas! 🧙‍♂️⚔️\n\nTe recomiendo sumergirte en estas epopeyas donde cada decisión y combate forjan tu propio destino:`,
+      recommendedGameIds: [5, 21, 2], // Baldur's Gate 3, The Witcher 3, Elden Ring
+    };
+  }
+
+  // Acción & Disparos & Superhéroes
+  if (
+    query.includes('accion') ||
+    query.includes('combate') ||
+    query.includes('lucha') ||
+    query.includes('dispar') ||
+    query.includes('shooter') ||
+    query.includes('doom') ||
+    query.includes('spiderman') ||
+    query.includes('gta')
+  ) {
+    return {
+      content: `¡Pura adrenalina, reflejos al límite y acción desenfrenada! 💥🎮\n\nEstos son los títulos de acción y combate más espectaculares disponibles en ViniGames:`,
+      recommendedGameIds: [19, 20, 25], // GTA VI, Marvel's Spider-Man 2, DOOM The Dark Ages
+    };
+  }
+
+  // Terror & Supervivencia
+  if (
+    query.includes('terror') ||
+    query.includes('miedo') ||
+    query.includes('horror') ||
+    query.includes('supervivencia') ||
+    query.includes('survival') ||
+    query.includes('zombie')
+  ) {
+    return {
+      content: `¡Prepárate para la tensión constante y la atmósfera inquietante! 🧟🔦\n\nEstos videojuegos de terror psicológico y supervivencia te mantendrán al borde del asiento:`,
+      recommendedGameIds: [13, 14], // Resident Evil 4, Silent Hill 2
+    };
+  }
+
+  // Carreras & Velocidad
+  if (
+    query.includes('carrera') ||
+    query.includes('auto') ||
+    query.includes('carro') ||
+    query.includes('velocidad') ||
+    query.includes('conducir') ||
+    query.includes('forza')
+  ) {
+    return {
+      content: `¡Ajusta tu cinturón y prepárate para la pista! 🏎️💨\n\nTe sugiero estos títulos de velocidad y conducción de primer nivel:`,
+      recommendedGameIds: [30, 16], // Mario Kart 8 Deluxe, Forza Horizon 5
+    };
+  }
+
+  // Indies & Roguelikes
+  if (
+    query.includes('indie') ||
+    query.includes('rogue') ||
+    query.includes('metroid') ||
+    query.includes('hades') ||
+    query.includes('hollow')
+  ) {
+    return {
+      content: `¡Joyas independientes con arte deslumbrante y jugabilidad magistral! 🗡️✨\n\nEstos títulos indie galardonados te ofrecerán desafíos únicos y rejugabilidad infinita:`,
+      recommendedGameIds: [3, 18, 32], // Hollow Knight, Hades II, Metroid Dread
+    };
+  }
+
+  // Ofertas & Descuentos
+  if (
+    query.includes('oferta') ||
+    query.includes('descuento') ||
+    query.includes('barato') ||
+    query.includes('promocion') ||
+    query.includes('precio')
+  ) {
+    return {
+      content: `¡Modo cazador de ofertas activado! 🏷️🔥\n\nEstos son los títulos con los **mayores descuentos activos** en la tienda en este momento. ¡Aprovecha antes de que finalice la promoción!`,
+      recommendedGameIds: [21, 3, 20], // The Witcher 3 (60%), Hollow Knight (50%), Spider-Man 2 (-25%)
+    };
+  }
+
+  // Cooperativo & Amigos
+  if (
+    query.includes('coop') ||
+    query.includes('amigo') ||
+    query.includes('multijugador') ||
+    query.includes('equipo') ||
+    query.includes('online')
+  ) {
+    return {
+      content: `¡Nada mejor que jugar en escuadrón y compartir la victoria! 👥⚔️\n\nTe recomiendo estos videojuegos cooperativos y multijugador para dominar las partidas en equipo:`,
+      recommendedGameIds: [5, 11, 29], // Baldur's Gate 3, GTA V, Super Smash Bros Ultimate
+    };
+  }
+
+  // Estrategia & Simulación
+  if (
+    query.includes('estrategia') ||
+    query.includes('tactica') ||
+    query.includes('gestion') ||
+    query.includes('simulac') ||
+    query.includes('stardew')
+  ) {
+    return {
+      content: `Para estrategas y constructores de imperios 🌌♟️\n\nAquí tienes las mejores opciones de estrategia y simulación disponibles en ViniGames:`,
+      recommendedGameIds: [22, 23, 24], // Civilization VI, Age of Empires IV, Stardew Valley
+    };
+  }
+
+  // ADN Gamer & Recomendaciones generales
   if (query.includes('adn') || query.includes('recomiend') || query.includes('perfil') || query.includes('favorito')) {
     return {
       content: `Analizando tu **ADN Gamer** y preferencias de juego... 🧬⚡\n\nDetecto una afinidad por experiencias inmersivas y mundos épicos. Aquí tienes mis títulos recomendados del catálogo:`,
@@ -259,37 +502,9 @@ function generateLocalAssistantReply(userQuery: string): {
     };
   }
 
-  if (query.includes('oferta') || query.includes('descuento') || query.includes('barato') || query.includes('promocion')) {
-    return {
-      content: `¡Modo cazador de ofertas activado! 🏷️🔥\n\nEstos son los títulos con los **mayores descuentos activos** en la tienda en este momento. ¡Aprovecha antes de que finalice la promoción!`,
-      recommendedGameIds: [21, 3], // The Witcher 3 (60%), Hollow Knight (50%)
-    };
-  }
-
-  if (query.includes('coop') || query.includes('amigo') || query.includes('multijugador') || query.includes('equipo')) {
-    return {
-      content: `¡Nada mejor que jugar en escuadrón! 👥⚔️\n\nTe recomiendo estos videojuegos cooperativos y multijugador para dominar las partidas en equipo:`,
-      recommendedGameIds: [5, 11], // Baldur's Gate 3, GTA V
-    };
-  }
-
-  if (query.includes('estrategia') || query.includes('sci-fi') || query.includes('espaci') || query.includes('tactica')) {
-    return {
-      content: `Para comandantes y mentes tácticas 🌌♟️\n\nAquí tienes las mejores opciones de estrategia y simulación disponibles en ViniGames:`,
-      recommendedGameIds: [22, 23], // Civilization VI, Age of Empires IV
-    };
-  }
-
-  if (query.includes('rpg') || query.includes('rol') || query.includes('fantasia') || query.includes('magia')) {
-    return {
-      content: `He explorado el catálogo de **ViniGames** para responder a tu consulta sobre *"${userQuery}"*.\n\nTe sugiero echarle un vistazo a estos títulos destacados que se adaptan a lo que buscas:`,
-      recommendedGameIds: [1, 2],
-    };
-  }
-
   return {
     content: `He explorado el catálogo de **ViniGames** para responder a tu consulta sobre *"${userQuery}"*.\n\nTe sugiero echarle un vistazo a estos títulos destacados que se adaptan a lo que buscas:`,
-    recommendedGameIds: [1, 2],
+    recommendedGameIds: [27, 1, 2], // Zelda Tears of the Kingdom, Cyberpunk 2077, Elden Ring
   };
 }
 
@@ -310,9 +525,10 @@ async function callNvidiaAiEndpoint(
       (g) => `ID ${g.id}: ${g.title} (${g.categories.map((c) => c.name).join(', ')}) - Bs. ${g.final_price}`
     ).join('\n');
 
-    const systemPrompt = `Eres ViniChat, el asistente gamer experto e interactivo de la plataforma de videojuegos ViniGames.
+    const systemPrompt = `Eres ViniChat, el copiloto gamer y asistente de inteligencia artificial oficial de la plataforma de videojuegos ViniGames.
 Tu misión es asesorar a los jugadores con entusiasmo, recomendar videojuegos del catálogo según sus gustos, resolver dudas y ayudarles con ofertas.
-Responde en español con formato Markdown atractivo, emojis gamer y tono profesional pero cercano.
+Responde de manera natural y conversacional en español con formato Markdown atractivo, emojis gamer y tono amigable.
+IMPORTANTE: NO devuelvas bloques de código JSON con \`\`\`json. Responde directamente con texto conversacional.
 Si recomiendas juegos específicos del catálogo, menciona sus títulos claramente.
 Al final de tu respuesta, en una línea separada, incluye SIEMPRE la etiqueta: [RECOMMENDED_IDS: 1, 2] con los IDs numéricos de los juegos que recomendaste (máximo 3 IDs de la lista).
 
@@ -347,22 +563,7 @@ ${ownedGames && ownedGames.length > 0 ? `Juegos en biblioteca del usuario: ${own
     const data = await res.json();
     const rawReply = data.choices?.[0]?.message?.content || '';
 
-    // Extraer IDs recomendados de [RECOMMENDED_IDS: x, y]
-    let recommendedIds: number[] = [];
-    const idMatch = rawReply.match(/\[RECOMMENDED_IDS:\s*([\d,\s]+)\]/i);
-    if (idMatch && idMatch[1]) {
-      recommendedIds = idMatch[1]
-        .split(',')
-        .map((s: string) => parseInt(s.trim(), 10))
-        .filter((n: number) => !isNaN(n) && n > 0);
-    }
-
-    const cleanReply = rawReply.replace(/\[RECOMMENDED_IDS:\s*[\d,\s]+\]/gi, '').trim();
-
-    return {
-      reply: cleanReply || rawReply,
-      recommendedGameIds: recommendedIds.length > 0 ? recommendedIds : [1, 2],
-    };
+    return cleanAndExtractChatReply(rawReply);
   } catch (err) {
     console.warn('Error calling NVIDIA AI API:', err);
     return null;
@@ -474,7 +675,8 @@ export async function sendChatMessageAction(input: {
         };
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        // Aumentamos el timeout a 25 segundos para permitir que n8n y los LLMs procesen respuestas completas
+        const timeoutId = setTimeout(() => controller.abort(), 25000);
 
         const res = await fetch(n8nWebhookUrl, {
           method: 'POST',
@@ -486,32 +688,24 @@ export async function sendChatMessageAction(input: {
         clearTimeout(timeoutId);
 
         if (res.ok) {
-          const n8nData: N8nChatResponse = await res.json();
-          if (n8nData && n8nData.reply) {
-            let rawReply = n8nData.reply;
-            let ids = n8nData.recommended_game_ids || [];
-
-            // Si la IA devolvió un bloque con ```json o texto JSON dentro del reply, limpiarlo automáticamente
-            if (typeof rawReply === 'string' && (rawReply.includes('```json') || rawReply.trim().startsWith('{'))) {
-              try {
-                const cleanedJson = rawReply.replace(/```json\s*/gi, '').replace(/```/g, '').trim();
-                const parsed = JSON.parse(cleanedJson);
-                if (parsed.reply) rawReply = parsed.reply;
-                if (Array.isArray(parsed.recommended_game_ids) && parsed.recommended_game_ids.length > 0) {
-                  ids = parsed.recommended_game_ids;
-                }
-              } catch {
-                // Mantener rawReply si falla el parseo
+          const n8nData: any = await res.json();
+          if (n8nData) {
+            const rawContent = n8nData.reply || n8nData.output || n8nData.message || n8nData.content || (typeof n8nData === 'string' ? n8nData : null);
+            if (rawContent) {
+              const cleaned = cleanAndExtractChatReply(rawContent);
+              replyContent = cleaned.reply;
+              // Si n8n trajo IDs en el objeto raíz, combinarlos con los extraídos del texto
+              if (Array.isArray(n8nData.recommended_game_ids) && n8nData.recommended_game_ids.length > 0) {
+                recommendedGameIds = Array.from(new Set([...cleaned.recommendedGameIds, ...n8nData.recommended_game_ids]));
+              } else {
+                recommendedGameIds = cleaned.recommendedGameIds;
               }
+              n8nSuccess = true;
             }
-
-            replyContent = rawReply;
-            recommendedGameIds = ids;
-            n8nSuccess = true;
           }
         }
       } catch (webhookErr) {
-        console.warn('n8n webhook timeout or unreachable, attempting NVIDIA AI direct fallback:', webhookErr);
+        console.warn('n8n webhook timeout or unreachable, attempting AI direct fallback:', webhookErr);
       }
     }
 

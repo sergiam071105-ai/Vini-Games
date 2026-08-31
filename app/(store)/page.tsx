@@ -111,8 +111,8 @@ export default async function StoreHomePage() {
     }
   }
 
-  // Seleccionar juego destacado para el Hero Showcase (Cyberpunk 2077 o primer título)
-  const featuredGame = gamesList.find(g => g.slug === 'cyberpunk-2077' || g.slug === 'elden-ring') || gamesList[0];
+  // Seleccionar juego destacado para el Hero Showcase (GTA VI o Cyberpunk 2077)
+  const featuredGame = gamesList.find(g => g.slug === 'grand-theft-auto-vi') || gamesList.find(g => g.slug === 'cyberpunk-2077') || gamesList[0];
 
   // Todos los juegos con descuento activo ordenados por mayor descuento para el Carrusel de Ofertas
   const discountedGames = gamesList

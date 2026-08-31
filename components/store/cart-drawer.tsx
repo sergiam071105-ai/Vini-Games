@@ -3,12 +3,14 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingCart, X, Trash2, ArrowRight, ShieldCheck, ShoppingBag, AlertTriangle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ShoppingCart, X, Trash2, ArrowRight, ShieldCheck, ShoppingBag, AlertTriangle, Plus, Minus } from 'lucide-react';
 import { useCart } from '@/lib/context/cart-context';
 import { useLibrary } from '@/lib/context/library-context';
 import { CheckoutModal } from '@/components/store/checkout-modal';
 
 export function CartDrawer() {
+  const router = useRouter();
   const {
     items,
     itemCount,
@@ -17,6 +19,7 @@ export function CartDrawer() {
     total,
     isDrawerOpen,
     closeDrawer,
+    updateQuantity,
     removeItem,
     clearCart,
   } = useCart();
@@ -28,7 +31,7 @@ export function CartDrawer() {
 
   const handleOpenCheckout = () => {
     closeDrawer();
-    setIsCheckoutOpen(true);
+    router.push('/checkout');
   };
 
   return (
@@ -135,10 +138,12 @@ export function CartDrawer() {
                         </span>
                       ) : (
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="text-xs font-bold text-[#1FD1EB]">Bs. {item.finalPrice}</span>
+                          <span className="text-xs font-bold text-[#1FD1EB]">
+                            Bs. {Number(item.finalPrice).toFixed(2)}
+                          </span>
                           {item.discountPercent > 0 && (
                             <span className="text-[10px] text-[#949CB2] line-through">
-                              Bs. {item.basePrice}
+                              Bs. {Number(item.basePrice).toFixed(2)}
                             </span>
                           )}
                         </div>
@@ -146,14 +151,16 @@ export function CartDrawer() {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => removeItem(item.id)}
-                    aria-label={`Eliminar ${item.title} del carrito de compras`}
-                    className="p-2 text-[#949CB2] hover:text-[#EF4444] hover:bg-[#2E334A]/50 rounded-lg transition-colors cursor-pointer"
-                    title="Eliminar del carrito"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex flex-col items-end justify-center">
+                    <button
+                      onClick={() => removeItem(item.id)}
+                      aria-label={`Eliminar ${item.title} del carrito de compras`}
+                      className="p-2 text-[#949CB2] hover:text-[#EF4444] hover:bg-[#2E334A]/50 rounded-lg transition-colors cursor-pointer"
+                      title="Eliminar del carrito"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               );
             })

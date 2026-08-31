@@ -1,0 +1,15 @@
+{
+  "projectId": "ac197677-009b-4f8f-8f07-df8e8f065b76",
+  "type": "frontend",
+  "name": "07 - Lista de Deseos: Visualización y sincronización de juegos deseados",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /wishlist"
+    },
+    {
+      "type": "assertion",
+      "description": "The Wishlist header is displayed showing the user saved games or the empty wishlist state with a link to /catalog"
+    }
+  ]
+}

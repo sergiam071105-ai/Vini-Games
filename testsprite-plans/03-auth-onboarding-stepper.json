@@ -1,0 +1,39 @@
+{
+  "projectId": "ac197677-009b-4f8f-8f07-df8e8f065b76",
+  "type": "frontend",
+  "name": "03 - Onboarding: Flujo de 4 Pasos y Gamer Passport",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /onboarding/step-1"
+    },
+    {
+      "type": "assertion",
+      "description": "The avatar selection grid and GamerTag input field are visible"
+    },
+    {
+      "type": "action",
+      "description": "Navigate to /onboarding/step-2"
+    },
+    {
+      "type": "assertion",
+      "description": "The genre selection cards with tags like RPG, Accion, Estrategia are visible"
+    },
+    {
+      "type": "action",
+      "description": "Navigate to /onboarding/step-3"
+    },
+    {
+      "type": "assertion",
+      "description": "The Gamer DNA radar and preference sliders are displayed"
+    },
+    {
+      "type": "action",
+      "description": "Navigate to /onboarding/step-4"
+    },
+    {
+      "type": "assertion",
+      "description": "The Gamer Passport summary card with the selected Gamer DNA is visible"
+    }
+  ]
+}

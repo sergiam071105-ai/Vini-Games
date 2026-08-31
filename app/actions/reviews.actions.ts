@@ -156,7 +156,10 @@ export async function getGameReviewsAction(gameId: number): Promise<{
 }
 
 /**
- * Verifica si el usuario actual cumple los requisitos para publicar una reseña verificada.
+ * Verifica si el usuario actual cumple los requisitos para publicar una reseña verificada:
+ * 1. Debe estar autenticado.
+ * 2. Debe poseer el juego en su biblioteca personal (user_library).
+ * 3. No debe haber publicado ya una reseña para este videojuego.
  */
 export async function checkUserCanReviewAction(gameId: number): Promise<{
   isAuthenticated: boolean;
@@ -179,24 +182,60 @@ export async function checkUserCanReviewAction(gameId: number): Promise<{
       };
     }
 
+    // 1. Verificar si el usuario compró el videojuego en su biblioteca
+    const { data: libraryItem } = await supabase
+      .from('user_library')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('game_id', gameId)
+      .maybeSingle();
+
+    const isPurchased = !!libraryItem;
+
+    // 2. Verificar si el usuario ya escribió una reseña previa
+    const { data: existingDbReview } = await supabase
+      .from('reviews')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('game_id', gameId)
+      .maybeSingle();
+
+    const existingMemoryReview = getExtraReviewsStore().find(
+      (r) => r.gameId === gameId && r.userId === user.id
+    );
+
+    const hasExistingReview = !!existingDbReview || !!existingMemoryReview;
+    const canReview = isPurchased && !hasExistingReview;
+
+    let message: string | undefined = undefined;
+    if (!isPurchased) {
+      message = 'Debes haber adquirido este videojuego en tu biblioteca para publicar una reseña.';
+    } else if (hasExistingReview) {
+      message = 'Ya has calificado este videojuego anteriormente.';
+    }
+
     return {
       isAuthenticated: true,
-      isPurchased: true,
-      hasExistingReview: false,
-      canReview: true,
+      isPurchased,
+      hasExistingReview,
+      canReview,
+      message,
     };
-  } catch {
+  } catch (err) {
+    console.error('Error al verificar permisos de reseña:', err);
     return {
-      isAuthenticated: true,
-      isPurchased: true,
-      canReview: true,
+      isAuthenticated: false,
+      isPurchased: false,
+      canReview: false,
       hasExistingReview: false,
+      message: 'No se pudo verificar el estado de compra.',
     };
   }
 }
 
 /**
  * Publica una nueva reseña verificada y recompensa al usuario con XP y GameCoins.
+ * Requiere que el usuario posea el juego en user_library.
  */
 export async function createReviewAction(rawInput: CreateReviewInput): Promise<{
   success: boolean;
@@ -218,46 +257,103 @@ export async function createReviewAction(rawInput: CreateReviewInput): Promise<{
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    const authorUsername = user?.user_metadata?.username || user?.email?.split('@')[0] || 'Eduardo';
-    const authorId = user?.id || `user_${Date.now()}`;
+    if (!user) {
+      return {
+        success: false,
+        error: 'Debes iniciar sesión para publicar una reseña.',
+      };
+    }
 
-    // Intentar inserción en base de datos Supabase
-    if (user) {
-      try {
-        const { data: newReview, error: insertError } = await supabase
-          .from('reviews')
-          .insert({
-            user_id: user.id,
-            game_id: gameId,
-            rating,
-            title,
-            content,
-            is_verified_purchase: true,
-            status: 'APPROVED',
-            helpful_votes_count: 0,
-            unhelpful_votes_count: 0,
-          })
-          .select('id')
-          .single();
+    // 1. Validar posesión obligatoria del juego en biblioteca
+    const { data: libraryItem } = await supabase
+      .from('user_library')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('game_id', gameId)
+      .maybeSingle();
 
-        if (!insertError && newReview) {
-          revalidatePath('/games');
-          revalidatePath(`/games/${gameId}`);
-          revalidatePath('/admin/reviews');
-          revalidatePath('/library');
-          revalidatePath('/profile');
-          revalidatePath('/gamification');
+    if (!libraryItem) {
+      return {
+        success: false,
+        error: 'Debes haber adquirido este videojuego en tu biblioteca para publicar una reseña.',
+      };
+    }
 
-          return {
-            success: true,
-            xpEarned: 50,
-            gamecoinsEarned: 25,
-            reviewId: newReview.id,
-          };
+    // 2. Validar que no exista reseña previa
+    const { data: existingReview } = await supabase
+      .from('reviews')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('game_id', gameId)
+      .maybeSingle();
+
+    if (existingReview) {
+      return {
+        success: false,
+        error: 'Ya has publicado una reseña para este videojuego.',
+      };
+    }
+
+    const authorUsername = user?.user_metadata?.username || user?.email?.split('@')[0] || 'Gamer';
+    const authorId = user.id;
+
+    // 3. Intentar inserción en base de datos Supabase
+    try {
+      const { data: newReview, error: insertError } = await supabase
+        .from('reviews')
+        .insert({
+          user_id: user.id,
+          game_id: gameId,
+          rating,
+          title,
+          content,
+          is_verified_purchase: true,
+          status: 'APPROVED',
+          helpful_votes_count: 0,
+          unhelpful_votes_count: 0,
+        })
+        .select('id')
+        .single();
+
+      if (!insertError && newReview) {
+        // Recompensar con XP y GameCoins en el perfil
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('gamecoins_balance, total_xp')
+            .eq('id', user.id)
+            .single();
+
+          if (profile) {
+            await supabase
+              .from('profiles')
+              .update({
+                gamecoins_balance: (Number(profile.gamecoins_balance) || 0) + 25,
+                total_xp: (Number(profile.total_xp) || 0) + 50,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', user.id);
+          }
+        } catch {
+          // Non-blocking profile update
         }
-      } catch (dbErr) {
-        console.warn('Supabase DB error on review insert, using fallback store:', dbErr);
+
+        revalidatePath('/games');
+        revalidatePath(`/games/${gameId}`);
+        revalidatePath('/admin/reviews');
+        revalidatePath('/library');
+        revalidatePath('/profile');
+        revalidatePath('/gamification');
+
+        return {
+          success: true,
+          xpEarned: 50,
+          gamecoinsEarned: 25,
+          reviewId: newReview.id,
+        };
       }
+    } catch (dbErr) {
+      console.warn('Supabase DB error on review insert, using fallback store:', dbErr);
     }
 
     // Persistencia resiliente en memoria ante restricciones RLS

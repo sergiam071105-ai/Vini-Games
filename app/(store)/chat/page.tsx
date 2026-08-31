@@ -25,6 +25,7 @@ import {
 import { ChatSession, ChatMessage } from '@/types/chat.types';
 import { ChatMessageList } from '@/components/chat/chat-message-list';
 import { ChatInput } from '@/components/chat/chat-input';
+import { createClient } from '@/lib/supabase/client';
 
 export default function ChatPage() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
@@ -34,6 +35,36 @@ export default function ChatPage() {
   const [isSessionsLoading, setIsSessionsLoading] = useState<boolean>(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
   const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState<boolean>(true);
+  const [currentUser, setCurrentUser] = useState<{ username: string; avatarUrl?: string | null }>({
+    username: 'Gamer',
+  });
+
+  // Obtener perfil del usuario autenticado
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('username, full_name, avatar_url')
+            .eq('id', user.id)
+            .single();
+
+          if (profile) {
+            setCurrentUser({
+              username: profile.username || profile.full_name || user.email?.split('@')[0] || 'Gamer',
+              avatarUrl: profile.avatar_url ?? undefined,
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('Error fetching user for chat:', err);
+      }
+    };
+    fetchUser();
+  }, []);
 
   // Cargar sesiones al montar
   const loadSessions = useCallback(async () => {
@@ -291,6 +322,8 @@ export default function ChatPage() {
           <ChatMessageList
             messages={messages}
             isLoading={isLoading}
+            userName={currentUser.username}
+            userAvatar={currentUser.avatarUrl}
           />
 
           {/* Barra de Entrada de Texto con Chips */}

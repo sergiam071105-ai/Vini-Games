@@ -24,6 +24,7 @@ interface CartContextType {
     discountPercent?: number;
     finalPrice?: number;
   }) => Promise<{ success: boolean; error?: string }>;
+  updateQuantity: (gameId: number, quantity: number) => void;
   removeItem: (gameId: number) => Promise<void>;
   clearCart: () => Promise<void>;
   isInCart: (gameId: number) => boolean;
@@ -43,7 +44,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     try {
       const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (stored) {
-        setItems(JSON.parse(stored));
+        const parsed: CartGameItem[] = JSON.parse(stored);
+        setItems(
+          parsed.map((item) => ({
+            ...item,
+            quantity: item.quantity && item.quantity > 0 ? item.quantity : 1,
+          }))
+        );
       }
     } catch {
       // Ignorar errores de parseo
@@ -62,10 +69,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items, isInitialized]);
 
-  const subtotal = items.reduce((acc, item) => acc + item.basePrice, 0);
-  const total = items.reduce((acc, item) => acc + item.finalPrice, 0);
+  const subtotal = items.reduce(
+    (acc, item) => acc + Number(item.basePrice) * (item.quantity || 1),
+    0
+  );
+  const total = items.reduce(
+    (acc, item) => acc + Number(item.finalPrice) * (item.quantity || 1),
+    0
+  );
   const discountTotal = Math.max(0, subtotal - total);
-  const itemCount = items.length;
+  const itemCount = items.reduce((acc, item) => acc + (item.quantity || 1), 0);
 
   const openDrawer = () => setIsDrawerOpen(true);
   const closeDrawer = () => setIsDrawerOpen(false);
@@ -101,6 +114,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       basePrice: base,
       discountPercent: discount,
       finalPrice: final,
+      quantity: 1,
       addedAt: new Date().toISOString(),
     };
 
@@ -119,6 +133,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     return { success: true };
+  };
+
+  const updateQuantity = (gameId: number, quantity: number) => {
+    if (quantity <= 0) {
+      removeItem(gameId);
+      return;
+    }
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === gameId
+          ? { ...item, quantity: Math.max(1, Math.min(99, quantity)) }
+          : item
+      )
+    );
   };
 
   const removeItem = async (gameId: number) => {
@@ -152,6 +180,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         closeDrawer,
         toggleDrawer,
         addItem,
+        updateQuantity,
         removeItem,
         clearCart,
         isInCart,
